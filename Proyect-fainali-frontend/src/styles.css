@@ -1,0 +1,39 @@
+:root {
+  --primario: #3d39af;
+  --secundario: #0bd692;
+  --texto: #372c1f;
+  --fondo: #ffffff;
+  --gris: #f8f9fa;
+  --fuente: 'inter', sans-serif;
+}
+
+body {
+  font: var(--fuente);
+  color: var(--texto);
+  margin: 0;
+}
+
+/* CSS PARA COMPONENTE INTERACTION */
+/* El overlay base para Carga, Alertas y Errores */
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  z-index: 99999 !important;
+  display: grid;
+  place-items: center;
+  backdrop-filter: blur(4px);
+}
+
+.toast {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 12px 25px;
+  color: white;
+  border-radius: 8px;
+  z-index: 9001; /* Un poco más que el overlay */
+  font-weight: bold;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
