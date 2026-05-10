@@ -1,0 +1,142 @@
+<section class="seccion-layout">
+  <div class="contenedor-estandar">
+    <header class="cabecera-pagina" style="text-align: left; margin-bottom: 30px; display: flex; justify-content: space-between; align-items: flex-end;">
+      <div>
+        <h2>Panel de Control</h2>
+        <span style="color: #64748b; font-size: 14px; font-weight: 500;">
+          <i class="fa-solid fa-building" style="margin-right: 5px;"></i> {{ datos()?.institucion?.nombre || 'Cargando institución...' }}
+        </span>
+      </div>
+      <div style="text-align: right;">
+        <span class="badge-resort badge-info" style="font-size: 12px; padding: 8px 16px;">
+          Carga Histórica: {{ datos()?.institucion?.cargaTrabajo || 0 }} Reportes
+        </span>
+      </div>
+    </header>
+
+    @if (cargando()) {
+      <div class="estado-carga"><div class="spinner"></div></div>
+    } @else {
+      <!--1. Métricas clave-->
+      <div class="grid-metricas">
+        <div class="tarjeta-metrica">
+          <div class="icono-metrica azul"><i class="fa-solid fa-file-signature"></i></div>
+          <div class="info-metrica">
+            <span class="label">Reportes Activos</span>
+            <h3 class="valor">{{ datos()?.kpis?.reportesActivos }}</h3>
+          </div>
+        </div>
+        <div class="tarjeta-metrica">
+          <div class="icono-metrica verde"><i class="fa-solid fa-check-double"></i></div>
+          <div class="info-metrica">
+            <span class="label">Índice Resolución</span>
+            <h3 class="valor">{{ datos()?.kpis?.indiceResolucion }}%</h3>
+          </div>
+        </div>
+        <div class="tarjeta-metrica">
+          <div class="icono-metrica naranja"><i class="fa-solid fa-clock-rotate-left"></i></div>
+          <div class="info-metrica">
+            <span class="label">T. Promedio (Días)</span>
+            <h3 class="valor">{{ datos()?.kpis?.tiempoPromedioDias }}</h3>
+          </div>
+        </div>
+        <div class="tarjeta-metrica">
+          <div class="icono-metrica purpura"><i class="fa-solid fa-triangle-exclamation"></i></div>
+          <div class="info-metrica">
+            <span class="label">Alta Prioridad</span>
+            <h3 class="valor">{{ datos()?.kpis?.alertasAltaPrioridad }}</h3>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid-dashboard-principal">
+        <!--Gráfico de tendencias-->
+        <div class="tarjeta-resort grafico-contenedor">
+          <h3 class="tarjeta-titulo">Reportes por Problema</h3>
+
+          @if (chartOptions; as chart) {
+            <apx-chart
+              [series]="chart.series"
+              [chart]="chart.chart"
+              [xaxis]="chart.xaxis"
+              [stroke]="chart.stroke"
+              [dataLabels]="chart.dataLabels"
+              [colors]="chart.colors"
+              [fill]="chart.fill"
+              [yaxis]="chart.yaxis"
+              [plotOptions]="chart.plotOptions!"
+            >
+            </apx-chart>
+          } @else {
+            <p class="txt-vacio">No hay datos para graficar.</p>
+          }
+        </div>
+
+        <!--Actividad reciente-->
+        <div class="tarjeta-resort">
+          <h3 class="tarjeta-titulo">Seguimiento Reciente</h3>
+          <div class="lista-actividades">
+            @for (act of datos()?.seguimiento; track act.descripcion) {
+              <div class="item-actividad">
+                <div class="punto-actividad"></div>
+                <div class="texto-actividad">
+                  <p>{{ act.descripcion }}</p>
+                  <small>{{ formatDate(act.fecha) }}</small>
+                </div>
+              </div>
+            } @empty {
+              <div class="item-actividad">
+                <div class="texto-actividad">
+                  <p class="txt-vacio">No hay seguimientos recientes.</p>
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+
+      <!--Sectores y Problemas-->
+      <div class="grid-tablas-cortas">
+        <div class="tarjeta-resort">
+          <h3 class="tarjtea-titulo" style="color: #0F2854; font-size: 1.2rem; font-weight: 700; margin: 0; margin-bottom: 20px;">Distribución por Sector</h3>
+          <table class="tabla-simple">
+            @for (s of datos()?.porSector; track s.sector) {
+              <tr>
+                <td>
+                  <b>{{ s.sector }}</b>
+                </td>
+                <td>
+                  <span class="badge-resort badge-info">{{ s.total }} Reportes</span>
+                </td>
+              </tr>
+            } @empty {
+              <tr>
+                <td class="txt-vacio">No hay reportes en sectores.</td>
+              </tr>
+            }
+          </table>
+        </div>
+        
+        <div class="tarjeta-resort">
+          <h3 class="tarjtea-titulo" style="color: #1C4D8D; font-size: 1.2rem; font-weight: 700; margin: 0; margin-bottom: 20px;">Problemas Frecuentes</h3>
+          <table class="tabla-simple">
+            @for (p of datos()?.porProblema; track p.problema) {
+              <tr>
+                <td>
+                  <b>{{ p.problema }}</b>
+                </td>
+                <td>
+                  <span class="badge-resort badge-pendiente">{{ p.total }} Reportes</span>
+                </td>
+              </tr>
+            } @empty {
+              <tr>
+                <td class="txt-vacio">No hay problemas reportados.</td>
+              </tr>
+            }
+          </table>
+        </div>
+      </div>
+    }
+  </div>
+</section>

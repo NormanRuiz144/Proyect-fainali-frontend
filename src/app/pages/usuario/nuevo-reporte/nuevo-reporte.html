@@ -1,0 +1,109 @@
+<section class="portal-ciudadano">
+  <div class="contenedor-formulario">
+    <div class="encabezado-portal">
+      <div class="icono-portal">
+        <i class="fa-solid fa-bullhorn"></i>
+      </div>
+      <h2>Reportar un Problema</h2>
+      <p>Ayúdanos a mejorar nuestra comunidad. Completa la información y resolveremos la incidencia lo más pronto posible.</p>
+    </div>
+
+    <form class="formulario-reporte" (submit)="enviarReporte($event)">
+      
+      <!-- Paso 1: Tipo de Problema -->
+      <div class="grupo-campo">
+        <label for="problematica"><i class="fa-solid fa-triangle-exclamation"></i> ¿Qué tipo de problema es?</label>
+        <select id="problematica" class="input-portal" required>
+          <option value="" disabled selected>Selecciona una opción...</option>
+          <option value="1">Fuga de Agua / Falta de Agua</option>
+          <option value="2">Alumbrado Público Dañado</option>
+          <option value="3">Bache en la Calle</option>
+          <option value="4">Acumulación de Basura</option>
+          <option value="5">Ruido Nocturno / Desorden</option>
+          <option value="6">Otro</option>
+        </select>
+      </div>
+
+      <!-- Paso 2: Descripción -->
+      <div class="grupo-campo">
+        <label for="descripcion"><i class="fa-solid fa-align-left"></i> Brinda más detalles (Descripción)</label>
+        <textarea id="descripcion" class="input-portal textarea-portal" placeholder="Ej: Hay una fuga de agua masiva frente a la pulpería de Doña María. El agua está llegando hasta la calle principal." required rows="3"></textarea>
+      </div>
+
+      <!-- Paso 3: Institución a la que va dirigido -->
+      <div class="grupo-campo">
+        <label for="institucion"><i class="fa-solid fa-building-flag"></i> ¿A qué institución va dirigido?</label>
+        <select id="institucion" class="input-portal" required>
+          <option value="" disabled selected>Selecciona la institución responsable...</option>
+          <option value="1">ENACAL (Agua y Saneamiento)</option>
+          <option value="2">Disnorte-Dissur (Energía Eléctrica)</option>
+          <option value="3">Alcaldía de Rivas (Baches/Basura)</option>
+          <option value="4">Policía Nacional (Ruido/Desorden)</option>
+        </select>
+      </div>
+
+      <!-- Paso 4: Municipio (Filtro) -->
+      <div class="grupo-campo">
+        <label for="municipio"><i class="fa-solid fa-city"></i> ¿En qué municipio te encuentras?</label>
+        <select id="municipio" class="input-portal" required>
+          <option value="" disabled selected>Selecciona tu municipio...</option>
+          <option value="1">Rivas (Cabecera)</option>
+          <option value="2">San Juan del Sur</option>
+          <option value="3">Tola</option>
+          <option value="4">San Jorge</option>
+          <option value="5">Belén</option>
+          <option value="6">Potosí</option>
+        </select>
+      </div>
+
+      <!-- Paso 5: Sector -->
+      <div class="grupo-campo">
+        <label for="sector"><i class="fa-solid fa-map"></i> ¿En qué sector/barrio ocurrió?</label>
+        <select id="sector" class="input-portal" required>
+          <option value="" disabled selected>Selecciona tu barrio o sector...</option>
+          <option value="1">Barrio San Francisco</option>
+          <option value="2">Barrio La Puebla</option>
+          <option value="3">Barrio Eduardo Alvarado</option>
+          <option value="4">Popoyuapa</option>
+          <option value="5">Barrio Los Pinos</option>
+        </select>
+      </div>
+
+      <!-- Paso 4: GPS y Mapa -->
+      <div class="grupo-campo">
+        <label><i class="fa-solid fa-location-crosshairs"></i> Ubicación Exacta (GPS)</label>
+        <div class="contenedor-mapa">
+          
+          <div class="estado-gps">
+            <button type="button" class="btn-gps" (click)="obtenerUbicacion()">
+              <i class="fa-solid fa-satellite-dish"></i> Obtener mi ubicación actual
+            </button>
+            <span class="texto-coordenadas" *if="ubicacionObtenida">¡Ubicación capturada con éxito!</span>
+          </div>
+
+          <div id="mapa-ubicacion" style="height: 300px; width: 100%; z-index: 1;"></div>
+        </div>
+      </div>
+
+      <!-- Paso 5: Evidencia Fotográfica -->
+      <div class="grupo-campo">
+        <label><i class="fa-solid fa-camera"></i> Evidencia Fotográfica</label>
+        <div class="zona-archivos">
+          <i class="fa-solid fa-cloud-arrow-up icono-subida"></i>
+          <h4>Haz clic o arrastra tus fotos aquí</h4>
+          <p>Sube hasta 6 imágenes del problema (JPG, PNG). Máximo 20MB.</p>
+          <input type="file" multiple accept="image/png, image/jpeg, image/webp" class="input-archivo-oculto">
+          <button type="button" class="btn-subir-falso">Seleccionar Archivos</button>
+        </div>
+      </div>
+
+      <div class="acciones-formulario">
+        <button type="button" class="btn-portal-secundario">Cancelar</button>
+        <button type="submit" class="btn-portal-primario">
+          <i class="fa-solid fa-paper-plane"></i> Enviar Reporte
+        </button>
+      </div>
+
+    </form>
+  </div>
+</section>
