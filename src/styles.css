@@ -1,20 +1,44 @@
+@import "leaflet/dist/leaflet.css";
+
+/* --- ESTRUCTURA DE SECCIÓN Y LAYOUT GLOBALES --- */
+.seccion-layout {
+  padding: 10px 30px 40px;
+  min-height: 80vh;
+}
+.contenedor-estandar {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+.cabecera-pagina {
+  text-align: left;
+  margin-bottom: 30px;
+}
+.cabecera-pagina h2 {
+  font-size: clamp(26px, 5vw, 36px);
+  font-weight: 800;
+  color: var(--texto, #1e293b);
+  margin-bottom: 5px;
+  letter-spacing: -0.5px;
+  margin-top: 0;
+}
+
 :root {
-  --primario: #3d39af;
+  --primario: #1C4D8D;
   --secundario: #0bd692;
   --texto: #372c1f;
   --fondo: #ffffff;
   --gris: #f8f9fa;
-  --fuente: 'inter', sans-serif;
+  --fuente: 'Inter', sans-serif;
 }
 
 body {
-  font: var(--fuente);
+  font-family: var(--fuente);
   color: var(--texto);
   margin: 0;
 }
 
 /* CSS PARA COMPONENTE INTERACTION */
-/* El overlay base para Carga, Alertas y Errores */
+
 .overlay {
   position: fixed;
   inset: 0;
@@ -33,7 +57,165 @@ body {
   padding: 12px 25px;
   color: white;
   border-radius: 8px;
-  z-index: 9001; /* Un poco más que el overlay */
+  z-index: 9001; 
   font-weight: bold;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+/* --- BADGES GLOBALES --- */
+.badge-resort {
+  font-size: 11px;
+  font-weight: 800;
+  padding: 6px 14px;
+  border-radius: 50px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  display: inline-block;
+  text-align: center;
+}
+.badge-info { background: #f0f3ff; color: var(--primario); }
+.badge-pendiente { background: #fff9db; color: #f59f00; }
+.badge-confirmada { background: #e7f5ff; color: #228be6; }
+.badge-activa { background: #ebfbee; color: #40c057; }
+.badge-finalizada { background: #f8f9fa; color: #868e96; }
+.badge-cancelada { background: #fff5f5; color: #fa5252; }
+
+/* --- BOTONES ESTÁNDAR --- */
+.btn-resort {
+  border: none;
+  padding: 10px 20px;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+  transition: 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.btn-resort-primario {
+  background: var(--primario);
+  color: white;
+}
+.btn-resort-outline {
+  background: white;
+  border: 1px solid var(--primario);
+  color: var(--primario);
+}
+.btn-resort:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+/* --- BARRA DE BÚSQUEDA --- */
+.barra-acciones {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 25px;
+  gap: 15px;
+}
+.contenedor-busqueda {
+  position: relative;
+  flex: 1;
+  max-width: 400px;
+}
+.icono-busqueda {
+  position: absolute;
+  left: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #94a3b8;
+}
+.input-busqueda {
+  width: 100%;
+  padding: 12px 15px 12px 45px;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 12px;
+  font-family: inherit;
+  font-size: 14px;
+  outline: none;
+  transition: all 0.3s ease;
+  box-sizing: border-box;
+}
+.input-busqueda:focus {
+  border-color: var(--primario);
+}
+
+/* --- TABLAS --- */
+.tabla-contenedor {
+  background: white;
+  border-radius: 20px;
+  border: 1px solid #e2e8f0;
+  overflow-x: auto;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02);
+  margin-bottom: 20px;
+}
+.tabla-resort {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  min-width: 700px;
+}
+.tabla-resort th {
+  background-color: #f8fafc;
+  padding: 18px 25px;
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  border-bottom: 1px solid #e2e8f0;
+}
+.tabla-resort td {
+  padding: 20px 25px;
+  font-size: 14px;
+  color: #334155;
+  border-bottom: 1px solid #f1f5f9;
+}
+.acciones-celda {
+  display: flex;
+  gap: 8px;
+}
+.btn-accion {
+  width: 35px;
+  height: 35px;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  transition: 0.3s;
+}
+.btn-editar { background-color: #f1f5f9; color: var(--primario); }
+.btn-editar:hover { background-color: var(--primario); color: white; }
+.btn-eliminar { background-color: #fff1f2; color: #e11d48; }
+.btn-eliminar:hover { background-color: #e11d48; color: white; }
+
+/* MODAL */
+.modal-fondo {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  display: grid;
+  place-items: center;
+  z-index: 3000;
+  padding: 20px;
+}
+.modal-caja {
+  background: white;
+  border-radius: 20px;
+  padding: 30px;
+  width: 100%;
+  max-width: 500px;
+  position: relative;
+}
+.boton-cerrar {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  color: #94a3b8;
 }
