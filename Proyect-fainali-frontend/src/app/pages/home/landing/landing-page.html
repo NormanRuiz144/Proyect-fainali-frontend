@@ -6,13 +6,10 @@
         Tu voz es el primer paso para mejorar nuestras calles. Reporta baches, fallos eléctricos y
         más en segundos.
       </p>
-      @if (authService.estaAutenticado()) {
-        <p class="logged-in-msg">Estas logeado</p>
-        <button class="btn-logout" (click)="cerrarSesion()">Cerrar Sesión</button>
-      } @else {
+      @if (!authService.estaAutenticado()) {
         <div class="cta-group">
           <button class="btn-primary" (click)="abrirRegistro()">Registrarse</button>
-          <button class="btn-primary" (click)="abrirLogin()">Iniciar Sesion</button>
+          <button class="btn-primary" (click)="abrirLogin()">Iniciar Sesión</button>
         </div>
       }
     </div>

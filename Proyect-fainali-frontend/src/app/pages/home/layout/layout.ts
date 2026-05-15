@@ -36,10 +36,12 @@ export class Layout {
   municipios = signal<IMunicipio[]>([]);
   sectores = signal<ISector[]>([]);
 
+  pasoRegistro = signal<number>(1);
+
 
   //Enlaces de navegacion
   enlaces = [
-    { ruta: '/inicio', etiqueta: 'Inicio' },
+    { ruta: '/inicio', etiqueta: '' },
   ]
   //navegar en los enlaces
   async navegar(ruta: string) {
@@ -62,6 +64,7 @@ export class Layout {
   //Alternar vista entre el Login y el registro
   cambiarVista(vista: 'login' | 'registro') {
     this.interactionService.vistaAuth.set(vista);
+    this.pasoRegistro.set(1);
 
     if (vista === 'login') {
       this.loginForm.reset()
@@ -96,7 +99,7 @@ export class Layout {
         '',
         [Validators.required, Validators.pattern(PASSW_PATTERN)]
       ],
-      idSector: [null, [Validators.required]],
+      idSector: [null],
     });
   }
 
@@ -121,10 +124,23 @@ export class Layout {
   onMunicipioChange(id: number) {
     this.sectores.set([]);
     this.registroForm.patchValue({ idSector: null });
+    const control = this.registroForm.get('idSector');
     if (!id) return;
     this.ubicacionService.obtenerSectoresPorMunicipio(id).subscribe({
-      next: (data) => this.sectores.set(data),
-      error: (err) => this.interactionService.mostrarError(err),
+      next: (data) => {
+        this.sectores.set(data);
+        if (data.length > 0) {
+          control?.setValidators([Validators.required]);
+        } else {
+          control?.clearValidators();
+        }
+        control?.updateValueAndValidity();
+      },
+      error: () => {
+        this.sectores.set([]);
+        control?.clearValidators();
+        control?.updateValueAndValidity();
+      },
     });
   }
 
@@ -132,6 +148,37 @@ export class Layout {
   isInvalid(form: FormGroup, controlName: string): boolean {
     const control = form.get(controlName);
     return !!control && control.invalid && (control.touched || control.dirty);
+  }
+
+  // Navegación del registro
+  siguientePaso() {
+    if (this.pasoValido(this.pasoRegistro())) {
+      this.pasoRegistro.update(p => p + 1);
+    }
+  }
+
+  pasoAnterior() {
+    this.pasoRegistro.update(p => Math.max(1, p - 1));
+  }
+
+  pasoValido(paso: number): boolean {
+    if (!this.registroForm) return false;
+
+    if (paso === 1) {
+      const { numeroCedula, nombres, apellidos, sexo } = this.registroForm.controls;
+      return !!numeroCedula?.valid && !!nombres?.valid && !!apellidos?.valid && !!sexo?.valid;
+    }
+    if (paso === 2) {
+      const { correo, contrasena, confirmationContra } = this.registroForm.controls;
+      return !!correo?.valid && !!contrasena?.valid && !!confirmationContra?.valid;
+    }
+    if (paso === 3) {
+      const sectoresDisponibles = this.sectores().length > 0;
+      if (!sectoresDisponibles) return true;
+      const { idSector } = this.registroForm.controls;
+      return !!idSector?.valid;
+    }
+    return false;
   }
 
   // Iniciar sesión
@@ -160,7 +207,12 @@ export class Layout {
       },
       error: async (err) => {
         await this.interactionService.hideLoading();
-        await this.interactionService.mostrarError(err);
+        const mensajeError = err?.error?.errors?.[0]?.message || '';
+        if (mensajeError.toLowerCase().includes('credential')) {
+          await this.interactionService.showToast('Credenciales incorrectas', 'error');
+        } else {
+          await this.interactionService.mostrarError(err);
+        }
       }
     });
   }
@@ -178,8 +230,10 @@ export class Layout {
       correo: val.correo,
       contrasena: val.contrasena,
       confirmationContra: val.confirmationContra,
-      idSector: Number(val.idSector),
     };
+    if (val.idSector) {
+      usuario.idSector = Number(val.idSector);
+    }
 
     console.log("Datos enviados al backend:", JSON.stringify(usuario, null, 2));
 
@@ -218,6 +272,7 @@ export class Layout {
 
   cerrarModal() {
     this.interactionService.cerrarModalAuth();
+    this.pasoRegistro.set(1);
     if (this.loginForm) {
       this.loginForm.reset();
     }
