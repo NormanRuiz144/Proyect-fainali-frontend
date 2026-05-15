@@ -15,7 +15,7 @@ export class UbicacionService {
 
   obtenerDepartamentos(): Observable<IDepartamento[]> {
     return this.http
-      .get<DepartamentoResponse>(`${this.baseUrl}/departamento`)
+      .get<DepartamentoResponse>(`${this.baseUrl}/departamento/listar`)
       .pipe(map((res) => res.lista_Departamentos));
   }
 
