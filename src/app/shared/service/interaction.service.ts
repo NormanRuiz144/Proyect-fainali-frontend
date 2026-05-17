@@ -9,6 +9,19 @@ export class InteractionService {
   toast = signal<{ msg: string; tipo: string } | null>(null);
   alerta = signal<{ titulo: string; msg: string; resolver: (v: boolean) => void } | null>(null);
   error = signal<{ titulo: string; msg: string; btnOk: string } | null>(null);
+  
+  // Estado del Modal de Autenticación
+  modalAuth = signal(false);
+  vistaAuth = signal<'login' | 'registro'>('login');
+
+  abrirModalAuth(vista: 'login' | 'registro') {
+    this.vistaAuth.set(vista);
+    this.modalAuth.set(true);
+  }
+
+  cerrarModalAuth() {
+    this.modalAuth.set(false);
+  }
 
   // Cargando
   showLoading() {
@@ -59,6 +72,7 @@ export class InteractionService {
       err?.error?.detail ||
       err?.error?.message ||
       err?.error?.title ||
+      err?.error?.errors?.[0]?.message ||
       err?.message ||
       'Error desconocido';
 
