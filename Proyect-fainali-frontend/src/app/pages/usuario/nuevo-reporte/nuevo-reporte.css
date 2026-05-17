@@ -1,0 +1,263 @@
+.portal-ciudadano {
+  background-color: #faf8f9;
+  min-height: 100vh;
+  padding: 40px 20px;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  font-family: 'Inter', sans-serif;
+}
+
+.contenedor-formulario {
+  background: white;
+  width: 100%;
+  max-width: 650px;
+  border-radius: 24px;
+  box-shadow: 0 10px 40px rgba(15, 40, 84, 0.08);
+  overflow: hidden;
+  border: 1px solid #f1f5f9;
+}
+
+.encabezado-portal {
+  background: linear-gradient(135deg, #0F2854 0%, #1C4D8D 100%);
+  color: white;
+  padding: 40px 30px;
+  text-align: center;
+  position: relative;
+}
+
+.icono-portal {
+  width: 60px;
+  height: 60px;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 24px;
+  margin: 0 auto 20px;
+  backdrop-filter: blur(5px);
+  color: #BDE8F5;
+}
+
+.encabezado-portal h2 {
+  margin: 0 0 10px 0;
+  font-size: 26px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+}
+
+.encabezado-portal p {
+  margin: 0;
+  font-size: 14px;
+  color: #BDE8F5;
+  line-height: 1.5;
+  opacity: 0.9;
+}
+
+.formulario-reporte {
+  padding: 40px 30px;
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
+}
+
+.grupo-campo label {
+  display: block;
+  font-size: 13px;
+  font-weight: 700;
+  color: #0F2854;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.grupo-campo label i {
+  color: #4988C4;
+  margin-right: 5px;
+  font-size: 14px;
+}
+
+.input-portal {
+  width: 100%;
+  padding: 15px;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 12px;
+  font-family: inherit;
+  font-size: 15px;
+  color: #334155;
+  transition: all 0.3s;
+  box-sizing: border-box;
+  background-color: #f8fafc;
+}
+
+.input-portal:focus {
+  outline: none;
+  border-color: #1C4D8D;
+  background-color: white;
+  box-shadow: 0 0 0 4px rgba(28, 77, 141, 0.1);
+}
+
+.textarea-portal {
+  resize: vertical;
+  min-height: 100px;
+}
+
+/* Zona del Mapa y GPS */
+.contenedor-mapa {
+  border: 1.5px solid #e2e8f0;
+  border-radius: 12px;
+  overflow: hidden;
+  background: white;
+}
+
+.estado-gps {
+  padding: 15px;
+  border-bottom: 1px solid #e2e8f0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #f8fafc;
+}
+
+.btn-gps {
+  background: #1C4D8D;
+  color: white;
+  border: none;
+  padding: 8px 15px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+  transition: 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-gps:hover {
+  background: #0F2854;
+}
+
+.texto-coordenadas {
+  font-size: 12px;
+  font-weight: 600;
+  color: #40c057;
+}
+
+.mapa-placeholder {
+  height: 200px;
+  background: #f1f5f9;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  color: #64748b;
+  padding: 20px;
+}
+
+/* Zona de Archivos */
+.zona-archivos {
+  border: 2px dashed #cbd5e1;
+  border-radius: 12px;
+  padding: 40px 20px;
+  text-align: center;
+  background-color: #f8fafc;
+  transition: all 0.3s;
+  position: relative;
+}
+
+.zona-archivos:hover {
+  border-color: #4988C4;
+  background-color: #f0f8ff;
+}
+
+.icono-subida {
+  font-size: 36px;
+  color: #4988C4;
+  margin-bottom: 15px;
+}
+
+.zona-archivos h4 {
+  margin: 0 0 5px 0;
+  color: #0F2854;
+  font-size: 16px;
+}
+
+.zona-archivos p {
+  margin: 0 0 20px 0;
+  color: #64748b;
+  font-size: 13px;
+}
+
+.input-archivo-oculto {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.btn-subir-falso {
+  background: white;
+  border: 1px solid #cbd5e1;
+  padding: 8px 20px;
+  border-radius: 8px;
+  font-weight: 600;
+  color: #1C4D8D;
+  pointer-events: none; /* El click lo recibe el input transparente */
+}
+
+/* Botones Finales */
+.acciones-formulario {
+  display: flex;
+  gap: 15px;
+  margin-top: 10px;
+  padding-top: 25px;
+  border-top: 1px solid #f1f5f9;
+}
+
+.btn-portal-primario, .btn-portal-secundario {
+  flex: 1;
+  padding: 16px;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  border: none;
+  transition: all 0.3s;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-portal-primario {
+  background: #1C4D8D;
+  color: white;
+}
+
+.btn-portal-primario:hover {
+  background: #0F2854;
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(15, 40, 84, 0.2);
+}
+
+.btn-portal-secundario {
+  background: #f1f5f9;
+  color: #64748b;
+}
+
+.btn-portal-secundario:hover {
+  background: #e2e8f0;
+  color: #334155;
+}
+
+@media (max-width: 600px) {
+  .acciones-formulario {
+    flex-direction: column;
+  }
+}

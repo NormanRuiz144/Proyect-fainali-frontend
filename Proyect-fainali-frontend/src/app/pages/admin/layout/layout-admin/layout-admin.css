@@ -1,0 +1,230 @@
+:host {
+  display: block;
+  height: 100vh;
+  width: 100%;
+  --primario: #1C4D8D; /* Color principal de Comunica */
+  --texto: #2d3436;
+}
+
+.contenedor-admin {
+  display: flex;
+  height: 100vh;
+  width: 100%;
+  background-color: #faf8f9;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.sidebar-admin {
+  width: 280px;
+  background-color: #ffffff;
+  border-right: 1px solid #e2e8f0;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  box-sizing: border-box;
+
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 2000;
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.sidebar-cabecera {
+  padding: 40px 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  text-align: center;
+}
+
+.boton-cerrar-sidebar {
+  display: none;
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.boton-cerrar-sidebar i {
+  font-size: 24px;
+  color: #94a3b8;
+  transition: color 0.3s;
+}
+
+.texto-logotipo {
+  font-size: 24px;
+  font-weight: 900;
+  color: #0F2854; /* Azul oscuro */
+  display: block;
+  letter-spacing: -1px;
+}
+
+.etiqueta-admin {
+  font-size: 10px;
+  font-weight: 800;
+  color: var(--primario);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+.sidebar-navegacion {
+  flex: 1;
+  padding: 10px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.enlace-menu {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  color: #64748b;
+  padding: 14px 20px;
+  border-radius: 14px;
+  font-weight: 600;
+  font-size: 14px;
+  transition: all 0.3s ease;
+  gap: 12px;
+}
+
+.icono-menu {
+  width: 20px;
+  text-align: center;
+  font-size: 16px;
+}
+
+.enlace-menu.activo {
+  background-color: var(--primario);
+  color: #ffffff;
+}
+
+.enlace-menu:hover {
+  background-color: #f1f5f9;
+  color: var(--primario);
+}
+
+.enlace-menu.activo:hover {
+  color: #ffffff;
+}
+
+.sidebar-footer {
+  padding: 25px;
+  border-top: 1px solid #f1f5f9;
+}
+
+.boton-salir-admin {
+  width: 100%;
+  padding: 12px;
+  background-color: #fff1f2;
+  color: #e11d48;
+  border: 1px solid #fecdd3;
+  border-radius: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.boton-salir-admin:hover {
+  background-color: #e11d48;
+  color: white;
+}
+
+.contenido-principal {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  min-width: 0;
+  margin-left: 280px;
+  overflow: hidden;
+}
+
+.cabecera-admin {
+  height: 80px;
+  min-height: 80px;
+  max-height: 80px;
+  background-color: #ffffff;
+  padding: 0 40px;
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid #e2e8f0;
+  box-sizing: border-box;
+  z-index: 1000;
+}
+
+.boton-alternar-menu {
+  display: none;
+  background: none;
+  border: none;
+  font-size: 22px;
+  color: #1e293b;
+}
+
+.perfil-admin {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+}
+
+.info-texto {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  text-align: right;
+}
+
+.nombre-usuario {
+  font-size: 14px;
+  font-weight: 700;
+  color: #1e293b;
+  line-height: 1.2;
+}
+
+.rol-usuario {
+  font-size: 11px;
+  color: #94a3b8;
+  font-weight: 600;
+}
+
+.cuerpo-admin {
+  padding-top: 20px;
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  box-sizing: border-box;
+  overscroll-behavior-y: none;
+}
+
+/* --- RESPONSIVE --- */
+@media (max-width: 1024px) {
+  .sidebar-admin {
+    width: 240px;
+    transform: translateX(-100%);
+    position: fixed;
+  }
+  .sidebar-admin.abierta {
+    transform: translateX(0);
+  }
+  .boton-cerrar-sidebar {
+    display: block;
+  }
+  .contenido-principal {
+    margin-left: 0;
+  }
+  .boton-alternar-menu {
+    display: block;
+  }
+}
+
+@media (max-width: 480px) {
+  .info-texto { display: none; }
+  .cabecera-admin { height: 70px; padding: 0 15px; }
+  .cuerpo-admin { padding: 20px 15px; }
+}
