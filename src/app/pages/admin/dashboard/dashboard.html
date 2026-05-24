@@ -1,12 +1,20 @@
 <section class="seccion-layout">
   <div class="contenedor-estandar">
-    <header class="cabecera-pagina" style="text-align: left; margin-bottom: 30px; display: flex; justify-content: space-between; align-items: flex-end;">
+    <header class="cabecera-pagina" style="text-align: left; margin-bottom: 30px; display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 20px;">
       <div>
         <h2>Panel de Control</h2>
-        <span style="color: #64748b; font-size: 14px; font-weight: 500;">
-          <i class="fa-solid fa-building" style="margin-right: 5px;"></i> {{ datos()?.institucion?.nombre || 'Cargando institución...' }}
+        
+        <!-- indicador de institución activa -->
+        <span style="color: #64748b; font-size: 14px; font-weight: 500; margin-top: 5px; display: inline-block;">
+          <i class="fa-solid fa-building" style="margin-right: 5px;"></i>
+          @if (estadoAdminService.institucionSeleccionadaId() === null) {
+            Todas las Instituciones (Consolidado)
+          } @else {
+            {{ datos()?.institucion?.nombre || 'Cargando institución...' }}
+          }
         </span>
       </div>
+      
       <div style="text-align: right;">
         <span class="badge-resort badge-info" style="font-size: 12px; padding: 8px 16px;">
           Carga Histórica: {{ datos()?.institucion?.cargaTrabajo || 0 }} Reportes

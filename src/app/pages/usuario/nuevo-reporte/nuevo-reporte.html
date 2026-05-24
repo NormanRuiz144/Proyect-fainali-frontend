@@ -13,7 +13,7 @@
       <!-- Paso 1: Tipo de Problema -->
       <div class="grupo-campo">
         <label for="problematica"><i class="fa-solid fa-triangle-exclamation"></i> ¿Qué tipo de problema es?</label>
-        <select id="problematica" class="input-portal" required>
+        <select id="problematica" class="input-portal" required (change)="cambiarPlaceholder($event)">
           <option value="" disabled selected>Selecciona una opción...</option>
           <option *ngFor="let prob of problematicas()" [value]="prob.id">{{ prob.problema }}</option>
         </select>
@@ -22,13 +22,13 @@
       <!-- Paso 2: Descripción -->
       <div class="grupo-campo">
         <label for="descripcion"><i class="fa-solid fa-align-left"></i> Brinda más detalles (Descripción)</label>
-        <textarea id="descripcion" class="input-portal textarea-portal" placeholder="Ej: Hay una fuga de agua masiva frente a la pulpería de Doña María. El agua está llegando hasta la calle principal." required rows="3"></textarea>
+        <textarea id="descripcion" class="input-portal textarea-portal" [placeholder]="placeholderActual()" required rows="3"></textarea>
       </div>
 
       <!-- Paso 3: Institución a la que va dirigido -->
       <div class="grupo-campo">
         <label for="institucion"><i class="fa-solid fa-building-flag"></i> ¿A qué institución va dirigido?</label>
-        <select id="institucion" class="input-portal" required>
+        <select id="institucion" class="input-portal" required [value]="institucionSeleccionada()" (change)="institucionSeleccionada.set($any($event.target).value)">
           <option value="" disabled selected>Selecciona la institución responsable...</option>
           <option *ngFor="let inst of instituciones()" [value]="inst.id">{{ inst.nombreInstitucion }}</option>
         </select>

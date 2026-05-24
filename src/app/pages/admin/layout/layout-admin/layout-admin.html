@@ -33,6 +33,22 @@
         <i class="fa-solid fa-bars"></i>
       </button>
 
+      <!-- selector dinámico de instituciones global en la cabecera del panel de administración -->
+      @if (estadoAdminService.esSuperAdmin()) {
+        <div class="selector-institucion-global">
+          <i class="fa-solid fa-building icono-edificio"></i>
+          <select 
+            (change)="onInstitucionChange($event)"
+            [value]="estadoAdminService.institucionSeleccionadaId() === null ? '0' : estadoAdminService.institucionSeleccionadaId()"
+          >
+            <option value="0">Todas las Instituciones (Consolidado)</option>
+            @for (inst of instituciones(); track inst.id) {
+              <option [value]="inst.id">{{ inst.nombreInstitucion }}</option>
+            }
+          </select>
+        </div>
+      }
+
       <div class="perfil-admin">
         <div class="info-texto">
           <span class="nombre-usuario">Administrador</span>
