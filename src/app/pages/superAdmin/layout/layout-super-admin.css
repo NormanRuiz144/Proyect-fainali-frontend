@@ -2,7 +2,7 @@
   display: block;
   height: 100vh;
   width: 100%;
-  --primario: #1c4d8d; /* Color principal de Comunica */
+  --primario: #0b2e59; /* Un color un poco más oscuro que el primario para diferenciar el superAdmin */
   --texto: #2d3436;
 }
 
@@ -17,7 +17,7 @@
 
 .sidebar-admin {
   width: 280px;
-  background-color: #ffffff;
+  background-color: var(--primario);
   border-right: 1px solid #e2e8f0;
   display: flex;
   flex-direction: column;
@@ -39,6 +39,7 @@
   justify-content: center;
   width: 100%;
   text-align: center;
+  color: #ffff;
 }
 
 .boton-cerrar-sidebar {
@@ -58,16 +59,17 @@
 }
 
 .logo-imagen {
-  max-width: 140px;
+  max-width: 150px;
   height: auto;
   margin-bottom: 8px;
   object-fit: contain;
+  border-radius: 14px;
 }
 
 .etiqueta-admin {
   font-size: 10px;
   font-weight: 800;
-  color: var(--primario);
+  color: #ffff;
   letter-spacing: 2px;
   text-transform: uppercase;
 }
@@ -110,7 +112,7 @@
 }
 
 .enlace-menu.activo:hover {
-  color: #ffffff;
+  color: var(--primario);
 }
 
 .sidebar-footer {

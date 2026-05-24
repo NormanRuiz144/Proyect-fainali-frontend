@@ -1,25 +1,28 @@
 import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
-import { AuthService } from '../../../../auth/service/auth-service';
+import { AuthService } from '../../../auth/service/auth-service';
 
 @Component({
-  selector: 'app-layout-admin',
+  selector: 'app-layout-super-admin',
   standalone: true,
   imports: [CommonModule, RouterModule],
-  templateUrl: './layout-admin.html',
-  styleUrl: './layout-admin.css',
+  templateUrl: './layout-super-admin.html',
+  styleUrl: './layout-super-admin.css',
 })
-export class LayoutAdmin {
+export class LayoutSuperAdmin {
   public authService = inject(AuthService);
   private router = inject(Router);
 
   menuAbierto = signal(false);
 
   menuAdmin = [
-    { texto: 'Panel de Control', icono: 'fa-solid fa-chart-line', url: '/admin/dashboard' },
-    { texto: 'Reportes', icono: 'fa-solid fa-file-signature', url: '/admin/reportes' },
-    { texto: 'Instituciones', icono: 'fa-solid fa-building', url: '/admin/instituciones' },
+    {
+      texto: 'Problemáticas',
+      icono: 'fa-solid fa-triangle-exclamation',
+      url: '/superAdmin/problematicas',
+    },
+    { texto: 'Ubicaciones', icono: 'fa-solid fa-map-marker-alt', url: '/superAdmin/ubicaciones' },
   ];
 
   alternarMenu() {
