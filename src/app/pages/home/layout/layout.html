@@ -1,68 +1,151 @@
-<div class="landing-container">
-  <header class="hero">
-    <div class="hero-content">
-      <h1>Transforma tu Comunidad</h1>
-      <p>
-        Tu voz es el primer paso para mejorar nuestras calles. Reporta baches, fallos eléctricos y
-        más en segundos.
-      </p>
-      <div class="cta-group">
-        <button class="btn-primary">Registarse</button>
-      </div>
-    </div>
-  </header>
+<div class="navbar-contenido">
+  <!--Enlaces Navegacion-->
+  <div class="menu-escritorio">
+    @for (link of enlaces; track link.etiqueta){
+    <a (click)="navegar(link.ruta)" class="enlace-nav" style="cursor:pointer">{{link.etiqueta}}</a>
+    }
+  </div>
 
-  <section class="about-section">
-    <div class="section-title">
-      <h2>¿Qué es el Sistema de Reportes Comunitarios "ComunityWarning"?</h2>
-      <p>
-        Una plataforma digital diseñada para conectar a los ciudadanos con las instituciones
-        responsables, facilitando la gestión de problemas de infraestructura pública.
-      </p>
-    </div>
-
-    <div class="features-grid">
-      <div class="feature-card">
-        <div class="icon">🚧</div>
-        <h3>Reporte de Baches</h3>
-        <p>
-          Notifica el mal estado de las vías para prevenir accidentes y mejorar la fluidez del
-          tráfico.
-        </p>
-      </div>
-      <div class="feature-card">
-        <div class="icon">🔌</div>
-        <h3>Cables y Tendido</h3>
-        <p>
-          Informa sobre cables caídos o en mal estado que representen un peligro para los vecinos.
-        </p>
-      </div>
-      <div class="feature-card">
-        <div class="icon">💡</div>
-        <h3>Alumbrado Público</h3>
-        <p>Asegura que tu sector esté iluminado reportando luminarias apagadas o dañadas.</p>
-      </div>
-    </div>
-  </section>
-
-  <section class="steps-section">
-    <h2>¿Cómo empezar?</h2>
-    <div class="steps-container">
-      <div class="step">
-        <span class="step-number">1</span>
-        <h4>Identifica</h4>
-        <p>Encuentra un problema en tu comunidad y toma una foto.</p>
-      </div>
-      <div class="step">
-        <span class="step-number">2</span>
-        <h4>Reporta</h4>
-        <p>Sube la ubicación y descripción desde tu celular o computadora.</p>
-      </div>
-      <div class="step">
-        <span class="step-number">3</span>
-        <h4>Seguimiento</h4>
-        <p>Recibe notificaciones cuando las instituciones comiencen a trabajar en la solución.</p>
-      </div>
-    </div>
-  </section>
+  @if (authService.estaAutenticado()) {
+    <p class="logged-in-msg">Estas logueado</p>
+    <button class="btn-logout" (click)="salir()">Cerrar Sesión</button>
+  }
 </div>
+
+
+<!-- Contenido dinamico-->
+<main class="cuerpo-layout">
+  <router-outlet></router-outlet>
+</main>
+
+<!-- Modal de Autenticación -->
+@if(esModal()) {
+<div class="modal-overlay">
+  <div class="modal-content">
+    <span class="close-btn" (click)="cerrarModal()">&times;</span>
+
+    @if(vistaAuth() === 'login') {
+    <h2>Iniciar Sesión</h2>
+    <form [formGroup]="loginForm" (ngSubmit)="enviarLogin()" class="form-login">
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" formControlName="email" placeholder="Correo electrónico">
+        @if(isInvalid(loginForm, 'email')) { <small style="color:red; font-size:12px;">Email inválido</small> }
+      </div>
+      <div class="form-group">
+        <label>Contraseña</label>
+        <input type="password" formControlName="password" placeholder="Contraseña">
+        @if(isInvalid(loginForm, 'password')) { <small style="color:red; font-size:12px;">La contraseña debe tener al
+          menos 8 caracteres, una mayúscula, un número y un carácter especial.</small> }
+      </div>
+      <button type="submit" [disabled]="loginForm.invalid">Ingresar</button>
+    </form>
+    <p class="auth-switch-text">¿No tienes cuenta? <a (click)="cambiarVista('registro')">Regístrate</a></p>
+    } @else {
+    <h2>Registro</h2>
+    <div class="paso-indicador">Paso {{pasoRegistro()}} de 3</div>
+    <form [formGroup]="registroForm" (ngSubmit)="enviarRegistro()" class="form-registro">
+
+      @if(pasoRegistro() === 1) {
+      <div class="form-group">
+        <label>Cédula</label>
+        <input type="text" formControlName="numeroCedula" placeholder="Cédula">
+        @if(isInvalid(registroForm, 'numeroCedula')) { <small style="color:red; font-size:12px;">Requerido</small> }
+      </div>
+      <div class="form-group">
+        <label>Nombres</label>
+        <input type="text" formControlName="nombres" placeholder="Nombres">
+        @if(isInvalid(registroForm, 'nombres')) { <small style="color:red; font-size:12px;">Requerido</small> }
+      </div>
+      <div class="form-group">
+        <label>Sexo (M/F)</label>
+        <input type="text" formControlName="sexo" placeholder="M o F">
+        @if(isInvalid(registroForm, 'sexo')) { <small style="color:red; font-size:12px;">Máx. 1 carácter (M o F)</small> }
+      </div>
+      <div class="form-group">
+        <label>Apellidos</label>
+        <input type="text" formControlName="apellidos" placeholder="Apellidos">
+        @if(isInvalid(registroForm, 'apellidos')) { <small style="color:red; font-size:12px;">Requerido</small> }
+      </div>
+      <div class="nav-botones">
+        <button type="button" class="btn-siguiente" (click)="siguientePaso()" [disabled]="!pasoValido(1)">Siguiente</button>
+      </div>
+      }
+
+      @if(pasoRegistro() === 2) {
+      <div class="form-group">
+        <label>Correo</label>
+        <input type="email" formControlName="correo" placeholder="Correo">
+        @if(isInvalid(registroForm, 'correo')) { <small style="color:red; font-size:12px;">Email inválido</small> }
+      </div>
+      <div class="form-group">
+        <label>Contraseña</label>
+        <input type="password" formControlName="contrasena" placeholder="Contraseña">
+        @if(isInvalid(registroForm, 'contrasena')) { <small style="color:red; font-size:12px;">Mín. 8 caracteres, una mayúscula, un número y un carácter especial.</small> }
+      </div>
+      <div class="form-group">
+        <label>Confirmar Contraseña</label>
+        <input type="password" formControlName="confirmationContra" placeholder="Confirmar Contraseña">
+        @if(isInvalid(registroForm, 'confirmationContra')) { <small style="color:red; font-size:12px;">Requerido, debe coincidir.</small> }
+      </div>
+      <div class="nav-botones nav-botones-flex">
+        <button type="button" class="btn-atras" (click)="pasoAnterior()">Atrás</button>
+        <button type="button" class="btn-siguiente" (click)="siguientePaso()" [disabled]="!pasoValido(2)">Siguiente</button>
+      </div>
+      }
+
+      @if(pasoRegistro() === 3) {
+      <div class="form-group">
+        <label>Departamento</label>
+        <select (change)="onDepartamentoChange($any($event.target).value)">
+          <option value="">Seleccione un departamento</option>
+          @for (d of departamentos(); track d.id) {
+            <option [value]="d.id">{{ d.nomDepartamento }}</option>
+          }
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Municipio</label>
+        <select (change)="onMunicipioChange($any($event.target).value)" [disabled]="municipios().length === 0">
+          <option value="">Seleccione un municipio</option>
+          @for (m of municipios(); track m.id) {
+            <option [value]="m.id">{{ m.nomMunicipio }}</option>
+          }
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Sector</label>
+        <select formControlName="idSector">
+          @if (sectores().length > 0) {
+            <option [value]="null">Seleccione un sector</option>
+            @for (s of sectores(); track s.id) {
+              <option [value]="s.id">{{ s.nombreSector }}</option>
+            }
+          } @else {
+            <option [value]="null">No hay sectores registrados en este municipio</option>
+          }
+        </select>
+        @if(isInvalid(registroForm, 'idSector')) { <small style="color:red; font-size:12px;">Requerido</small> }
+      </div>
+      <div class="nav-botones nav-botones-flex">
+        <button type="button" class="btn-atras" (click)="pasoAnterior()">Atrás</button>
+        <button type="submit" [disabled]="registroForm.invalid">Registrarse</button>
+      </div>
+      }
+    </form>
+    <p class="auth-switch-text">¿Ya tienes cuenta? <a (click)="cambiarVista('login')">Inicia Sesión</a></p>
+    }
+  </div>
+</div>
+}
+
+<footer class="pie-de-pagina">
+  <p>Instituciones Afiliadas</p>
+  <div class="contenedor-imagenes">
+    <img src="recursos/bomberos.jpeg" alt="Descripción 1">
+    <img src="recursos/disnortedissur.jpeg" alt="Descripción 2">
+    <img src="recursos/enacal.png" alt="Descripción 3">
+    <img src="recursos/policia.jpg.jpeg" alt="Descripción 4">
+  </div>
+  <p>&copy; 2026 "ComunityWarning" - Empieza ya</p>
+</footer>
