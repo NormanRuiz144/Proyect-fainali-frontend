@@ -61,6 +61,18 @@ export const routes: Routes = [
           import('./features/ubicacion/components/ubicacion').then((c) => c.UbicacionComponent),
       },
       {
+        path: 'instituciones',
+        loadComponent: () =>
+          import('./features/instituciones/components/instituciones').then(
+            (c) => c.InstitucionesComponent,
+          ),
+      },
+      {
+        path: 'usuarios',
+        loadComponent: () =>
+          import('./features/usuario/components/usuarios').then((c) => c.UsuariosComponent),
+      },
+      {
         path: '',
         redirectTo: 'problematicas',
         pathMatch: 'full',

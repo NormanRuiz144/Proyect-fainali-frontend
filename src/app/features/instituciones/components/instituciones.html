@@ -1,0 +1,130 @@
+<div class="contenedor-vista">
+  <div class="cabecera-vista">
+    <div>
+      <h1 class="titulo-vista">Gestión de Intituciones</h1>
+      <p class="subtitulo-vista">Administra las Instituciones registradas en la plataforma.</p>
+    </div>
+    <button class="btn-primario" (click)="abrirModalCrear()">
+      <i class="fa-solid fa-plus"></i> Nueva Institución
+    </button>
+  </div>
+
+  @if (error()) {
+    <div class="alerta-error">
+      <i class="fa-solid fa-triangle-exclamation"></i>
+      {{ error() }}
+    </div>
+  }
+
+  <div class="tarjeta-tabla">
+    <table class="tabla-moderna">
+      <thead>
+        <tr>
+          <th>Institución</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        @if (cargando() && instituciones().length === 0) {
+          <tr>
+            <td colspan="3" class="texto-centro py-4">
+              <div class="spinner"></div>
+              Cargando...
+            </td>
+          </tr>
+        } @else if (instituciones().length === 0) {
+          <tr>
+            <td colspan="3" class="texto-centro py-4 text-muted">
+              No hay instituciones registradas.
+            </td>
+          </tr>
+        } @else {
+          @for (inst of instituciones(); track inst.id) {
+            <tr>
+              <td class="font-medium">{{ inst.nombreInstitucion }}</td>
+              <td>
+                <div class="acciones-celda">
+                  <button class="btn-icono editar" (click)="abrirModalEditar(inst)" title="Editar">
+                    <i class="fa-solid fa-pen"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          }
+        }
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Modal -->
+@if (mostrarModal()) {
+  <div class="modal-backdrop">
+    <div class="modal-contenedor">
+      <div class="modal-cabecera">
+        <h2 class="modal-titulo">
+          {{ modalModo() === 'crear' ? 'Nueva Institución' : 'Editar Institución' }}
+        </h2>
+        <button class="btn-cerrar" (click)="cerrarModal()">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+      <div class="modal-cuerpo">
+        <div class="form-grupo">
+          <label for="problema">Nombre de la Institución</label>
+          <input
+            type="text"
+            id="problema"
+            class="form-input"
+            [(ngModel)]="fromInstitucion().nombreInstitucion"
+            placeholder="Ingrese el nombre de la institución"
+          />
+          <label for="problema">Ingrese el nombre del municipio</label>
+          <div class="form-grupo mt-4">
+            <label for="idDepartamentoSectorModal">1. Departamento (Requerido)</label>
+            <select
+              id="idDepartamentoSectorModal"
+              class="form-input"
+              [ngModel]="formSectorDepartamento()"
+              (ngModelChange)="onFormSectorDepartamentoChange($event)"
+            >
+              <option [value]="undefined" disabled selected>
+                Selecciona un departamento primero
+              </option>
+              @for (dep of departamentos(); track dep.id) {
+                <option [value]="dep.id">{{ dep.nom_departamento || dep.nomDepartamento }}</option>
+              }
+            </select>
+          </div>
+          <div class="form-grupo mt-4">
+            <label for="idMunicipio">2. Municipio</label>
+            <select
+              id="idMunicipio"
+              class="form-input"
+              [(ngModel)]="formMunicipio().id"
+              [disabled]="!formSectorDepartamento()"
+              (ngModelChange)="onMunicipioChange($event)"
+            >
+              <option [value]="undefined" disabled selected>Selecciona un municipio</option>
+              @for (muni of municipiosParaModal(); track muni.id) {
+                <option [value]="muni.id">{{ muni.nom_municipio || muni.nomMunicipio }}</option>
+              }
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="modal-pie">
+        <button class="btn-secundario" (click)="cerrarModal()" [disabled]="cargando()">
+          Cancelar
+        </button>
+        <button class="btn-primario" (click)="guardarInstitucion()" [disabled]="cargando()">
+          @if (cargando()) {
+            <i class="fa-solid fa-spinner fa-spin mr-2"></i> Guardando...
+          } @else {
+            Guardar
+          }
+        </button>
+      </div>
+    </div>
+  </div>
+}

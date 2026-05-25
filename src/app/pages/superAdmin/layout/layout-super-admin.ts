@@ -23,6 +23,8 @@ export class LayoutSuperAdmin {
       url: '/superAdmin/problematicas',
     },
     { texto: 'Ubicaciones', icono: 'fa-solid fa-map-marker-alt', url: '/superAdmin/ubicaciones' },
+    { texto: 'Instituciones', icono: 'fa-solid fa-building', url: '/superAdmin/instituciones' },
+    { texto: 'Usuarios', icono: 'fa-solid fa-users', url: '/superAdmin/usuarios' },
   ];
 
   alternarMenu() {
