@@ -21,120 +21,162 @@
 <!-- Modal de Autenticación -->
 @if(esModal()) {
 <div class="modal-overlay">
-  <div class="modal-content">
+  <div class="modal-content split-layout">
     <span class="close-btn" (click)="cerrarModal()">&times;</span>
 
-    @if(vistaAuth() === 'login') {
-    <h2>Iniciar Sesión</h2>
-    <form [formGroup]="loginForm" (ngSubmit)="enviarLogin()" class="form-login">
-      <div class="form-group">
-        <label>Email</label>
-        <input type="email" formControlName="email" placeholder="Correo electrónico">
-        @if(isInvalid(loginForm, 'email')) { <small style="color:red; font-size:12px;">Email inválido</small> }
-      </div>
-      <div class="form-group">
-        <label>Contraseña</label>
-        <input type="password" formControlName="password" placeholder="Contraseña">
-        @if(isInvalid(loginForm, 'password')) { <small style="color:red; font-size:12px;">La contraseña debe tener al
-          menos 8 caracteres, una mayúscula, un número y un carácter especial.</small> }
-      </div>
-      <button type="submit" [disabled]="loginForm.invalid">Ingresar</button>
-    </form>
-    <p class="auth-switch-text">¿No tienes cuenta? <a (click)="cambiarVista('registro')">Regístrate</a></p>
-    } @else {
-    <h2>Registro</h2>
-    <div class="paso-indicador">Paso {{pasoRegistro()}} de 3</div>
-    <form [formGroup]="registroForm" (ngSubmit)="enviarRegistro()" class="form-registro">
+    <div class="modal-brand">
+      <div class="brand-overlay"></div>
+      <div class="brand-content">
+        <img src="recursos/COMUNICA.jpeg" alt="Descripción 5" >
+        <h2>Participa, reporta y mantén tu comunidad segura.</h2>
 
-      @if(pasoRegistro() === 1) {
-      <div class="form-group">
-        <label>Cédula</label>
-        <input type="text" formControlName="numeroCedula" placeholder="Cédula">
-        @if(isInvalid(registroForm, 'numeroCedula')) { <small style="color:red; font-size:12px;">Requerido</small> }
+        <!-- <div class="brand-decorations">
+          <span class="dot"></span>
+          <span class="dot"></span>
+          <span class="dot"></span>
+        </div> -->
       </div>
-      <div class="form-group">
-        <label>Nombres</label>
-        <input type="text" formControlName="nombres" placeholder="Nombres">
-        @if(isInvalid(registroForm, 'nombres')) { <small style="color:red; font-size:12px;">Requerido</small> }
-      </div>
-      <div class="form-group">
-        <label>Sexo (M/F)</label>
-        <input type="text" formControlName="sexo" placeholder="M o F">
-        @if(isInvalid(registroForm, 'sexo')) { <small style="color:red; font-size:12px;">Máx. 1 carácter (M o F)</small> }
-      </div>
-      <div class="form-group">
-        <label>Apellidos</label>
-        <input type="text" formControlName="apellidos" placeholder="Apellidos">
-        @if(isInvalid(registroForm, 'apellidos')) { <small style="color:red; font-size:12px;">Requerido</small> }
-      </div>
-      <div class="nav-botones">
-        <button type="button" class="btn-siguiente" (click)="siguientePaso()" [disabled]="!pasoValido(1)">Siguiente</button>
-      </div>
-      }
+    </div>
 
-      @if(pasoRegistro() === 2) {
-      <div class="form-group">
-        <label>Correo</label>
-        <input type="email" formControlName="correo" placeholder="Correo">
-        @if(isInvalid(registroForm, 'correo')) { <small style="color:red; font-size:12px;">Email inválido</small> }
+    <div class="modal-form-container">
+      @if(vistaAuth() === 'login') {
+      <div class="form-header fade-in">
+        <h2>Iniciar Sesión</h2>
+        <p class="subtitle">Bienvenido de nuevo</p>
       </div>
-      <div class="form-group">
-        <label>Contraseña</label>
-        <input type="password" formControlName="contrasena" placeholder="Contraseña">
-        @if(isInvalid(registroForm, 'contrasena')) { <small style="color:red; font-size:12px;">Mín. 8 caracteres, una mayúscula, un número y un carácter especial.</small> }
+      <form [formGroup]="loginForm" (ngSubmit)="enviarLogin()" class="form-login fade-in">
+        <div class="form-group form-floating">
+          <input type="email" formControlName="email" id="loginEmail" placeholder=" ">
+          <label for="loginEmail">Correo electrónico</label>
+          @if(isInvalid(loginForm, 'email')) { <small class="error-msg"><svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none"></svg> Email inválido</small> }
+        </div>
+        <div class="form-group form-floating">
+          <input type="password" formControlName="password" id="loginPassword" placeholder=" ">
+          <label for="loginPassword">Contraseña</label>
+          @if(isInvalid(loginForm, 'password')) { <small class="error-msg"><svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none"></svg>Mínimo 8 caracteres, mayúscula, número y especial.</small> }
+        </div>
+        <button type="submit" class="btn-submit" [disabled]="loginForm.invalid">
+          <span class="btn-text">Ingresar</span>
+        </button>
+      </form>
+      <p class="auth-switch-text fade-in">¿No tienes cuenta? <a (click)="cambiarVista('registro')" class="link-hover">Regístrate</a></p>
+      } @else {
+      <div class="form-header fade-in">
+        <h2>Crear Cuenta</h2>
       </div>
-      <div class="form-group">
-        <label>Confirmar Contraseña</label>
-        <input type="password" formControlName="confirmationContra" placeholder="Confirmar Contraseña">
-        @if(isInvalid(registroForm, 'confirmationContra')) { <small style="color:red; font-size:12px;">Requerido, debe coincidir.</small> }
-      </div>
-      <div class="nav-botones nav-botones-flex">
-        <button type="button" class="btn-atras" (click)="pasoAnterior()">Atrás</button>
-        <button type="button" class="btn-siguiente" (click)="siguientePaso()" [disabled]="!pasoValido(2)">Siguiente</button>
-      </div>
-      }
 
-      @if(pasoRegistro() === 3) {
-      <div class="form-group">
-        <label>Departamento</label>
-        <select (change)="onDepartamentoChange($any($event.target).value)">
-          <option value="">Seleccione un departamento</option>
-          @for (d of departamentos(); track d.id) {
-            <option [value]="d.id">{{ d.nomDepartamento }}</option>
-          }
-        </select>
+      <div class="stepper-container fade-in">
+        <div class="step" [class.active]="pasoRegistro() >= 1">1</div>
+        <div class="step-line" [class.active]="pasoRegistro() >= 2"></div>
+        <div class="step" [class.active]="pasoRegistro() >= 2">2</div>
+        <div class="step-line" [class.active]="pasoRegistro() >= 3"></div>
+        <div class="step" [class.active]="pasoRegistro() >= 3">3</div>
       </div>
-      <div class="form-group">
-        <label>Municipio</label>
-        <select (change)="onMunicipioChange($any($event.target).value)" [disabled]="municipios().length === 0">
-          <option value="">Seleccione un municipio</option>
-          @for (m of municipios(); track m.id) {
-            <option [value]="m.id">{{ m.nomMunicipio }}</option>
-          }
-        </select>
-      </div>
-      <div class="form-group">
-        <label>Sector</label>
-        <select formControlName="idSector">
-          @if (sectores().length > 0) {
-            <option [value]="null">Seleccione un sector</option>
-            @for (s of sectores(); track s.id) {
-              <option [value]="s.id">{{ s.nombreSector }}</option>
+
+      <form [formGroup]="registroForm" (ngSubmit)="enviarRegistro()" class="form-registro">
+
+        @if(pasoRegistro() === 1) {
+        <div class="form-step slide-in">
+          <div class="form-group form-floating">
+            <input type="text" formControlName="numeroCedula" id="regCedula" placeholder=" ">
+            <label for="regCedula">Cédula</label>
+            @if(isInvalid(registroForm, 'numeroCedula')) { <small class="error-msg">ejemplo 001-000700-2300A</small> }
+          </div>
+          <div class="form-group form-floating">
+            <input type="text" formControlName="nombres" id="regNombres" placeholder=" ">
+            <label for="regNombres">Nombres</label>
+            @if(isInvalid(registroForm, 'nombres')) { <small class="error-msg">Requerido</small> }
+          </div>
+          <div class="form-group form-floating">
+            <input type="text" formControlName="sexo" id="regSexo" placeholder=" ">
+            <label for="regSexo">Sexo (M/F)</label>
+            @if(isInvalid(registroForm, 'sexo')) { <small class="error-msg">Máximo 1 carácter (M o F)</small> }
+          </div>
+          <div class="form-group form-floating">
+            <input type="text" formControlName="apellidos" id="regApellidos" placeholder=" ">
+            <label for="regApellidos">Apellidos</label>
+            @if(isInvalid(registroForm, 'apellidos')) { <small class="error-msg">Requerido</small> }
+          </div>
+          <div class="nav-botones">
+            <button type="button" class="btn-siguiente btn-submit" (click)="siguientePaso()" [disabled]="!pasoValido(1)">Siguiente</button>
+          </div>
+        </div>
+        }
+
+        @if(pasoRegistro() === 2) {
+        <div class="form-step slide-in">
+          <div class="form-group form-floating grid-full">
+            <input type="email" formControlName="correo" id="regCorreo" placeholder=" ">
+            <label for="regCorreo">Correo</label>
+            @if(isInvalid(registroForm, 'correo')) { <small class="error-msg">Email inválido</small> }
+          </div>
+          <div class="form-group form-floating grid-full">
+            <input type="password" formControlName="contrasena" id="regContrasena" placeholder=" ">
+            <label for="regContrasena">Contraseña</label>
+            @if(isInvalid(registroForm, 'contrasena')) { <small class="error-msg">Mín. 8 caracteres, mayúscula, número y especial.</small> }
+          </div>
+          <div class="form-group form-floating grid-full">
+            <input type="password" formControlName="confirmationContra" id="regConfContra" placeholder=" ">
+            <label for="regConfContra">Confirmar Contraseña</label>
+            @if(isInvalid(registroForm, 'confirmationContra')) { <small class="error-msg">Requerido, debe coincidir.</small> }
+          </div>
+          <div class="nav-botones nav-botones-flex">
+            <button type="button" class="btn-atras" (click)="pasoAnterior()">Atrás</button>
+            <button type="button" class="btn-siguiente btn-submit" (click)="siguientePaso()" [disabled]="!pasoValido(2)">Siguiente</button>
+          </div>
+        </div>
+        }
+
+        @if(pasoRegistro() === 3) {
+        <div class="form-step slide-in">
+          <div class="form-group form-floating grid-full">
+            <select formControlName="idDepartamento" id="regDepto" (change)="onDepartamentoChange($any($event.target).value)" class="custom-select">
+              <option value="" disabled selected hidden></option>
+              @for (d of departamentos(); track d.id) {
+                <option [value]="d.id">{{ d.nomDepartamento }}</option>
+              }
+            </select>
+            <label for="regDepto" class="select-label">Departamento</label>
+          </div>
+          <div class="form-group form-floating grid-full">
+            <select formControlName="idMunicipio" id="regMuni" (change)="onMunicipioChange($any($event.target).value)" class="custom-select">
+              <option value="" disabled selected hidden></option>
+            @if (municipios().length > 0) {
+              @for (m of municipios(); track m.id) {
+                <option [value]="m.id">{{ m.nomMunicipio }}</option>
+              }
+            } @else {
+              <option value="" disabled>No hay municipios disponibles</option>
             }
-          } @else {
-            <option [value]="null">No hay sectores registrados en este municipio</option>
-          }
-        </select>
-        @if(isInvalid(registroForm, 'idSector')) { <small style="color:red; font-size:12px;">Requerido</small> }
-      </div>
-      <div class="nav-botones nav-botones-flex">
-        <button type="button" class="btn-atras" (click)="pasoAnterior()">Atrás</button>
-        <button type="submit" [disabled]="registroForm.invalid">Registrarse</button>
-      </div>
+            </select>
+            @if (municipios().length > 0 && !municipioSeleccionado()) { <small class="error-msg">Requerido</small> }
+            <label for="regMuni" class="select-label">Municipio</label>
+          </div>
+          <div class="form-group form-floating grid-full">
+            <select formControlName="idSector" id="regSector" class="custom-select">
+              <option [value]="null" disabled selected hidden></option>
+              @if (sectores().length > 0) {
+                @for (s of sectores(); track s.id) {
+                  <option [value]="s.id">{{ s.nombreSector }}</option>
+                }
+              } @else {
+                <option [value]="null" disabled>No hay sectores disponibles</option>
+              }
+            </select>
+            @if (sectores().length > 0 && !registroForm.get('idSector')?.value) { <small class="error-msg">Requerido</small> }
+            <label for="regSector" class="select-label">Sector</label>
+
+          </div>
+          <div class="nav-botones nav-botones-flex">
+            <button type="button" class="btn-atras" (click)="pasoAnterior()">Atrás</button>
+            <button type="submit" class="btn-submit" [disabled]="registroForm.invalid">Registrarse</button>
+          </div>
+        </div>
+        }
+      </form>
+      <p class="auth-switch-text fade-in">¿Ya tienes cuenta? <a (click)="cambiarVista('login')" class="link-hover">Inicia Sesión</a></p>
       }
-    </form>
-    <p class="auth-switch-text">¿Ya tienes cuenta? <a (click)="cambiarVista('login')">Inicia Sesión</a></p>
-    }
+    </div>
   </div>
 </div>
 }

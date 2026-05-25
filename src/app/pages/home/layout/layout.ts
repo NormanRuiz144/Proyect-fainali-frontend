@@ -10,13 +10,17 @@ import { UbicacionService } from '../../../features/ubicacion/service/ubicacion-
 import { IDepartamento } from '../../../features/ubicacion/interface/idepartamento';
 import { IMunicipio } from '../../../features/ubicacion/interface/imunicipio';
 import { ISector } from '../../../features/ubicacion/interface/isector';
-import { IRegistro } from '../../../features/usuario/interface/ireguistro';
+//import { IRegistro } from '../../../features/usuario/interface/ireguistro';
 
 
 
 
 const EMAIL_PATTERN = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 const PASSW_PATTERN = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/;
+const CEDULA_NI_PATTERN = /^\d{3}-\d{6}-\d{4}[A-Z]$/;
+const SEXO_PATTERN = /^[MF]$/;
+
+
 
 @Component({
   selector: 'app-layout',
@@ -37,6 +41,12 @@ export class Layout {
   sectores = signal<ISector[]>([]);
 
   pasoRegistro = signal<number>(1);
+  municipioSeleccionado = signal(false);
+  loginPasswordVisible = signal(false);
+  regPasswordVisible = signal(false);
+  regConfirmVisible = signal(false);
+
+
 
 
   //Enlaces de navegacion
@@ -70,6 +80,10 @@ export class Layout {
       this.loginForm.reset()
     } else {
       this.registroForm.reset({ activo: true })
+      this.municipios.set([]);
+      this.sectores.set([]);
+      this.municipioSeleccionado.set(false);
+      this.limpiarValidadoresUbicacion();
     }
   }
   // Inicializar formularios
@@ -83,22 +97,15 @@ export class Layout {
     });
 
     this.registroForm = this.fb.group({
-      numeroCedula: ['', [Validators.required]],
+      numeroCedula: ['', [Validators.required, Validators.pattern(CEDULA_NI_PATTERN)]],
       nombres: ['', [Validators.required]],
       apellidos: ['', [Validators.required]],
-      sexo: [
-        '',
-        [Validators.required, Validators.minLength(1), Validators.maxLength(1)]
-      ],
+      sexo: ['',[Validators.required, Validators.pattern(SEXO_PATTERN)]],
       correo: ['', [Validators.required, Validators.pattern(EMAIL_PATTERN)]],
-      contrasena: [
-        '',
-        [Validators.required, Validators.pattern(PASSW_PATTERN)]
-      ],
-      confirmationContra: [
-        '',
-        [Validators.required, Validators.pattern(PASSW_PATTERN)]
-      ],
+      contrasena: [ '', [Validators.required, Validators.pattern(PASSW_PATTERN)]],
+      confirmationContra: ['',[Validators.required, Validators.pattern(PASSW_PATTERN)]],
+      idDepartamento: [null, [Validators.required]],
+      idMunicipio: [null],
       idSector: [null],
     });
   }
@@ -106,26 +113,46 @@ export class Layout {
   cargarDepartamentos() {
     this.ubicacionService.obtenerDepartamentos().subscribe({
       next: (data) => this.departamentos.set(data),
-      error: (err) => this.interactionService.mostrarError(err),
     });
   }
 
   onDepartamentoChange(id: number) {
     this.municipios.set([]);
     this.sectores.set([]);
-    this.registroForm.patchValue({ idSector: null });
-    if (!id) return;
+    this.municipioSeleccionado.set(false);
+    this.registroForm.patchValue({ idSector: null, idMunicipio: null });
+    const muniControl = this.registroForm.get('idMunicipio');
+    const sectorControl = this.registroForm.get('idSector');
+    if (!id) {
+      muniControl?.clearValidators();
+      muniControl?.updateValueAndValidity();
+      sectorControl?.clearValidators();
+      sectorControl?.updateValueAndValidity();
+      return;
+    }
     this.ubicacionService.obtenerMunicipiosPorDepartamento(id).subscribe({
-      next: (data) => this.municipios.set(data),
-      error: (err) => this.interactionService.mostrarError(err),
+      next: (data) => {
+        this.municipios.set(data);
+        if (data.length > 0) {
+          muniControl?.setValidators([Validators.required]);
+        } else {
+          muniControl?.clearValidators();
+        }
+        muniControl?.updateValueAndValidity();
+      },
     });
   }
 
   onMunicipioChange(id: number) {
     this.sectores.set([]);
+    this.municipioSeleccionado.set(!!id);
     this.registroForm.patchValue({ idSector: null });
     const control = this.registroForm.get('idSector');
-    if (!id) return;
+    if (!id) {
+      control?.clearValidators();
+      control?.updateValueAndValidity();
+      return;
+    }
     this.ubicacionService.obtenerSectoresPorMunicipio(id).subscribe({
       next: (data) => {
         this.sectores.set(data);
@@ -144,6 +171,15 @@ export class Layout {
     });
   }
 
+  private limpiarValidadoresUbicacion() {
+    const muniControl = this.registroForm?.get('idMunicipio');
+    const sectorControl = this.registroForm?.get('idSector');
+    muniControl?.clearValidators();
+    muniControl?.updateValueAndValidity();
+    sectorControl?.clearValidators();
+    sectorControl?.updateValueAndValidity();
+  }
+
   // validar los controles//
   isInvalid(form: FormGroup, controlName: string): boolean {
     const control = form.get(controlName);
@@ -153,12 +189,56 @@ export class Layout {
   // Navegación del registro
   siguientePaso() {
     if (this.pasoValido(this.pasoRegistro())) {
+      const pasoAnterior = this.pasoRegistro();
       this.pasoRegistro.update(p => p + 1);
+      if (pasoAnterior === 2) {
+        this.restaurarPaso3();
+      }
     }
   }
 
   pasoAnterior() {
     this.pasoRegistro.update(p => Math.max(1, p - 1));
+  }
+
+  private restaurarPaso3() {
+    const deptoId = this.registroForm.get('idDepartamento')?.value;
+    const municipioId = this.registroForm.get('idMunicipio')?.value;
+
+    if (deptoId) {
+      this.ubicacionService.obtenerMunicipiosPorDepartamento(Number(deptoId)).subscribe({
+        next: (data) => {
+          this.municipios.set(data);
+          const muniControl = this.registroForm.get('idMunicipio');
+          if (data.length > 0) {
+            muniControl?.setValidators([Validators.required]);
+          } else {
+            muniControl?.clearValidators();
+          }
+          muniControl?.updateValueAndValidity();
+        },
+      });
+      if (municipioId) {
+        this.ubicacionService.obtenerSectoresPorMunicipio(Number(municipioId)).subscribe({
+          next: (data) => {
+            this.sectores.set(data);
+            this.municipioSeleccionado.set(true);
+            const control = this.registroForm.get('idSector');
+            if (data.length > 0) {
+              control?.setValidators([Validators.required]);
+            } else {
+              control?.clearValidators();
+            }
+            control?.updateValueAndValidity();
+          },
+          error: () => {
+            const control = this.registroForm.get('idSector');
+            control?.clearValidators();
+            control?.updateValueAndValidity();
+          },
+        });
+      }
+    }
   }
 
   pasoValido(paso: number): boolean {
@@ -173,10 +253,13 @@ export class Layout {
       return !!correo?.valid && !!contrasena?.valid && !!confirmationContra?.valid;
     }
     if (paso === 3) {
-      const sectoresDisponibles = this.sectores().length > 0;
-      if (!sectoresDisponibles) return true;
-      const { idSector } = this.registroForm.controls;
-      return !!idSector?.valid;
+      const { idDepartamento, idMunicipio, idSector } = this.registroForm.controls;
+      if (!idDepartamento?.valid) return false;
+      const hayMunicipios = this.municipios().length > 0;
+      if (hayMunicipios && !idMunicipio?.valid) return false;
+      const haySectores = this.sectores().length > 0;
+      if (haySectores && !idSector?.valid) return false;
+      return true;
     }
     return false;
   }
@@ -248,7 +331,17 @@ export class Layout {
       },
       error: async (err) => {
         await this.interactionService.hideLoading();
-        await this.interactionService.mostrarError(err);
+        const mensaje = err?.error?.detail ||
+          err?.error?.message ||
+          err?.error?.errors?.[0]?.message ||
+          '';
+        if (/cedula|cédula|numeroCedula/i.test(mensaje)) {
+          await this.interactionService.showToast('Error número de cédula en uso', 'error');
+        } else if (/correo|email|already.exist|duplicate|unique/i.test(mensaje)) {
+          await this.interactionService.showToast('Error correo en uso', 'error');
+        } else {
+          await this.interactionService.mostrarError(err);
+        }
       },
     })
   }
@@ -273,10 +366,13 @@ export class Layout {
   cerrarModal() {
     this.interactionService.cerrarModalAuth();
     this.pasoRegistro.set(1);
+    this.municipios.set([]);
+    this.sectores.set([]);
+    this.municipioSeleccionado.set(false);
+    this.limpiarValidadoresUbicacion();
     if (this.loginForm) {
       this.loginForm.reset();
     }
-
     if (this.registroForm) {
       this.registroForm.reset({ activo: true });
     }
