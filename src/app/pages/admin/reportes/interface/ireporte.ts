@@ -8,9 +8,17 @@ export interface IReporte {
   problematica?: {
     problema: string;
   };
+  institucion?: {
+    id?: number;
+    nombreInstitucion: string;
+  };
   usuario?: {
+    id?: number;
     nombres: string;
     apellidos: string;
+    numeroCedula?: string;
+    correo?: string;
+    sexo?: string | null;
   };
 }
 
