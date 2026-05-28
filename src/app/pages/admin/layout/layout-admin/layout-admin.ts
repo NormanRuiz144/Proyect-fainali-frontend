@@ -25,7 +25,7 @@ export class LayoutAdmin {
   menuAdmin = [
     { texto: 'Panel de Control', icono: 'fa-solid fa-chart-line', url: '/admin/dashboard' },
     { texto: 'Reportes', icono: 'fa-solid fa-file-signature', url: '/admin/reportes' },
-    { texto: 'Instituciones', icono: 'fa-solid fa-building', url: '/admin/instituciones' },
+    // { texto: 'Instituciones', icono: 'fa-solid fa-building', url: '/admin/instituciones' },
     {
       texto: 'Historial por Usuario',
       icono: 'fa-solid fa-users-viewfinder',

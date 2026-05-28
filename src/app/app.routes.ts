@@ -35,6 +35,10 @@ export const routes: Routes = [
         loadComponent: () => import('./pages/admin/reportes/reportes').then((c) => c.Reportes),
       },
       {
+        path: 'historial',
+        loadComponent: () => import('./pages/admin/historial/historial').then((c) => c.Historial),
+      },
+      {
         path: '',
         redirectTo: 'dashboard',
         pathMatch: 'full',

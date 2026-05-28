@@ -268,7 +268,7 @@ export class Layout {
         } else if (res.data.user.rol.rol == 'Super-Admin') {
           this.router.navigate(['/superAdmin/problematicas']);
         } else {
-          this.router.navigate(['/inicio']);
+          this.router.navigate(['/nuevo-reporte']);
         }
         console.log('Info del usuario:', res.data);
         await this.interactionService.showToast(`Bienvenido a Comunica!`);

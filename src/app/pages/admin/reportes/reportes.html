@@ -2,29 +2,50 @@
   <div class="contenedor-estandar">
     <header class="cabecera-pagina">
       <h2>Gestión de Reportes</h2>
-      <p style="color: #64748b; margin-top: 5px;">Administra y da seguimiento a todos los reportes de la comunidad.</p>
+      <p style="color: #64748b; margin-top: 5px">
+        Administra y da seguimiento a todos los reportes de la comunidad.
+      </p>
     </header>
 
     @if (cargando()) {
-      <div style="display: flex; justify-content: center; padding: 50px;">
-        <div class="spinner" style="width: 40px; height: 40px; border: 4px solid #BDE8F5; border-top-color: #1C4D8D; border-radius: 50%; animation: girar 1s linear infinite;"></div>
+      <div style="display: flex; justify-content: center; padding: 50px">
+        <div
+          class="spinner"
+          style="
+            width: 40px;
+            height: 40px;
+            border: 4px solid #bde8f5;
+            border-top-color: #1c4d8d;
+            border-radius: 50%;
+            animation: girar 1s linear infinite;
+          "
+        ></div>
       </div>
     } @else {
       <!-- Barra de acciones: Búsqueda y Filtros -->
       <div class="barra-acciones">
         <div class="contenedor-busqueda">
           <i class="fa-solid fa-search icono-busqueda"></i>
-          <input type="text" class="input-busqueda" placeholder="Buscar por descripción, problema, usuario o ID..." [(ngModel)]="terminoBusqueda" />
+          <input
+            type="text"
+            class="input-busqueda"
+            placeholder="Buscar por descripción, problema, usuario o ID..."
+            [(ngModel)]="terminoBusqueda"
+          />
         </div>
-        
-        <div style="display: flex; gap: 10px;">
-          <select class="input-busqueda" style="padding-left: 15px; width: auto; cursor: pointer;" [(ngModel)]="filtroEstado">
+
+        <div style="display: flex; gap: 10px">
+          <select
+            class="input-busqueda"
+            style="padding-left: 15px; width: auto; cursor: pointer"
+            [(ngModel)]="filtroEstado"
+          >
             <option value="">Todos los estados</option>
             <option value="Pendiente">Pendientes</option>
             <option value="En Proceso">En Proceso</option>
             <option value="Finalizado">Finalizados</option>
           </select>
-          
+
           <button class="btn-resort btn-resort-primario">
             <i class="fa-solid fa-file-export"></i> Exportar
           </button>
@@ -36,22 +57,30 @@
         <table class="tabla-resort">
           <thead>
             <tr>
-              <th>ID</th>
+              <!-- <th>ID</th> -->
               <th>Descripción</th>
               <th>Problema</th>
               <th>Reportado por</th>
               <th>Fecha</th>
               <th>Prioridad</th>
               <th>Estado</th>
-              <th style="text-align: center;">Acciones</th>
+              <th style="text-align: center">Acciones</th>
             </tr>
           </thead>
           <tbody>
             @for (reporte of reportesFiltrados(); track reporte.id) {
               <tr>
-                <td style="font-weight: bold; color: var(--primario);">#{{ reporte.id }}</td>
-                <td style="max-width: 250px;">
-                  <span style="display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" [title]="reporte.descripcion">
+                <!-- <td style="font-weight: bold; color: var(--primario);">#{{ reporte.id }}</td> -->
+                <td style="max-width: 250px">
+                  <span
+                    style="
+                      display: block;
+                      white-space: nowrap;
+                      overflow: hidden;
+                      text-overflow: ellipsis;
+                    "
+                    [title]="reporte.descripcion"
+                  >
                     {{ reporte.descripcion }}
                   </span>
                 </td>
@@ -59,25 +88,33 @@
                 <td>{{ reporte.usuario?.nombres }} {{ reporte.usuario?.apellidos }}</td>
                 <td>{{ formatDate(reporte.fechaGen) }}</td>
                 <td>
-                  @if(reporte.nvlPrioridad >= 8) {
-                    <span style="color: #e11d48; font-weight: bold;"><i class="fa-solid fa-fire"></i> Alta ({{ reporte.nvlPrioridad }})</span>
+                  @if (reporte.nvlPrioridad >= 8) {
+                    <span style="color: #e11d48; font-weight: bold"
+                      ><i class="fa-solid fa-fire"></i> Alta ({{ reporte.nvlPrioridad }})</span
+                    >
                   } @else {
-                    <span style="color: #64748b;">Normal ({{ reporte.nvlPrioridad }})</span>
+                    <span style="color: #64748b">Normal ({{ reporte.nvlPrioridad }})</span>
                   }
                 </td>
                 <td>
-                  <span class="badge-resort" 
+                  <span
+                    class="badge-resort"
                     [ngClass]="{
                       'badge-pendiente': reporte.estado === 'Pendiente',
                       'badge-info': reporte.estado === 'En Proceso',
-                      'badge-activa': reporte.estado === 'Finalizado'
-                    }">
+                      'badge-activa': reporte.estado === 'Finalizado',
+                    }"
+                  >
                     {{ reporte.estado }}
                   </span>
                 </td>
                 <td>
                   <div class="acciones-celda">
-                    <button class="btn-accion btn-editar" title="Ver Detalle" (click)="abrirModal(reporte)">
+                    <button
+                      class="btn-accion btn-editar"
+                      title="Ver Detalle"
+                      (click)="abrirModal(reporte)"
+                    >
                       <i class="fa-solid fa-eye"></i>
                     </button>
                   </div>
@@ -85,7 +122,10 @@
               </tr>
             } @empty {
               <tr>
-                <td colspan="8" style="text-align: center; padding: 40px; color: #94a3b8; font-style: italic;">
+                <td
+                  colspan="8"
+                  style="text-align: center; padding: 40px; color: #94a3b8; font-style: italic"
+                >
                   No hay reportes registrados o no coinciden con la búsqueda.
                 </td>
               </tr>
@@ -98,31 +138,61 @@
     <!-- Modal de Detalle (Maqueta) -->
     @if (reporteSeleccionado()) {
       <div class="modal-fondo" (click)="cerrarModal()">
-        <div class="modal-caja" (click)="$event.stopPropagation()" style="max-width: 600px;">
+        <div class="modal-caja" (click)="$event.stopPropagation()" style="max-width: 600px">
           <button class="boton-cerrar" (click)="cerrarModal()">
             <i class="fa-solid fa-xmark"></i>
           </button>
-          
-          <h3 style="color: var(--primario); margin-top: 0;">Detalle del Reporte #{{ reporteSeleccionado()?.id }}</h3>
-          
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px; margin-bottom: 25px;">
+
+          <h3 style="color: var(--primario); margin-top: 0">
+            Detalle del Reporte #{{ reporteSeleccionado()?.id }}
+          </h3>
+
+          <div
+            style="
+              display: grid;
+              grid-template-columns: 1fr 1fr;
+              gap: 15px;
+              margin-top: 20px;
+              margin-bottom: 25px;
+            "
+          >
             <div>
-              <small style="color: #94a3b8; font-weight: bold; text-transform: uppercase;">Estado Actual</small>
-              <div style="margin-top: 5px;">
-                <span class="badge-resort badge-pendiente">{{ reporteSeleccionado()?.estado }}</span>
+              <small style="color: #94a3b8; font-weight: bold; text-transform: uppercase"
+                >Estado Actual</small
+              >
+              <div style="margin-top: 5px">
+                <span class="badge-resort badge-pendiente">{{
+                  reporteSeleccionado()?.estado
+                }}</span>
               </div>
             </div>
             <div>
-              <small style="color: #94a3b8; font-weight: bold; text-transform: uppercase;">Prioridad</small>
-              <p style="margin: 5px 0 0 0; font-weight: bold;">{{ reporteSeleccionado()?.nvlPrioridad }} / 10</p>
+              <small style="color: #94a3b8; font-weight: bold; text-transform: uppercase"
+                >Prioridad</small
+              >
+              <p style="margin: 5px 0 0 0; font-weight: bold">
+                {{ reporteSeleccionado()?.nvlPrioridad }} / 10
+              </p>
             </div>
-            <div style="grid-column: 1 / -1;">
-              <small style="color: #94a3b8; font-weight: bold; text-transform: uppercase;">Descripción</small>
-              <p style="margin: 5px 0 0 0; line-height: 1.5;">{{ reporteSeleccionado()?.descripcion }}</p>
+            <div style="grid-column: 1 / -1">
+              <small style="color: #94a3b8; font-weight: bold; text-transform: uppercase"
+                >Descripción</small
+              >
+              <p style="margin: 5px 0 0 0; line-height: 1.5">
+                {{ reporteSeleccionado()?.descripcion }}
+              </p>
             </div>
           </div>
 
-          <div style="border-top: 1px solid #f1f5f9; padding-top: 20px; display: flex; gap: 10px; justify-content: flex-end;">
+          <div
+            style="
+              border-top: 1px solid #f1f5f9;
+              padding-top: 20px;
+              display: flex;
+              gap: 10px;
+              justify-content: flex-end;
+            "
+          >
             <button class="btn-resort btn-resort-outline" (click)="cerrarModal()">Cerrar</button>
             <button class="btn-resort btn-resort-primario">
               <i class="fa-solid fa-pen-to-square"></i> Actualizar Estado
@@ -131,6 +201,5 @@
         </div>
       </div>
     }
-
   </div>
 </section>
