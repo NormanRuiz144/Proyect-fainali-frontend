@@ -15,6 +15,11 @@ export const routes: Routes = [
     component: Layout,
     children: [
       {
+        path: '',
+        redirectTo: 'inicio',
+        pathMatch: 'full',
+      },
+      {
         path: 'inicio',
         loadComponent: () => import('./pages/home/landing/landing-page').then((c) => c.LandingPage),
       },

@@ -1,10 +1,15 @@
 :root {
-  --primario: #3d39af;
+  --primario: #1c4d8d;
   --secundario: #0bd692;
   --texto: #372c1f;
   --fondo: #ffffff;
   --gris: #f8f9fa;
-  --fuente: 'inter', sans-serif;
+  --fuente: 'Inter', sans-serif;
+  --white: #ffffff;
+  --primary-color: #1c4d8d;
+  --text-main: #372c1f;
+  --text-muted: #6b7280;
+  --bg-light: #f9fafb;
 }
 
 body {
@@ -62,26 +67,7 @@ body {
   margin-top: 0;
 }
 
-:root {
-  --primario: #3d39af;
-  --primario: #1c4d8d;
-  --secundario: #0bd692;
-  --texto: #372c1f;
-  --fondo: #ffffff;
-  --gris: #f8f9fa;
-  --fuente: 'inter', sans-serif;
-  --fuente: 'Inter', sans-serif;
-}
 
-body {
-  font: var(--fuente);
-  font-family: var(--fuente);
-  color: var(--texto);
-  margin: 0;
-}
-
-/* CSS PARA COMPONENTE INTERACTION */
-/* El overlay base para Carga, Alertas y Errores */
 
 /* --- BADGES GLOBALES --- */
 .badge-resort {

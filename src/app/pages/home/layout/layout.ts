@@ -42,9 +42,11 @@ export class Layout {
   regConfirmVisible = signal(false);
 
   //Enlaces de navegacion
-  enlaces = [{ ruta: '/inicio', etiqueta: '' }];
+  enlaces = [{ ruta: '/inicio', etiqueta: 'Inicio' }];
   //navegar en los enlaces
-  async navegar(ruta: string) {}
+  async navegar(ruta: string) {
+    this.router.navigate([ruta]);
+  }
 
   esModal = this.interactionService.modalAuth;
   vistaAuth = this.interactionService.vistaAuth;
