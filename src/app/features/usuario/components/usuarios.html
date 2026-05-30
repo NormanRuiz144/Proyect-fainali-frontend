@@ -1,0 +1,305 @@
+<div class="contenedor-vista">
+  <div class="cabecera-vista">
+    <div>
+      <h1 class="titulo-vista">Gestión de Usuarios</h1>
+      <p class="subtitulo-vista">Administra los usuarios registrados en la plataforma.</p>
+    </div>
+    <button class="btn-primario" (click)="abrirModalCrear()">
+      <i class="fa-solid fa-plus"></i> Nuevo Usuario
+    </button>
+  </div>
+
+  @if (error()) {
+    <div class="alerta-error">
+      <i class="fa-solid fa-triangle-exclamation"></i>
+      {{ error() }}
+    </div>
+  }
+
+  <div class="tarjeta-tabla">
+    <table class="tabla-moderna">
+      <thead>
+        <tr>
+          <th>Cedula</th>
+          <th>Nombres</th>
+          <th>Apellidos</th>
+          <th>Correo</th>
+          <th>Rol</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        @if (cargando() && usuarios().length === 0) {
+          <tr>
+            <td colspan="5" class="texto-centro py-4">
+              <div class="spinner"></div>
+              Cargando...
+            </td>
+          </tr>
+        } @else if (usuarios().length === 0) {
+          <tr>
+            <td colspan="5" class="texto-centro py-4 text-muted">
+              No hay usuarios registrados en esta institución.
+            </td>
+          </tr>
+        } @else {
+          @for (usr of usuarios(); track usr.id) {
+            <tr>
+              <td class="font-medium">{{ usr.numeroCedula }}</td>
+              <td>{{ usr.nombres }}</td>
+              <td>{{ usr.apellidos }}</td>
+              <td>{{ usr.correo }}</td>
+              <td>{{ obtenerNombreRol(usr.idRol) }}</td>
+              <td>
+                <div class="acciones-celda">
+                  <button class="btn-icono editar" (click)="abrirModalEditar(usr)" title="Editar">
+                    <i class="fa-solid fa-pen"></i>
+                  </button>
+                  <button
+                    class="btn-icono reasignar"
+                    (click)="abrirModalReasignar(usr)"
+                    title="Reasignar Rol/Institución"
+                  >
+                    <i class="fa-solid fa-arrows-rotate"></i>
+                  </button>
+                  <!-- <button class="btn-icono baja" (click)="abrirModalBaja(usr)" title="Dar de baja">
+                    <i class="fa-solid fa-user-minus"></i>
+                  </button> -->
+                </div>
+              </td>
+            </tr>
+          }
+        }
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Modal Crear/Editar -->
+@if (mostrarModal()) {
+  <div class="modal-backdrop">
+    <div class="modal-contenedor modal-lg">
+      <div class="modal-cabecera">
+        <h2 class="modal-titulo">
+          {{ modalModo() === 'crear' ? 'Nuevo Usuario' : 'Editar Usuario' }}
+        </h2>
+        <button class="btn-cerrar" (click)="cerrarModal()">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+      <div class="modal-cuerpo">
+        <div class="form-grid">
+          @if (modalModo() === 'crear') {
+            <div class="form-grupo">
+              <label for="numeroCedula">Cédula</label>
+              <input
+                type="text"
+                id="numeroCedula"
+                class="form-input"
+                [(ngModel)]="usuarioActual().numeroCedula"
+                placeholder="Ej. 001-1234567-8"
+              />
+            </div>
+            <div class="form-grupo">
+              <label for="contrasena">Contraseña</label>
+              <input
+                type="password"
+                id="contrasena"
+                class="form-input"
+                [(ngModel)]="usuarioActual().contrasena"
+                placeholder="Mín. 8 caracteres"
+              />
+            </div>
+          }
+          <div class="form-grupo">
+            <label for="nombres">Nombres</label>
+            <input
+              type="text"
+              id="nombres"
+              class="form-input"
+              [(ngModel)]="usuarioActual().nombres"
+              placeholder="Ej. Juan Carlos"
+            />
+          </div>
+          <div class="form-grupo">
+            <label for="apellidos">Apellidos</label>
+            <input
+              type="text"
+              id="apellidos"
+              class="form-input"
+              [(ngModel)]="usuarioActual().apellidos"
+              placeholder="Ej. Pérez García"
+            />
+          </div>
+          <div class="form-grupo">
+            <label for="correo">Correo Electrónico</label>
+            <input
+              type="email"
+              id="correo"
+              class="form-input"
+              [(ngModel)]="usuarioActual().correo"
+              placeholder="Ej. correo@ejemplo.com"
+            />
+          </div>
+          <div class="form-grupo">
+            <label for="sexo">Sexo</label>
+            <select id="sexo" class="form-input" [(ngModel)]="usuarioActual().sexo">
+              <option [value]="undefined" disabled selected>Seleccione...</option>
+              <option value="M">Masculino</option>
+              <option value="F">Femenino</option>
+            </select>
+          </div>
+          <div class="form-grupo">
+            <label for="idDepartamentoSector">1. Departamento</label>
+            <select
+              id="idDepartamentoSector"
+              class="form-input"
+              [ngModel]="formSectorDepartamento()"
+              (ngModelChange)="onFormSectorDepartamentoChange($event)"
+            >
+              <option [value]="undefined" disabled selected>Selecciona un departamento</option>
+              @for (dep of departamentos(); track dep.id) {
+                <option [value]="dep.id">{{ dep.nom_departamento || dep.nomDepartamento }}</option>
+              }
+            </select>
+          </div>
+          <div class="form-grupo">
+            <label for="idMunicipioSector">2. Municipio</label>
+            <select
+              id="idMunicipioSector"
+              class="form-input"
+              [ngModel]="formSectorMunicipio()"
+              (ngModelChange)="onFormSectorMunicipioChange($event)"
+              [disabled]="!formSectorDepartamento()"
+            >
+              <option [value]="undefined" disabled selected>Selecciona un municipio</option>
+              @for (muni of municipiosParaSector(); track muni.id) {
+                <option [value]="muni.id">{{ muni.nom_municipio || muni.nomMunicipio }}</option>
+              }
+            </select>
+          </div>
+          <div class="form-grupo">
+            <label for="idSector">3. Sector</label>
+            <select
+              id="idSector"
+              class="form-input"
+              [(ngModel)]="usuarioActual().idSector"
+              [disabled]="!formSectorMunicipio()"
+            >
+              <option [value]="undefined" disabled selected>Selecciona un sector</option>
+              @for (sec of sectoresParaSector(); track sec.id) {
+                <option [value]="sec.id">
+                  {{ sec.nombreSector || sec.nombre_sector || sec.nomSector }}
+                </option>
+              }
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="modal-pie">
+        <button class="btn-secundario" (click)="cerrarModal()" [disabled]="cargando()">
+          Cancelar
+        </button>
+        <button class="btn-primario" (click)="guardarUsuario()" [disabled]="cargando()">
+          @if (cargando()) {
+            <i class="fa-solid fa-spinner fa-spin mr-2"></i> Guardando...
+          } @else {
+            Guardar
+          }
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- Modal Reasignar -->
+@if (mostrarModalReasignar()) {
+  <div class="modal-backdrop">
+    <div class="modal-contenedor">
+      <div class="modal-cabecera">
+        <h2 class="modal-titulo">Reasignar Usuario</h2>
+        <button class="btn-cerrar" (click)="cerrarModalReasignar()">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+      <div class="modal-cuerpo">
+        <div class="form-grupo">
+          <label for="reasignarRol">Nuevo Rol</label>
+          <select id="reasignarRol" class="form-input" [(ngModel)]="reasignarForm().idRol">
+            <option [value]="undefined" disabled selected>Seleccione un rol</option>
+            @for (rol of roles(); track rol.id) {
+              <option [value]="rol.id">{{ rol.rol }}</option>
+            }
+          </select>
+        </div>
+        <div class="form-grupo mt-4">
+          <label for="reasignarInst">Nueva Institución</label>
+          <select id="reasignarInst" class="form-input" [(ngModel)]="reasignarForm().idInstitucion">
+            <option [value]="undefined">Sin institución</option>
+            @for (inst of instituciones(); track inst.id) {
+              <option [value]="inst.id">{{ inst.nombreInstitucion }}</option>
+            }
+          </select>
+        </div>
+      </div>
+      <div class="modal-pie">
+        <button class="btn-secundario" (click)="cerrarModalReasignar()" [disabled]="cargando()">
+          Cancelar
+        </button>
+        <button class="btn-primario" (click)="guardarReasignar()" [disabled]="cargando()">
+          @if (cargando()) {
+            <i class="fa-solid fa-spinner fa-spin mr-2"></i> Guardando...
+          } @else {
+            Reasignar
+          }
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- Modal Confirmar Baja -->
+@if (mostrarModalBaja()) {
+  <div class="modal-backdrop">
+    <div class="modal-contenedor modal-confirmacion">
+      <div class="modal-cabecera">
+        <h2 class="modal-titulo">Confirmar Baja</h2>
+        <button class="btn-cerrar" (click)="cerrarModalBaja()">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+      <div class="modal-cuerpo">
+        <p class="texto-confirmacion">
+          <i class="fa-solid fa-triangle-exclamation icono-advertencia"></i>
+          ¿Estás seguro de que deseas dar de baja a este usuario de la institución? El usuario
+          perderá el acceso a los recursos de la institución.
+        </p>
+        <div class="form-grupo mt-4">
+          <label for="bajaInstitucion">Institución</label>
+          <select id="bajaInstitucion" class="form-input" #bajaInstitucionSelect>
+            <option [value]="undefined" disabled selected>Seleccione la institución</option>
+            @for (inst of instituciones(); track inst.id) {
+              <option [value]="inst.id">{{ inst.nombreInstitucion }}</option>
+            }
+          </select>
+        </div>
+      </div>
+      <div class="modal-pie">
+        <button class="btn-secundario" (click)="cerrarModalBaja()" [disabled]="cargando()">
+          Cancelar
+        </button>
+        <button
+          class="btn-peligro"
+          (click)="confirmarBaja(+bajaInstitucionSelect.value)"
+          [disabled]="cargando() || !bajaInstitucionSelect.value"
+        >
+          @if (cargando()) {
+            <i class="fa-solid fa-spinner fa-spin mr-2"></i> Procesando...
+          } @else {
+            <i class="fa-solid fa-user-minus"></i> Dar de Baja
+          }
+        </button>
+      </div>
+    </div>
+  </div>
+}

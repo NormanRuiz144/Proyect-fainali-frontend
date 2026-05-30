@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ReportesService } from './service/reportes';
 import { IReporte, IRespuestaReportes } from './interface/ireporte';
+import { EstadoAdminService } from '../../../shared/service/estado-admin.service';
 
 @Component({
   selector: 'app-reportes',
@@ -13,6 +14,7 @@ import { IReporte, IRespuestaReportes } from './interface/ireporte';
 })
 export class Reportes implements OnInit {
   private reportesService = inject(ReportesService);
+  public estadoAdminService = inject(EstadoAdminService); // esto comparte el estado de la institución seleccionada
 
   reportes = signal<IReporte[]>([]);
   cargando = signal(true);
@@ -28,6 +30,12 @@ export class Reportes implements OnInit {
     const estado = this.filtroEstado();
     if (estado) {
       filtrados = filtrados.filter(r => r.estado === estado);
+    }
+
+    // Filtrar por la institución seleccionada globalmente si existe
+    const idFiltro = this.estadoAdminService.institucionSeleccionadaId();
+    if (idFiltro !== null) {
+      filtrados = filtrados.filter(r => r.institucion && r.institucion.id === idFiltro);
     }
     
     const busqueda = this.terminoBusqueda().toLowerCase().trim();

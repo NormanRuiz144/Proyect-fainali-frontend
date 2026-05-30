@@ -4,8 +4,8 @@
       <button class="boton-cerrar-sidebar" (click)="alternarMenu()">
         <i class="fa-solid fa-xmark"></i>
       </button>
-      <img src="/logo/comunica_logo.jpeg" alt="Comunica Logo" class="logo-imagen">
-      <span class="etiqueta-admin">ADMINISTRACIÓN</span>
+      <img src="/logo/comunica_logo.jpeg" alt="Comunica Logo" class="logo-imagen" />
+      <span class="etiqueta-admin">ADMINISTRADOR DE LA PLATAFORMA</span>
     </div>
 
     <nav class="sidebar-navegacion">
@@ -33,25 +33,9 @@
         <i class="fa-solid fa-bars"></i>
       </button>
 
-      <!-- selector dinámico de instituciones global en la cabecera del panel de administración -->
-      @if (estadoAdminService.esSuperAdmin()) {
-        <div class="selector-institucion-global">
-          <i class="fa-solid fa-building icono-edificio"></i>
-          <select 
-            (change)="onInstitucionChange($event)"
-            [value]="estadoAdminService.institucionSeleccionadaId() === null ? '0' : estadoAdminService.institucionSeleccionadaId()"
-          >
-            <option value="0">Todas las Instituciones (Consolidado)</option>
-            @for (inst of instituciones(); track inst.id) {
-              <option [value]="inst.id">{{ inst.nombreInstitucion }}</option>
-            }
-          </select>
-        </div>
-      }
-
       <div class="perfil-admin">
         <div class="info-texto">
-          <span class="nombre-usuario">Administrador</span>
+          <span class="nombre-usuario">Administrador de la plataforma</span>
           <span class="rol-usuario">Comunica</span>
         </div>
       </div>

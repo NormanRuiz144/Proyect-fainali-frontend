@@ -1,0 +1,98 @@
+<div class="contenedor-vista">
+  <div class="cabecera-vista">
+    <div>
+      <h1 class="titulo-vista">Gestión de Problemáticas</h1>
+      <p class="subtitulo-vista">Administra las problemáticas registradas en la plataforma.</p>
+    </div>
+    <button class="btn-primario" (click)="abrirModalCrear()">
+      <i class="fa-solid fa-plus"></i> Nueva Problemática
+    </button>
+  </div>
+
+  @if (error()) {
+    <div class="alerta-error">
+      <i class="fa-solid fa-triangle-exclamation"></i>
+      {{ error() }}
+    </div>
+  }
+
+  <div class="tarjeta-tabla">
+    <table class="tabla-moderna">
+      <thead>
+        <tr>
+          <th>Problema</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        @if (cargando() && problematicas().length === 0) {
+          <tr>
+            <td colspan="3" class="texto-centro py-4">
+              <div class="spinner"></div>
+              Cargando...
+            </td>
+          </tr>
+        } @else if (problematicas().length === 0) {
+          <tr>
+            <td colspan="3" class="texto-centro py-4 text-muted">
+              No hay problemáticas registradas.
+            </td>
+          </tr>
+        } @else {
+          @for (prob of problematicas(); track prob.id) {
+            <tr>
+              <td class="font-medium">{{ prob.problema }}</td>
+              <td>
+                <div class="acciones-celda">
+                  <button class="btn-icono editar" (click)="abrirModalEditar(prob)" title="Editar">
+                    <i class="fa-solid fa-pen"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          }
+        }
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Modal -->
+@if (mostrarModal()) {
+  <div class="modal-backdrop">
+    <div class="modal-contenedor">
+      <div class="modal-cabecera">
+        <h2 class="modal-titulo">
+          {{ modalModo() === 'crear' ? 'Nueva Problemática' : 'Editar Problemática' }}
+        </h2>
+        <button class="btn-cerrar" (click)="cerrarModal()">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+      <div class="modal-cuerpo">
+        <div class="form-grupo">
+          <label for="problema">Nombre de la Problemática</label>
+          <input
+            type="text"
+            id="problema"
+            class="form-input"
+            [(ngModel)]="problematicaActual().problema"
+            placeholder="Ej. Baches en la calle"
+          />
+        </div>
+      </div>
+      <div class="modal-pie">
+        <button class="btn-secundario" (click)="cerrarModal()" [disabled]="cargando()">
+          Cancelar
+        </button>
+        <button class="btn-primario" (click)="guardarProblematica()" [disabled]="cargando()">
+          @if (cargando()) {
+            <i class="fa-solid fa-spinner fa-spin mr-2"></i> Guardando...
+          } @else {
+            Guardar
+          }
+        </button>
+      </div>
+    </div>
+  </div>
+}

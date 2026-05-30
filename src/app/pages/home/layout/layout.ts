@@ -12,24 +12,19 @@ import { IMunicipio } from '../../../features/ubicacion/interface/imunicipio';
 import { ISector } from '../../../features/ubicacion/interface/isector';
 //import { IRegistro } from '../../../features/usuario/interface/ireguistro';
 
-
-
-
 const EMAIL_PATTERN = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 const PASSW_PATTERN = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/;
 const CEDULA_NI_PATTERN = /^\d{3}-\d{6}-\d{4}[A-Z]$/;
 const SEXO_PATTERN = /^[MF]$/;
 
-
-
 @Component({
   selector: 'app-layout',
   templateUrl: './layout.html',
   styleUrl: './layout.css',
-  imports: [RouterOutlet, ReactiveFormsModule]
+  imports: [RouterOutlet, ReactiveFormsModule],
 })
 export class Layout {
-  public authService = inject(AuthService)
+  public authService = inject(AuthService);
   private fb = inject(FormBuilder);
   private usuarioService = inject(UsuarioService);
   private ubicacionService = inject(UbicacionService);
@@ -46,26 +41,17 @@ export class Layout {
   regPasswordVisible = signal(false);
   regConfirmVisible = signal(false);
 
-
-
-
   //Enlaces de navegacion
-  enlaces = [
-    { ruta: '/inicio', etiqueta: '' },
-  ]
+  enlaces = [{ ruta: '/inicio', etiqueta: '' }];
   //navegar en los enlaces
-  async navegar(ruta: string) {
-
-  }
-
-
+  async navegar(ruta: string) {}
 
   esModal = this.interactionService.modalAuth;
   vistaAuth = this.interactionService.vistaAuth;
 
   //Definir Formulario
-  loginForm!: FormGroup
-  registroForm!: FormGroup
+  loginForm!: FormGroup;
+  registroForm!: FormGroup;
 
   ngOnInit(): void {
     this.inicializarFormularios();
@@ -77,9 +63,9 @@ export class Layout {
     this.pasoRegistro.set(1);
 
     if (vista === 'login') {
-      this.loginForm.reset()
+      this.loginForm.reset();
     } else {
-      this.registroForm.reset({ activo: true })
+      this.registroForm.reset({ activo: true });
       this.municipios.set([]);
       this.sectores.set([]);
       this.municipioSeleccionado.set(false);
@@ -99,10 +85,10 @@ export class Layout {
       numeroCedula: ['', [Validators.required, Validators.pattern(CEDULA_NI_PATTERN)]],
       nombres: ['', [Validators.required]],
       apellidos: ['', [Validators.required]],
-      sexo: ['',[Validators.required, Validators.pattern(SEXO_PATTERN)]],
+      sexo: ['', [Validators.required, Validators.pattern(SEXO_PATTERN)]],
       correo: ['', [Validators.required, Validators.pattern(EMAIL_PATTERN)]],
-      contrasena: [ '', [Validators.required, Validators.pattern(PASSW_PATTERN)]],
-      confirmationContra: ['',[Validators.required, Validators.pattern(PASSW_PATTERN)]],
+      contrasena: ['', [Validators.required, Validators.pattern(PASSW_PATTERN)]],
+      confirmationContra: ['', [Validators.required, Validators.pattern(PASSW_PATTERN)]],
       idDepartamento: [null, [Validators.required]],
       idMunicipio: [null, [Validators.required]],
       idSector: [null, [Validators.required]],
@@ -152,7 +138,7 @@ export class Layout {
   siguientePaso() {
     if (this.pasoValido(this.pasoRegistro())) {
       const pasoAnterior = this.pasoRegistro();
-      this.pasoRegistro.update(p => p + 1);
+      this.pasoRegistro.update((p) => p + 1);
       if (pasoAnterior === 2) {
         this.restaurarPaso3();
       }
@@ -160,7 +146,7 @@ export class Layout {
   }
 
   pasoAnterior() {
-    this.pasoRegistro.update(p => Math.max(1, p - 1));
+    this.pasoRegistro.update((p) => Math.max(1, p - 1));
   }
 
   private restaurarPaso3() {
@@ -202,7 +188,7 @@ export class Layout {
 
   // Iniciar sesión
   async enviarLogin() {
-    await this.interactionService.showLoading()
+    await this.interactionService.showLoading();
 
     const { email, password } = this.loginForm.value;
 
@@ -213,16 +199,15 @@ export class Layout {
         // Error 1: La propiedad 'cerrarModal' no existe
         this.cerrarModal();
 
-        // if(res.usuario.rol === 'Administrador') {
-        //   this.router.navigate(['/admin'])
-        //} else
-        {
-          this.router.navigate(['/inicio']);
+        if (res.data.user.rol.rol === 'Admin') {
+          this.router.navigate(['/admin/dashboard']);
+        } else if (res.data.user.rol.rol == 'Super-Admin') {
+          this.router.navigate(['/superAdmin/problematicas']);
+        } else {
+          this.router.navigate(['/nuevo-reporte']);
         }
-
-        await this.interactionService.showToast(
-          `Bienvenido vago!`
-        )
+        console.log('Info del usuario:', res.data);
+        await this.interactionService.showToast(`Bienvenido a Comunica!`);
       },
       error: async (err) => {
         await this.interactionService.hideLoading();
@@ -232,7 +217,7 @@ export class Layout {
         } else {
           await this.interactionService.mostrarError(err);
         }
-      }
+      },
     });
   }
 
@@ -259,7 +244,7 @@ export class Layout {
       usuario.idSector = Number(val.idSector);
     }
 
-    console.log("Datos enviados al backend:", JSON.stringify(usuario, null, 2));
+    console.log('Datos enviados al backend:', JSON.stringify(usuario, null, 2));
 
     this.usuarioService.registrarUsuario(usuario).subscribe({
       next: async (res) => {
@@ -272,10 +257,8 @@ export class Layout {
       },
       error: async (err) => {
         await this.interactionService.hideLoading();
-        const mensaje = err?.error?.detail ||
-          err?.error?.message ||
-          err?.error?.errors?.[0]?.message ||
-          '';
+        const mensaje =
+          err?.error?.detail || err?.error?.message || err?.error?.errors?.[0]?.message || '';
         if (/cedula|cédula|numeroCedula/i.test(mensaje)) {
           await this.interactionService.showToast('Error número de cédula en uso', 'error');
         } else if (/correo|email|already.exist|duplicate|unique/i.test(mensaje)) {
@@ -284,7 +267,7 @@ export class Layout {
           await this.interactionService.mostrarError(err);
         }
       },
-    })
+    });
   }
 
   // Cerrar sesión
