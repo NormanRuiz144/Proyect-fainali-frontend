@@ -83,7 +83,6 @@ export class Layout {
       this.municipios.set([]);
       this.sectores.set([]);
       this.municipioSeleccionado.set(false);
-      this.limpiarValidadoresUbicacion();
     }
   }
   // Inicializar formularios
@@ -105,8 +104,8 @@ export class Layout {
       contrasena: [ '', [Validators.required, Validators.pattern(PASSW_PATTERN)]],
       confirmationContra: ['',[Validators.required, Validators.pattern(PASSW_PATTERN)]],
       idDepartamento: [null, [Validators.required]],
-      idMunicipio: [null],
-      idSector: [null],
+      idMunicipio: [null, [Validators.required]],
+      idSector: [null, [Validators.required]],
     });
   }
 
@@ -121,63 +120,26 @@ export class Layout {
     this.sectores.set([]);
     this.municipioSeleccionado.set(false);
     this.registroForm.patchValue({ idSector: null, idMunicipio: null });
-    const muniControl = this.registroForm.get('idMunicipio');
-    const sectorControl = this.registroForm.get('idSector');
-    if (!id) {
-      muniControl?.clearValidators();
-      muniControl?.updateValueAndValidity();
-      sectorControl?.clearValidators();
-      sectorControl?.updateValueAndValidity();
-      return;
+    if (id) {
+      this.ubicacionService.obtenerMunicipiosPorDepartamento(id).subscribe({
+        next: (data) => this.municipios.set(data),
+      });
     }
-    this.ubicacionService.obtenerMunicipiosPorDepartamento(id).subscribe({
-      next: (data) => {
-        this.municipios.set(data);
-        if (data.length > 0) {
-          muniControl?.setValidators([Validators.required]);
-        } else {
-          muniControl?.clearValidators();
-        }
-        muniControl?.updateValueAndValidity();
-      },
-    });
   }
 
   onMunicipioChange(id: number) {
     this.sectores.set([]);
     this.municipioSeleccionado.set(!!id);
     this.registroForm.patchValue({ idSector: null });
-    const control = this.registroForm.get('idSector');
-    if (!id) {
-      control?.clearValidators();
-      control?.updateValueAndValidity();
-      return;
+    if (id) {
+      this.ubicacionService.obtenerSectoresPorMunicipio(id).subscribe({
+        next: (data) => this.sectores.set(data),
+        error: () => this.sectores.set([]),
+      });
     }
-    this.ubicacionService.obtenerSectoresPorMunicipio(id).subscribe({
-      next: (data) => {
-        this.sectores.set(data);
-        if (data.length > 0) {
-          control?.setValidators([Validators.required]);
-        } else {
-          control?.clearValidators();
-        }
-        control?.updateValueAndValidity();
-      },
-      error: () => {
-        this.sectores.set([]);
-        control?.clearValidators();
-        control?.updateValueAndValidity();
-      },
-    });
   }
 
   private limpiarValidadoresUbicacion() {
-    const muniControl = this.registroForm?.get('idMunicipio');
-    const sectorControl = this.registroForm?.get('idSector');
-    muniControl?.clearValidators();
-    muniControl?.updateValueAndValidity();
-    sectorControl?.clearValidators();
-    sectorControl?.updateValueAndValidity();
   }
 
   // validar los controles//
@@ -207,37 +169,16 @@ export class Layout {
 
     if (deptoId) {
       this.ubicacionService.obtenerMunicipiosPorDepartamento(Number(deptoId)).subscribe({
+        next: (data) => this.municipios.set(data),
+      });
+    }
+    if (municipioId) {
+      this.ubicacionService.obtenerSectoresPorMunicipio(Number(municipioId)).subscribe({
         next: (data) => {
-          this.municipios.set(data);
-          const muniControl = this.registroForm.get('idMunicipio');
-          if (data.length > 0) {
-            muniControl?.setValidators([Validators.required]);
-          } else {
-            muniControl?.clearValidators();
-          }
-          muniControl?.updateValueAndValidity();
+          this.sectores.set(data);
+          this.municipioSeleccionado.set(true);
         },
       });
-      if (municipioId) {
-        this.ubicacionService.obtenerSectoresPorMunicipio(Number(municipioId)).subscribe({
-          next: (data) => {
-            this.sectores.set(data);
-            this.municipioSeleccionado.set(true);
-            const control = this.registroForm.get('idSector');
-            if (data.length > 0) {
-              control?.setValidators([Validators.required]);
-            } else {
-              control?.clearValidators();
-            }
-            control?.updateValueAndValidity();
-          },
-          error: () => {
-            const control = this.registroForm.get('idSector');
-            control?.clearValidators();
-            control?.updateValueAndValidity();
-          },
-        });
-      }
     }
   }
 
@@ -254,12 +195,7 @@ export class Layout {
     }
     if (paso === 3) {
       const { idDepartamento, idMunicipio, idSector } = this.registroForm.controls;
-      if (!idDepartamento?.valid) return false;
-      const hayMunicipios = this.municipios().length > 0;
-      if (hayMunicipios && !idMunicipio?.valid) return false;
-      const haySectores = this.sectores().length > 0;
-      if (haySectores && !idSector?.valid) return false;
-      return true;
+      return !!idDepartamento?.valid && !!idMunicipio?.valid && !!idSector?.valid;
     }
     return false;
   }
@@ -302,6 +238,11 @@ export class Layout {
 
   // Registrar un nuevo usuario
   async enviarRegistro() {
+    if (this.registroForm.invalid) {
+      await this.interactionService.showToast('Complete todos los campos obligatorios', 'error');
+      return;
+    }
+
     await this.interactionService.showLoading();
 
     const val = this.registroForm.value;
