@@ -46,7 +46,7 @@
             <option value="Finalizado">Finalizados</option>
           </select>
 
-          <button class="btn-resort btn-resort-primario">
+          <button class="btn-resort btn-resort-primario" (click)="exportarPDF()">
             <i class="fa-solid fa-file-export"></i> Exportar
           </button>
         </div>
@@ -57,12 +57,9 @@
         <table class="tabla-resort">
           <thead>
             <tr>
-              <!-- <th>ID</th> -->
-              <th>Descripción</th>
-              <th>Problema</th>
-              <th>Reportado por</th>
               <th>Fecha</th>
               <th>Prioridad</th>
+              <th>Problema</th>
               <th>Estado</th>
               <th style="text-align: center">Acciones</th>
             </tr>
@@ -70,22 +67,6 @@
           <tbody>
             @for (reporte of reportesFiltrados(); track reporte.id) {
               <tr>
-                <!-- <td style="font-weight: bold; color: var(--primario);">#{{ reporte.id }}</td> -->
-                <td style="max-width: 250px">
-                  <span
-                    style="
-                      display: block;
-                      white-space: nowrap;
-                      overflow: hidden;
-                      text-overflow: ellipsis;
-                    "
-                    [title]="reporte.descripcion"
-                  >
-                    {{ reporte.descripcion }}
-                  </span>
-                </td>
-                <td>{{ reporte.problematica?.problema || 'N/A' }}</td>
-                <td>{{ reporte.usuario?.nombres }} {{ reporte.usuario?.apellidos }}</td>
                 <td>{{ formatDate(reporte.fechaGen) }}</td>
                 <td>
                   @if (reporte.nvlPrioridad >= 8) {
@@ -96,6 +77,7 @@
                     <span style="color: #64748b">Normal ({{ reporte.nvlPrioridad }})</span>
                   }
                 </td>
+                <td>{{ reporte.problematica?.problema || 'N/A' }}</td>
                 <td>
                   <span
                     class="badge-resort"
@@ -123,7 +105,7 @@
             } @empty {
               <tr>
                 <td
-                  colspan="8"
+                  colspan="5"
                   style="text-align: center; padding: 40px; color: #94a3b8; font-style: italic"
                 >
                   No hay reportes registrados o no coinciden con la búsqueda.
@@ -174,12 +156,36 @@
                 {{ reporteSeleccionado()?.nvlPrioridad }} / 10
               </p>
             </div>
-            <div style="grid-column: 1 / -1">
+            <div>
               <small style="color: #94a3b8; font-weight: bold; text-transform: uppercase"
-                >Descripción</small
+                >Fecha de Registro</small
               >
-              <p style="margin: 5px 0 0 0; line-height: 1.5">
-                {{ reporteSeleccionado()?.descripcion }}
+              <p style="margin: 5px 0 0 0;">
+                {{ formatDate(reporteSeleccionado()?.fechaGen || null) }}
+              </p>
+            </div>
+            <div>
+              <small style="color: #94a3b8; font-weight: bold; text-transform: uppercase"
+                >Categoría de Problema</small
+              >
+              <p style="margin: 5px 0 0 0; font-weight: bold; color: var(--primario);">
+                {{ reporteSeleccionado()?.problematica?.problema || 'N/A' }}
+              </p>
+            </div>
+            <div>
+              <small style="color: #94a3b8; font-weight: bold; text-transform: uppercase"
+                >Reportado por</small
+              >
+              <p style="margin: 5px 0 0 0; font-weight: 500;">
+                {{ reporteSeleccionado()?.usuario?.nombres }} {{ reporteSeleccionado()?.usuario?.apellidos }}
+              </p>
+            </div>
+            <div>
+              <small style="color: #94a3b8; font-weight: bold; text-transform: uppercase"
+                >Institución Asignada</small
+              >
+              <p style="margin: 5px 0 0 0; font-weight: 500;">
+                {{ reporteSeleccionado()?.institucion?.nombreInstitucion || 'No asignada' }}
               </p>
             </div>
           </div>
