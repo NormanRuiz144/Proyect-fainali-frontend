@@ -24,7 +24,8 @@ export class InstitucionesComponent implements OnInit {
 
   // Modal State
   mostrarModal = signal(false);
-  modalModo = signal<'crear' | 'editar'>('crear');
+  modalModo = signal<'crear' | 'editar' | 'eliminar' | 'restaurar'>('crear');
+  itemAProcesar = signal<any>(null);
 
   filtroDepartamento = signal<number | undefined>(undefined);
   filtroMunicipio = signal<number | undefined>(undefined);
@@ -104,12 +105,57 @@ export class InstitucionesComponent implements OnInit {
     this.mostrarModal.set(true);
   }
 
+  abrirModalEliminar(institucion: Institucion) {
+    this.modalModo.set('eliminar');
+    this.itemAProcesar.set(institucion);
+    this.mostrarModal.set(true);
+  }
+
+  abrirModalRestaurar(institucion: Institucion) {
+    this.modalModo.set('restaurar');
+    this.itemAProcesar.set(institucion);
+    this.mostrarModal.set(true);
+  }
+
   cerrarModal() {
     this.mostrarModal.set(false);
     this.fromInstitucion.set({ id: undefined, nombreInstitucion: '', idMunicipio: undefined });
   }
 
   guardarInstitucion() {
+    if (this.modalModo() === 'eliminar' || this.modalModo() === 'restaurar') {
+      const id = this.itemAProcesar()?.id;
+      if (!id) return;
+      this.cargando.set(true);
+
+      if (this.modalModo() === 'eliminar') {
+        this.instituticionService.eliminarInstitucion(id).subscribe({
+          next: () => {
+            this.cargarInstituciones();
+            this.cerrarModal();
+          },
+          error: (err) => {
+            console.error(err);
+            alert('Error al eliminar la Institucion');
+            this.cargando.set(false);
+          },
+        });
+      } else {
+        this.instituticionService.restaurarInstitucion(id).subscribe({
+          next: () => {
+            this.cargarInstituciones();
+            this.cerrarModal();
+          },
+          error: (err) => {
+            console.error(err);
+            alert('Error al restaurar la Institucion');
+            this.cargando.set(false);
+          },
+        });
+      }
+      return;
+    }
+
     if (!this.fromInstitucion().nombreInstitucion?.trim()) {
       alert('El nombre de la institución es requerido');
       return;
@@ -121,7 +167,7 @@ export class InstitucionesComponent implements OnInit {
 
     if (this.modalModo() === 'crear') {
       const data = this.fromInstitucion();
-      this.instituticionService.crearInstitucion(data.id!, institucion).subscribe({
+      this.instituticionService.crearInstitucion(data.idMunicipio!, institucion).subscribe({
         next: () => {
           this.cargarInstituciones();
           this.cerrarModal();

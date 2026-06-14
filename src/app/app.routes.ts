@@ -3,12 +3,6 @@ import { Layout } from './pages/home/layout/layout';
 import { AuthGuard } from './guards/AuthGuard';
 
 export const routes: Routes = [
-  // Portal Ciudadano
-  {
-    path: 'nuevo-reporte',
-    loadComponent: () =>
-      import('./pages/usuario/nuevo-reporte/nuevo-reporte').then((c) => c.NuevoReporte),
-  },
   // Bloque 1: experiencia publica
   {
     path: '',
@@ -19,6 +13,12 @@ export const routes: Routes = [
         loadComponent: () => import('./pages/home/landing/landing-page').then((c) => c.LandingPage),
       },
     ],
+  },
+  // Portal Ciudadano
+  {
+    path: 'nuevo-reporte',
+    loadComponent: () =>
+      import('./pages/usuario/nuevo-reporte/nuevo-reporte').then((c) => c.NuevoReporte),
   },
   // Area Administrativa
   {
@@ -52,6 +52,10 @@ export const routes: Routes = [
       import('./pages/superAdmin/layout/layout-super-admin').then((c) => c.LayoutSuperAdmin),
     // canActivate: [AuthGuard],
     children: [
+      {
+        path: 'dashboard',
+        loadComponent: () => import('./pages/admin/dashboard/dashboard').then((c) => c.Dashboard),
+      },
       {
         path: 'problematicas',
         loadComponent: () =>

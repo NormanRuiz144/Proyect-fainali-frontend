@@ -39,4 +39,12 @@ export class InstitucionesService {
       idMunicipio: institucion.idMunicipio,
     });
   }
+
+  eliminarInstitucion(id: number): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/eliminar/${id}`);
+  }
+
+  restaurarInstitucion(id: number): Observable<any> {
+    return this.http.patch(`${this.apiUrl}/restaurar/${id}`, {});
+  }
 }
