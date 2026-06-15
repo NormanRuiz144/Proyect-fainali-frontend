@@ -143,9 +143,15 @@
                 >Estado Actual</small
               >
               <div style="margin-top: 5px">
-                <span class="badge-resort badge-pendiente">{{
-                  reporteSeleccionado()?.estado
-                }}</span>
+                <select 
+                  class="input-busqueda" 
+                  style="width: 100%; padding: 5px; cursor: pointer; border-radius: 6px; border: 1px solid #cbd5e1; font-weight: 600;" 
+                  [(ngModel)]="nuevoEstadoSeleccionado"
+                >
+                  <option value="Pendiente">Pendiente</option>
+                  <option value="En Proceso">En Proceso</option>
+                  <option value="Finalizado">Finalizado</option>
+                </select>
               </div>
             </div>
             <div>
@@ -188,6 +194,14 @@
                 {{ reporteSeleccionado()?.institucion?.nombreInstitucion || 'No asignada' }}
               </p>
             </div>
+            <div style="grid-column: 1 / -1;">
+              <small style="color: #94a3b8; font-weight: bold; text-transform: uppercase"
+                >Descripción</small
+              >
+              <p style="margin: 5px 0 0 0; font-weight: 500; white-space: pre-wrap;">
+                {{ reporteSeleccionado()?.descripcion || 'Sin descripción' }}
+              </p>
+            </div>
           </div>
 
           <div
@@ -200,7 +214,7 @@
             "
           >
             <button class="btn-resort btn-resort-outline" (click)="cerrarModal()">Cerrar</button>
-            <button class="btn-resort btn-resort-primario">
+            <button class="btn-resort btn-resort-primario" (click)="actualizarEstado()">
               <i class="fa-solid fa-pen-to-square"></i> Actualizar Estado
             </button>
           </div>

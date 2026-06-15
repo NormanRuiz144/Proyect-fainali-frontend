@@ -58,6 +58,7 @@ export class Reportes implements OnInit {
 
   // Estado para el modal
   reporteSeleccionado = signal<IReporte | null>(null);
+  nuevoEstadoSeleccionado = signal('Pendiente');
 
   ngOnInit(): void {
     this.cargarReportes();
@@ -100,10 +101,27 @@ export class Reportes implements OnInit {
 
   abrirModal(reporte: IReporte) {
     this.reporteSeleccionado.set(reporte);
+    this.nuevoEstadoSeleccionado.set(reporte.estado);
   }
 
   cerrarModal() {
     this.reporteSeleccionado.set(null);
+  }
+
+  actualizarEstado() {
+    const rep = this.reporteSeleccionado();
+    if (!rep) return;
+    this.reportesService.actualizarEstadoReporte(rep.id, this.nuevoEstadoSeleccionado()).subscribe({
+      next: (res) => {
+        alert(res.mensaje || 'Estado actualizado con éxito');
+        this.cargarReportes();
+        this.cerrarModal();
+      },
+      error: (err) => {
+        console.error('Error al actualizar estado:', err);
+        alert('Hubo un error al actualizar el estado: ' + (err?.error?.mensaje || err.message));
+      }
+    });
   }
 
   formatDate(dateString: string | null): string {
@@ -317,12 +335,8 @@ export class Reportes implements OnInit {
             <tr>
               <td class="label">Fecha Emisión:</td>
               <td class="value">${fechaExportacion}</td>
-              <td class="label">Estado Filtro:</td>
-              <td class="value">${this.filtroEstado() || 'Todos los Estados'}</td>
-            </tr>
-            <tr>
               <td class="label">Total Reportes:</td>
-              <td class="value" colspan="3">${lista.length}</td>
+              <td class="value">${lista.length}</td>
             </tr>
           </table>
         </div>
@@ -330,12 +344,11 @@ export class Reportes implements OnInit {
         <table class="tabla-datos">
           <thead>
             <tr>
-              <th style="width: 5%">#</th>
               <th style="width: 15%">Fecha</th>
               <th style="width: 15%">Prioridad</th>
               <th style="width: 30%">Problema</th>
-              <th style="width: 20%">Reportado por</th>
-              ${isTodasLasInstituciones ? '<th style="width: 20%">Institución Dirigida</th>' : ''}
+              <th style="width: 25%">Reportado por</th>
+              ${isTodasLasInstituciones ? '<th style="width: 20%">Institución</th>' : ''}
               <th style="width: 15%">Estado</th>
             </tr>
           </thead>
@@ -360,8 +373,8 @@ export class Reportes implements OnInit {
           : 'N/A';
         const institucionStr = rep.institucion?.nombreInstitucion || 'N/A';
         const prioridadStr = rep.nvlPrioridad >= 8 
-          ? `<span class="prioridad-alta">Alta (${rep.nvlPrioridad})</span>`
-          : `Normal (${rep.nvlPrioridad})`;
+          ? `<span class="prioridad-alta">Alta</span>`
+          : `Normal`;
         
         let badgeClass = 'badge-pendiente';
         if (rep.estado === 'En Proceso') badgeClass = 'badge-proceso';
@@ -369,7 +382,6 @@ export class Reportes implements OnInit {
 
         htmlContent += `
           <tr>
-            <td>${index + 1}</td>
             <td>${fechaStr}</td>
             <td>${prioridadStr}</td>
             <td>${problemaStr}</td>
