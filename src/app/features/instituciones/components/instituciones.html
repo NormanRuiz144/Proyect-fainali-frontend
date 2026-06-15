@@ -40,13 +40,44 @@
           </tr>
         } @else {
           @for (inst of instituciones(); track inst.id) {
-            <tr>
+            <tr [style.background-color]="inst.isDeleted ? '#fee2e2' : ''">
               <td class="font-medium">{{ inst.nombreInstitucion }}</td>
               <td>
-                <div class="acciones-celda">
-                  <button class="btn-icono editar" (click)="abrirModalEditar(inst)" title="Editar">
-                    <i class="fa-solid fa-pen"></i>
-                  </button>
+                <div
+                  style="
+                    display: flex;
+                    gap: 8px;
+                    justify-content: flex-start;
+                    align-items: center;
+                    white-space: nowrap;
+                  "
+                >
+                  @if (inst.isDeleted) {
+                    <button
+                      class="btn-icono restaurar"
+                      (click)="abrirModalRestaurar(inst)"
+                      title="Restaurar"
+                      style="color: #10b981"
+                    >
+                      <i class="fa-solid fa-rotate-left"></i>
+                    </button>
+                  } @else {
+                    <button
+                      class="btn-icono editar"
+                      (click)="abrirModalEditar(inst)"
+                      title="Editar"
+                    >
+                      <i class="fa-solid fa-pen"></i>
+                    </button>
+                    <button
+                      class="btn-icono eliminar"
+                      (click)="abrirModalEliminar(inst)"
+                      title="Eliminar"
+                      style="color: #ef4444"
+                    >
+                      <i class="fa-solid fa-trash"></i>
+                    </button>
+                  }
                 </div>
               </td>
             </tr>
@@ -63,65 +94,103 @@
     <div class="modal-contenedor">
       <div class="modal-cabecera">
         <h2 class="modal-titulo">
-          {{ modalModo() === 'crear' ? 'Nueva Institución' : 'Editar Institución' }}
+          {{
+            modalModo() === 'crear'
+              ? 'Nueva'
+              : modalModo() === 'editar'
+                ? 'Editar'
+                : modalModo() === 'eliminar'
+                  ? 'Eliminar'
+                  : 'Restaurar'
+          }}
+          Institución
         </h2>
         <button class="btn-cerrar" (click)="cerrarModal()">
           <i class="fa-solid fa-xmark"></i>
         </button>
       </div>
       <div class="modal-cuerpo">
-        <div class="form-grupo">
-          <label for="problema">Nombre de la Institución</label>
-          <input
-            type="text"
-            id="problema"
-            class="form-input"
-            [(ngModel)]="fromInstitucion().nombreInstitucion"
-            placeholder="Ingrese el nombre de la institución"
-          />
-          <label for="problema">Ingrese el nombre del municipio</label>
-          <div class="form-grupo mt-4">
-            <label for="idDepartamentoSectorModal">1. Departamento (Requerido)</label>
-            <select
-              id="idDepartamentoSectorModal"
+        @if (modalModo() === 'eliminar' || modalModo() === 'restaurar') {
+          <p class="texto-centro" style="font-size: 1.1rem; padding: 20px 0">
+            ¿Está seguro de que desea
+            <strong>{{ modalModo() === 'eliminar' ? 'eliminar' : 'restaurar' }}</strong> la
+            institución seleccionada?
+          </p>
+        } @else {
+          <div class="form-grupo">
+            <label for="problema">Nombre de la Institución</label>
+            <input
+              type="text"
+              id="problema"
               class="form-input"
-              [ngModel]="formSectorDepartamento()"
-              (ngModelChange)="onFormSectorDepartamentoChange($event)"
-            >
-              <option [value]="undefined" disabled selected>
-                Selecciona un departamento primero
-              </option>
-              @for (dep of departamentos(); track dep.id) {
-                <option [value]="dep.id">{{ dep.nom_departamento || dep.nomDepartamento }}</option>
-              }
-            </select>
+              [(ngModel)]="fromInstitucion().nombreInstitucion"
+              placeholder="Ingrese el nombre de la institución"
+            />
+            <div class="form-grupo mt-4">
+              <label for="idDepartamentoSectorModal">1. Departamento (Requerido)</label>
+              <select
+                id="idDepartamentoSectorModal"
+                class="form-input"
+                [ngModel]="formSectorDepartamento()"
+                (ngModelChange)="onFormSectorDepartamentoChange($event)"
+              >
+                <option [value]="undefined" disabled selected>
+                  Selecciona un departamento primero
+                </option>
+                @for (dep of departamentos(); track dep.id) {
+                  <option [value]="dep.id">
+                    {{ dep.nom_departamento || dep.nomDepartamento }}
+                  </option>
+                }
+              </select>
+            </div>
+            <div class="form-grupo mt-4">
+              <label for="idMunicipio">2. Municipio</label>
+              <select
+                id="idMunicipio"
+                class="form-input"
+                [(ngModel)]="formMunicipio().id"
+                [disabled]="!formSectorDepartamento()"
+                (ngModelChange)="onMunicipioChange($event)"
+              >
+                <option [value]="undefined" disabled selected>Selecciona un municipio</option>
+                @for (muni of municipiosParaModal(); track muni.id) {
+                  <option [value]="muni.id">{{ muni.nom_municipio || muni.nomMunicipio }}</option>
+                }
+              </select>
+            </div>
           </div>
-          <div class="form-grupo mt-4">
-            <label for="idMunicipio">2. Municipio</label>
-            <select
-              id="idMunicipio"
-              class="form-input"
-              [(ngModel)]="formMunicipio().id"
-              [disabled]="!formSectorDepartamento()"
-              (ngModelChange)="onMunicipioChange($event)"
-            >
-              <option [value]="undefined" disabled selected>Selecciona un municipio</option>
-              @for (muni of municipiosParaModal(); track muni.id) {
-                <option [value]="muni.id">{{ muni.nom_municipio || muni.nomMunicipio }}</option>
-              }
-            </select>
-          </div>
-        </div>
+        }
       </div>
       <div class="modal-pie">
         <button class="btn-secundario" (click)="cerrarModal()" [disabled]="cargando()">
           Cancelar
         </button>
-        <button class="btn-primario" (click)="guardarInstitucion()" [disabled]="cargando()">
+        <button
+          class="btn-primario"
+          [style.background-color]="
+            modalModo() === 'eliminar' ? '#ef4444' : modalModo() === 'restaurar' ? '#10b981' : ''
+          "
+          (click)="guardarInstitucion()"
+          [disabled]="cargando()"
+        >
           @if (cargando()) {
-            <i class="fa-solid fa-spinner fa-spin mr-2"></i> Guardando...
+            <i class="fa-solid fa-spinner fa-spin mr-2"></i>
+            {{
+              modalModo() === 'eliminar'
+                ? 'Eliminando...'
+                : modalModo() === 'restaurar'
+                  ? 'Restaurando...'
+                  : 'Guardando...'
+            }}
           } @else {
-            Guardar
+            {{
+              modalModo() === 'eliminar'
+                ? 'Eliminar'
+                : modalModo() === 'restaurar'
+                  ? 'Restaurar'
+                  : 'Guardar'
+            }}
           }
         </button>
       </div>

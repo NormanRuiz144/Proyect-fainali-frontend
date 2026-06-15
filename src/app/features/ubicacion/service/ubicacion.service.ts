@@ -26,6 +26,14 @@ export class UbicacionService {
     return this.http.put(`${this.apiUrl}/departamento/actu/${id}`, data);
   }
 
+  eliminarDepartamento(id: number): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/departamento/eliminar/${id}`);
+  }
+
+  restaurarDepartamento(id: number): Observable<any> {
+    return this.http.patch(`${this.apiUrl}/departamento/restaurar/${id}`, {});
+  }
+
   // --- Municipios ---
   obtenerMunicipios(): Observable<{ lista_Municipios: Municipio[] }> {
     return this.http.get<{ lista_Municipios: Municipio[] }>(`${this.apiUrl}/municipios/listar`);
@@ -45,6 +53,14 @@ export class UbicacionService {
     return this.http.put(`${this.apiUrl}/municipios/actu/${id}`, data);
   }
 
+  eliminarMunicipio(id: number): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/municipios/eliminar/${id}`);
+  }
+
+  restaurarMunicipio(id: number): Observable<any> {
+    return this.http.patch(`${this.apiUrl}/municipios/restaurar/${id}`, {});
+  }
+
   // --- Sectores ---
   obtenerSectores(): Observable<{ lista_Sectores: Sector[] }> {
     return this.http.get<{ lista_Sectores: Sector[] }>(`${this.apiUrl}/sectores/listar`);
@@ -62,5 +78,13 @@ export class UbicacionService {
 
   actualizarSector(id: number, data: Partial<Sector>): Observable<any> {
     return this.http.put(`${this.apiUrl}/sectores/actu/${id}`, data);
+  }
+
+  eliminarSector(id: number): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/sectores/eliminar/${id}`);
+  }
+
+  restaurarSector(id: number): Observable<any> {
+    return this.http.patch(`${this.apiUrl}/sectores/restaurar/${id}`, {});
   }
 }

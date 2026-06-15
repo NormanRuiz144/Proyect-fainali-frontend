@@ -4,6 +4,7 @@ export interface Institucion {
   idMunicipio: number;
   created_at?: string;
   updated_at?: string;
+  isDeleted: boolean;
 }
 
 export interface ListarInstitucionesResponse {
