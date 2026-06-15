@@ -293,9 +293,10 @@ export class NuevoReporte implements OnInit, AfterViewInit, OnDestroy {
     formData.append('idInstitucion', idInstitucion);
     formData.append('idSector', idSector);
     
-    // El backend espera una "ubicacion", mandaremos las coordenadas y la descripción juntas
-    const ubicacionCombinada = `Lat: ${lat}, Lng: ${lng} | Desc: ${descripcion}`;
-    formData.append('ubicacion', ubicacionCombinada);
+    // El backend espera "ubicacion" y "descripcion"
+    const ubicacionGPS = `Lat: ${lat}, Lng: ${lng}`;
+    formData.append('ubicacion', ubicacionGPS);
+    formData.append('descripcion', descripcion);
 
     // Adjuntar imágenes si existen en nuestra señal (permite eliminación previa al envío)
     const imagenes = this.imagenesPrevisualizacion();

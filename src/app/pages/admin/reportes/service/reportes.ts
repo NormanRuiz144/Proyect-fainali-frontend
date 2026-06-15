@@ -15,7 +15,8 @@ export class ReportesService {
   obtenerReportes(): Observable<IRespuestaReportes> {
     return this.http.get<IRespuestaReportes>(`${this.url}/listar`);
   }
-  // obtenerReportes(idInstitucion: number): Observable<IRespuestaReportes> {
-  //   return this.http.get<IRespuestaReportes>(`${this.url}/listarInst/${idInstitucion}`);
-  // }
+
+  actualizarEstadoReporte(id: number, estado: string): Observable<any> {
+    return this.http.patch(`${this.url}/estado/${id}`, { estado });
+  }
 }
