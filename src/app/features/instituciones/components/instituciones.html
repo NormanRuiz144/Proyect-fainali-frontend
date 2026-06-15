@@ -4,6 +4,10 @@
       <h1 class="titulo-vista">Gestión de Intituciones</h1>
       <p class="subtitulo-vista">Administra las Instituciones registradas en la plataforma.</p>
     </div>
+    <button class="btn-primario" (click)="cambiarFiltroInhabilitados()">
+      <i class="fa-solid fa-filter"></i>
+      {{ mostrarInhabilitados() ? 'Mostrar Activas' : 'Mostrar Inhabilitadas' }}
+    </button>
     <button class="btn-primario" (click)="abrirModalCrear()">
       <i class="fa-solid fa-plus"></i> Nueva Institución
     </button>

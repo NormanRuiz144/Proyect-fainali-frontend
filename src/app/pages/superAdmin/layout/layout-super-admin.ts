@@ -25,7 +25,7 @@ export class LayoutSuperAdmin {
     { texto: 'Ubicaciones', icono: 'fa-solid fa-map-marker-alt', url: '/superAdmin/ubicaciones' },
     { texto: 'Instituciones', icono: 'fa-solid fa-building', url: '/superAdmin/instituciones' },
     { texto: 'Usuarios', icono: 'fa-solid fa-users', url: '/superAdmin/usuarios' },
-    { texto: 'Dashboard', icono: 'fa-solid fa-chart-line', url: '/superAdmin/dashboard' },
+    // { texto: 'Dashboard', icono: 'fa-solid fa-chart-line', url: '/superAdmin/dashboard' },
   ];
 
   alternarMenu() {

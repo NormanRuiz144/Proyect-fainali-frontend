@@ -237,7 +237,9 @@
           <select id="reasignarInst" class="form-input" [(ngModel)]="reasignarForm().idInstitucion">
             <option [value]="undefined">Sin institución</option>
             @for (inst of instituciones(); track inst.id) {
-              <option [value]="inst.id">{{ inst.nombreInstitucion }}</option>
+              @if (inst.isDeleted != true) {
+                <option [value]="inst.id">{{ inst.nombreInstitucion }}</option>
+              }
             }
           </select>
         </div>

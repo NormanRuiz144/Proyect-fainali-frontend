@@ -24,6 +24,7 @@ export class InstitucionesComponent implements OnInit {
 
   // Modal State
   mostrarModal = signal(false);
+  mostrarInhabilitados = signal(false);
   modalModo = signal<'crear' | 'editar' | 'eliminar' | 'restaurar'>('crear');
   itemAProcesar = signal<any>(null);
 
@@ -48,7 +49,9 @@ export class InstitucionesComponent implements OnInit {
     this.instituticionService.obtenerInstituciones().subscribe({
       next: (res) => {
         if (res.lista_Instituciones) {
-          this.instituciones.set(res.lista_Instituciones);
+          this.instituciones.set(
+            res.lista_Instituciones.filter((i) => i.isDeleted == this.mostrarInhabilitados()),
+          );
         }
         this.cargando.set(false);
       },
@@ -223,5 +226,10 @@ export class InstitucionesComponent implements OnInit {
       ...this.fromInstitucion(),
       idMunicipio: val,
     });
+  }
+
+  cambiarFiltroInhabilitados() {
+    this.mostrarInhabilitados.set(!this.mostrarInhabilitados());
+    this.cargarInstituciones();
   }
 }

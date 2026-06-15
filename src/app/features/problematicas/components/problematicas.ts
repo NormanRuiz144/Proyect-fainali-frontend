@@ -35,6 +35,8 @@ export class ProblematicasComponent implements OnInit {
 
   // Modal Instituciones State
   mostrarModalInstituciones = signal(false);
+  mostrarInhabilitados = signal(false);
+
   problematicaActiva = signal<Problematica | null>(null);
   cargandoAsignacion = signal(false);
 
@@ -69,8 +71,11 @@ export class ProblematicasComponent implements OnInit {
     this.problematicaService.obtenerProblematicas().subscribe({
       next: (res) => {
         if (res.lista_Problematicas) {
-          this.problematicas.set(res.lista_Problematicas);
+          this.problematicas.set(
+            res.lista_Problematicas.filter((p) => p.isDeleted == this.mostrarInhabilitados()),
+          );
         }
+
         this.cargando.set(false);
       },
       error: (err) => {
@@ -293,5 +298,10 @@ export class ProblematicasComponent implements OnInit {
   onFiltroMunicipioChange(val: any) {
     this.filtroMunicipio.set(val);
     this.institucionSeleccionada.set(undefined);
+  }
+
+  cambiarFiltroInhabilitados() {
+    this.mostrarInhabilitados.set(!this.mostrarInhabilitados());
+    this.cargarProblematicas();
   }
 }

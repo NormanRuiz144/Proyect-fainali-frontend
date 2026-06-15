@@ -1,52 +1,57 @@
 <div class="contenedor-vista">
+  <div>
+    <h1 class="titulo-vista">Gestión de Ubicaciones</h1>
+    <p class="subtitulo-vista">Administra Departamentos, Municipios y Sectores.</p>
+  </div>
   <div class="cabecera-vista">
-    <div>
-      <h1 class="titulo-vista">Gestión de Ubicaciones</h1>
-      <p class="subtitulo-vista">Administra Departamentos, Municipios y Sectores.</p>
-    </div>
-    <div style="display: flex; gap: 12px; align-items: center">
+    <div style="display: flex; gap: 12px; align-items: center; justify-content: center">
       @if (activeTab() === 'municipios') {
-        <select
-          class="form-input"
-          [ngModel]="filtroDepartamento()"
-          (ngModelChange)="filtroDepartamento.set($event)"
-          style="max-width: 250px; padding: 10px"
-        >
-          <option [value]="undefined" selected>Todos los departamentos</option>
-          @for (dep of departamentos(); track dep.id) {
-            <option [value]="dep.id">{{ dep.nom_departamento || dep.nomDepartamento }}</option>
-          }
-        </select>
+        <div class="contenedorFiltros">
+          <p>Filtro de busqueda:</p>
+          <select
+            class="form-input"
+            [ngModel]="filtroDepartamento()"
+            (ngModelChange)="filtroDepartamento.set($event)"
+            style="max-width: 250px; padding: 10px"
+          >
+            <option [value]="undefined" selected>Todos los departamentos</option>
+            @for (dep of departamentos(); track dep.id) {
+              <option [value]="dep.id">{{ dep.nom_departamento || dep.nomDepartamento }}</option>
+            }
+          </select>
+        </div>
         <button class="btn-secundario" (click)="buscarFiltro()">
           <i class="fa-solid fa-search"></i> Buscar
         </button>
       }
 
       @if (activeTab() === 'sectores') {
-        <select
-          class="form-input"
-          [ngModel]="filtroDepartamentoSector()"
-          (ngModelChange)="onFiltroDepartamentoSectorChange($event)"
-          style="max-width: 250px; padding: 10px"
-        >
-          <option [value]="undefined" selected>1. Selecciona Departamento</option>
-          @for (dep of departamentos(); track dep.id) {
-            <option [value]="dep.id">{{ dep.nom_departamento || dep.nomDepartamento }}</option>
-          }
-        </select>
-
-        <select
-          class="form-input"
-          [ngModel]="filtroMunicipio()"
-          (ngModelChange)="filtroMunicipio.set($event)"
-          [disabled]="!filtroDepartamentoSector()"
-          style="max-width: 250px; padding: 10px"
-        >
-          <option [value]="undefined" selected>2. Todos los municipios</option>
-          @for (muni of municipiosParaFiltroSector(); track muni.id) {
-            <option [value]="muni.id">{{ muni.nom_municipio || muni.nomMunicipio }}</option>
-          }
-        </select>
+        <div class="contenedorFiltros">
+          <p>Filtros de busqueda:</p>
+          <select
+            class="form-input"
+            [ngModel]="filtroDepartamentoSector()"
+            (ngModelChange)="onFiltroDepartamentoSectorChange($event)"
+            style="max-width: 250px; padding: 10px"
+          >
+            <option [value]="undefined" selected>1. Selecciona Departamento</option>
+            @for (dep of departamentos(); track dep.id) {
+              <option [value]="dep.id">{{ dep.nom_departamento || dep.nomDepartamento }}</option>
+            }
+          </select>
+          <select
+            class="form-input"
+            [ngModel]="filtroMunicipio()"
+            (ngModelChange)="filtroMunicipio.set($event)"
+            [disabled]="!filtroDepartamentoSector()"
+            style="max-width: 250px; padding: 10px"
+          >
+            <option [value]="undefined" selected>2. Todos los municipios</option>
+            @for (muni of municipiosParaFiltroSector(); track muni.id) {
+              <option [value]="muni.id">{{ muni.nom_municipio || muni.nomMunicipio }}</option>
+            }
+          </select>
+        </div>
         <button class="btn-secundario" (click)="buscarFiltro()" [disabled]="!filtroMunicipio()">
           <i class="fa-solid fa-search"></i> Buscar
         </button>
@@ -61,6 +66,10 @@
               ? 'Municipio'
               : 'Sector'
         }}
+      </button>
+      <button class="btn-primario" (click)="cambiarFiltroInhabilitados()">
+        <i class="fa-solid fa-filter"></i>
+        {{ mostrarInhabilitados() ? 'Mostrar Activas' : 'Mostrar Inhabilitadas' }}
       </button>
     </div>
   </div>
