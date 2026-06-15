@@ -312,7 +312,7 @@ export class Layout {
         this.authService.establecerSesion(res);
         this.cerrarModal();
         await this.interactionService.showToast('Cuenta creada correctamente', 'success');
-        this.router.navigate(['/inicio']);
+        this.router.navigate(['/nuevo-reporte']);
       },
       error: async (err) => {
         await this.interactionService.hideLoading();

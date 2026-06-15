@@ -40,7 +40,7 @@ export class UsuariosComponent implements OnInit {
     const depId = Number(this.formSectorDepartamento());
     if (!depId || isNaN(depId)) return [];
     return this.municipios().filter(
-      (m) => m.id_departamento === depId || m.idDepartamento === depId
+      (m) => m.id_departamento === depId || m.idDepartamento === depId,
     );
   });
 
@@ -48,7 +48,7 @@ export class UsuariosComponent implements OnInit {
     const muniId = Number(this.formSectorMunicipio());
     if (!muniId || isNaN(muniId)) return [];
     return this.sectores().filter(
-      (s) => s.idMunicipios === muniId || s.idMunicipio === muniId || s.id_municipios === muniId
+      (s) => s.idMunicipios === muniId || s.idMunicipio === muniId || s.id_municipios === muniId,
     );
   });
 
@@ -90,7 +90,7 @@ export class UsuariosComponent implements OnInit {
     this.usuarioService.obtenerUsuarios().subscribe({
       next: (res) => {
         if (res.lista) {
-          this.usuarios.set(res.lista);
+          this.usuarios.set(res.lista.filter((u) => u.idRol !== 1));
         }
         this.cargando.set(false);
       },
@@ -105,7 +105,7 @@ export class UsuariosComponent implements OnInit {
   cargarDatosFormulario() {
     this.rolService.listarRoles().subscribe({
       next: (res) => {
-        this.roles.set(res.lista_Rol || []);
+        this.roles.set(res.lista_Rol.filter((r): r is IRoles => r.id !== 1) || []);
       },
       error: () => console.error('Error cargando roles'),
     });
