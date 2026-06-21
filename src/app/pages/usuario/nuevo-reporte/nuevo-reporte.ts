@@ -15,7 +15,13 @@ export class NuevoReporte implements OnInit, AfterViewInit, OnDestroy {
   private reporteService = inject(NuevoReporteService);
   private authService = inject(AuthService);
   ubicacionObtenida = signal(false);
+  
+  // Señal para almacenar las previsualizaciones de imágenes y sus archivos correspondientes
+  imagenesPrevisualizacion = signal<{ url: string, name: string, file: File }[]>([]);
 
+  // Señal para manejar la imagen ampliada en el Lightbox
+  imagenAmpliada = signal<string | null>(null);
+  
   // Señales para los catálogos
   instituciones = signal<any[]>([]);
   problematicas = signal<any[]>([]);
@@ -74,6 +80,8 @@ export class NuevoReporte implements OnInit, AfterViewInit, OnDestroy {
     if (this.map) {
       this.map.remove();
     }
+    // Liberar recursos de las imágenes previsualizadas
+    this.imagenesPrevisualizacion().forEach(img => URL.revokeObjectURL(img.url));
   }
 
   private initMap(): void {
@@ -114,37 +122,51 @@ export class NuevoReporte implements OnInit, AfterViewInit, OnDestroy {
         console.log(`Pin movido a: Lat ${position.lat}, Lng ${position.lng}`);
       }
     });
+
+    // Asegurar rediseño y posicionamiento correcto de las cuadrículas (tiles) de Leaflet
+    setTimeout(() => {
+      this.map?.invalidateSize();
+    }, 200);
   }
 
   // Método para cambiar el placeholder dinámicamente
   cambiarPlaceholder(event: Event) {
     const idSeleccionado = (event.target as HTMLSelectElement).value;
+    console.log('🔍 [cambiarPlaceholder] ID de problemática seleccionado:', idSeleccionado);
+    console.log('📚 [cambiarPlaceholder] Problemáticas cargadas en el frontend:', this.problematicas());
+
     // Buscamos la problemática seleccionada en el arreglo
     const problema = this.problematicas().find(p => p.id.toString() === idSeleccionado);
-
+    console.log('🎯 [cambiarPlaceholder] Objeto problemática encontrado en la lista:', problema);
+    
     // Si encontramos la problemática y tenemos un ejemplo para ella en el diccionario:
     if (problema && this.ejemplosProblematicas[problema.problema]) {
-      this.placeholderActual.set(this.ejemplosProblematicas[problema.problema]);
+      const nuevoPlaceholder = this.ejemplosProblematicas[problema.problema];
+      console.log('💡 [cambiarPlaceholder] Seteando nuevo placeholder:', nuevoPlaceholder);
+      this.placeholderActual.set(nuevoPlaceholder);
 
       // LÓGICA DE AUTO-SELECCIÓN DE INSTITUCIÓN
       const palabraClaveInst = this.institucionPorProblema[problema.problema];
+      console.log('🏢 [cambiarPlaceholder] Palabra clave de la institución vinculada:', palabraClaveInst);
       if (palabraClaveInst) {
+        console.log('🏛️ [cambiarPlaceholder] Lista de instituciones disponibles en frontend:', this.instituciones());
         // Buscamos la institución en la lista que contenga la palabra clave (ignorando mayúsculas)
         const instEncontrada = this.instituciones().find(i =>
           i.nombreInstitucion.toLowerCase().includes(palabraClaveInst.toLowerCase())
         );
 
         if (instEncontrada) {
-          console.log('✅ Institución encontrada automáticamente:', instEncontrada.nombreInstitucion);
-          // Actualizamos la señal, lo que cambiará el select en el HTML
+          console.log('✅ [cambiarPlaceholder] Institución encontrada automáticamente:', instEncontrada.nombreInstitucion, 'ID:', instEncontrada.id);
+          // Actualizamos la señal, lo que cambiará el select en el HTML (tipo string)
           this.institucionSeleccionada.set(instEncontrada.id.toString());
         } else {
-          console.warn('❌ No se encontró ninguna institución en tu base de datos que contenga la palabra:', palabraClaveInst);
+          console.warn('❌ [cambiarPlaceholder] No se encontró ninguna institución en la base de datos que contenga:', palabraClaveInst);
         }
       }
 
     } else {
-      // Mensaje por defecto si la problemática no está en el diccionario
+      console.warn('⚠️ [cambiarPlaceholder] No hay coincidencia exacta para la problemática "' + (problema ? problema.problema : 'desconocida') + '" en tus diccionarios.');
+      // Mensaje por defecto si la problemática no está en el diccionario o es nula
       this.placeholderActual.set('Ej: Describe detalladamente el problema, su ubicación exacta y cómo afecta a la comunidad.');
     }
   }
@@ -167,6 +189,11 @@ export class NuevoReporte implements OnInit, AfterViewInit, OnDestroy {
           // Centrar el mapa en la ubicación real del usuario
           this.map.setView([lat, lng], 17);
           this.marker.setLatLng([lat, lng]);
+          
+          // Forzar rediseño de Leaflet tras centrar
+          setTimeout(() => {
+            this.map?.invalidateSize();
+          }, 100);
         }
       },
       (error) => {
@@ -175,6 +202,62 @@ export class NuevoReporte implements OnInit, AfterViewInit, OnDestroy {
       },
       { enableHighAccuracy: true }
     );
+  }
+
+  onFileSelected(event: Event) {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files.length > 0) {
+      const nuevosArchivos = Array.from(input.files);
+      const imagenesActuales = this.imagenesPrevisualizacion();
+      
+      // Limitar a un máximo de 6 imágenes en total
+      if (imagenesActuales.length + nuevosArchivos.length > 6) {
+        alert('Solo puedes subir hasta 6 imágenes en total.');
+        return;
+      }
+
+      const nuevasPrevisualizaciones = nuevosArchivos.map(file => {
+        return {
+          url: URL.createObjectURL(file),
+          name: file.name,
+          file: file
+        };
+      });
+
+      this.imagenesPrevisualizacion.set([...imagenesActuales, ...nuevasPrevisualizaciones]);
+    }
+  }
+
+  eliminarImagen(index: number) {
+    const imagenesActuales = this.imagenesPrevisualizacion();
+    URL.revokeObjectURL(imagenesActuales[index].url);
+    const nuevasImagenes = imagenesActuales.filter((_, i) => i !== index);
+    this.imagenesPrevisualizacion.set(nuevasImagenes);
+
+    // Si ya no quedan imágenes, vaciamos el valor del input file original
+    if (nuevasImagenes.length === 0) {
+      const archivosInput = document.getElementById('archivos-evidencia') as HTMLInputElement;
+      if (archivosInput) {
+        archivosInput.value = '';
+      }
+    }
+  }
+
+  limpiarImagenes() {
+    this.imagenesPrevisualizacion().forEach(img => URL.revokeObjectURL(img.url));
+    this.imagenesPrevisualizacion.set([]);
+    const archivosInput = document.getElementById('archivos-evidencia') as HTMLInputElement;
+    if (archivosInput) {
+      archivosInput.value = '';
+    }
+  }
+
+  ampliarImagen(url: string) {
+    this.imagenAmpliada.set(url);
+  }
+
+  cerrarModalImagen() {
+    this.imagenAmpliada.set(null);
   }
 
   enviarReporte(event: Event) {
@@ -194,29 +277,32 @@ export class NuevoReporte implements OnInit, AfterViewInit, OnDestroy {
       return;
     }
 
-    const usuario = this.authService.usuarioActual();
-    if (!usuario?.id) {
-      alert('Debes iniciar sesión para enviar un reporte.');
+    const usuarioLogueado = this.authService.usuarioActual();
+    if (!usuarioLogueado) {
+      alert('Debes iniciar sesión para poder enviar un reporte.');
       return;
     }
 
     const formData = new FormData();
-    formData.append('idUsuario', usuario.id.toString());
+    // Valores dinámicos del usuario autenticado
+    formData.append('idUsuario', usuarioLogueado.id.toString()); 
     formData.append('nvlPrioridad', '5');
 
     // Valores del formulario
     formData.append('idProblematica', idProblematica);
     formData.append('idInstitucion', idInstitucion);
     formData.append('idSector', idSector);
+    
+    // El backend espera "ubicacion" y "descripcion"
+    const ubicacionGPS = `Lat: ${lat}, Lng: ${lng}`;
+    formData.append('ubicacion', ubicacionGPS);
+    formData.append('descripcion', descripcion);
 
-    // El backend espera una "ubicacion", mandaremos las coordenadas y la descripción juntas
-    const ubicacionCombinada = `Lat: ${lat}, Lng: ${lng} | Desc: ${descripcion}`;
-    formData.append('ubicacion', ubicacionCombinada);
-
-    // Adjuntar imágenes si existen
-    if (archivosInput.files && archivosInput.files.length > 0) {
-      for (let i = 0; i < archivosInput.files.length; i++) {
-        formData.append('formato[]', archivosInput.files[i]);
+    // Adjuntar imágenes si existen en nuestra señal (permite eliminación previa al envío)
+    const imagenes = this.imagenesPrevisualizacion();
+    if (imagenes.length > 0) {
+      for (let i = 0; i < imagenes.length; i++) {
+        formData.append('formato[]', imagenes[i].file);
       }
     }
 
@@ -224,10 +310,13 @@ export class NuevoReporte implements OnInit, AfterViewInit, OnDestroy {
       next: (respuesta) => {
         alert('¡Reporte enviado con exito man!\n' + respuesta.mensaje);
         (event.target as HTMLFormElement).reset(); // Limpiar el formulario
+        this.limpiarImagenes();
       },
       error: (error) => {
         console.error('Error enviando reporte:', error);
-        alert('Hubo un problema enviando el reporte.');
+        // Extraer el mensaje detallado del backend
+        const mensajeDetalle = error?.error?.mensaje || error?.error?.message || error?.message || 'Error desconocido';
+        alert('Hubo un problema enviando el reporte.\nDetalle: ' + mensajeDetalle);
       }
     });
   }

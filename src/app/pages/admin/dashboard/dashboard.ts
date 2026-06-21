@@ -81,41 +81,45 @@ export class Dashboard implements OnInit, OnDestroy {
           const categorias = res.porProblema.map((p) => p.problema);
           const data = res.porProblema.map((p) => p.total);
 
-          this.chartOptions = {
-            series: [
-              {
-                name: 'Reportes',
-                data: data,
+          if (!this.chartOptions || JSON.stringify(this.chartOptions.series[0].data) !== JSON.stringify(data)) {
+            this.chartOptions = {
+              series: [
+                {
+                  name: 'Reportes',
+                  data: data,
+                },
+              ],
+              chart: {
+                height: 300,
+                type: 'bar',
+                toolbar: { show: false },
+                zoom: { enabled: false },
               },
-            ],
-            chart: {
-              height: 300,
-              type: 'area',
-              toolbar: { show: false },
-              zoom: { enabled: false },
-            },
-            colors: ['#0F2854'],
-            dataLabels: { enabled: false },
-            stroke: {
-              curve: 'smooth',
-              width: 3,
-            },
-            fill: {
-              type: 'gradient',
-              gradient: {
-                shadeIntensity: 1,
-                opacityFrom: 0.4,
-                opacityTo: 0.1,
-                stops: [0, 90, 100],
+              plotOptions: {
+                bar: {
+                  borderRadius: 6,
+                  columnWidth: '20%',
+                }
               },
-            },
-            xaxis: {
-              categories: categorias,
-            },
-            yaxis: {
-              min: 0,
-            },
-          };
+              colors: ['#1C4D8D'],
+              dataLabels: { enabled: false },
+              stroke: {
+                show: true,
+                width: 2,
+                colors: ['transparent']
+              },
+              fill: {
+                opacity: 1
+              },
+              xaxis: {
+                categories: categorias,
+              },
+              yaxis: {
+                min: 0,
+                tickAmount: Math.max(...data) < 5 ? Math.max(...data) : undefined,
+              },
+            };
+          }
         } else {
           this.chartOptions = null;
         }
@@ -139,41 +143,45 @@ export class Dashboard implements OnInit, OnDestroy {
           const categorias = res.porProblema.map((p) => p.problema);
           const data = res.porProblema.map((p) => p.total);
 
-          this.chartOptions = {
-            series: [
-              {
-                name: 'Reportes',
-                data: data,
+          if (!this.chartOptions || JSON.stringify(this.chartOptions.series[0].data) !== JSON.stringify(data)) {
+            this.chartOptions = {
+              series: [
+                {
+                  name: 'Reportes',
+                  data: data,
+                },
+              ],
+              chart: {
+                height: 300,
+                type: 'bar',
+                toolbar: { show: false },
+                zoom: { enabled: false },
               },
-            ],
-            chart: {
-              height: 300,
-              type: 'area',
-              toolbar: { show: false },
-              zoom: { enabled: false },
-            },
-            colors: ['#0F2854'],
-            dataLabels: { enabled: false },
-            stroke: {
-              curve: 'smooth',
-              width: 3,
-            },
-            fill: {
-              type: 'gradient',
-              gradient: {
-                shadeIntensity: 1,
-                opacityFrom: 0.4,
-                opacityTo: 0.1,
-                stops: [0, 90, 100],
+              plotOptions: {
+                bar: {
+                  borderRadius: 6,
+                  columnWidth: '20%',
+                }
               },
-            },
-            xaxis: {
-              categories: categorias,
-            },
-            yaxis: {
-              min: 0,
-            },
-          };
+              colors: ['#1C4D8D'],
+              dataLabels: { enabled: false },
+              stroke: {
+                show: true,
+                width: 2,
+                colors: ['transparent']
+              },
+              fill: {
+                opacity: 1
+              },
+              xaxis: {
+                categories: categorias,
+              },
+              yaxis: {
+                min: 0,
+                tickAmount: Math.max(...data) < 5 ? Math.max(...data) : undefined,
+              },
+            };
+          }
         } else {
           this.chartOptions = null;
         }

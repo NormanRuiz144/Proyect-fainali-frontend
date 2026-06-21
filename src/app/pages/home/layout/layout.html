@@ -1,178 +1,293 @@
+<div class="navbar-contenido">
+  <!--Enlaces Navegacion-->
+  <div class="menu-escritorio">
+    @for (link of enlaces; track link.etiqueta) {
+      <a (click)="navegar(link.ruta)" class="enlace-nav" style="cursor: pointer">{{
+        link.etiqueta
+      }}</a>
+    }
+  </div>
+
+  @if (authService.estaAutenticado()) {
+    <p class="logged-in-msg">Estas logueado</p>
+    <button class="btn-logout" (click)="salir()">Cerrar Sesión</button>
+  }
+</div>
+
 <!-- Contenido dinamico-->
 <main class="cuerpo-layout">
   <router-outlet></router-outlet>
 </main>
 
 <!-- Modal de Autenticación -->
-@if(esModal()) {
-<div class="modal-overlay">
-  <div class="modal-content split-layout">
-    <span class="close-btn" (click)="cerrarModal()">&times;</span>
+@if (esModal()) {
+  <div class="modal-overlay">
+    <div class="modal-content split-layout">
+      <span class="close-btn" (click)="cerrarModal()">&times;</span>
 
-    <div class="modal-brand">
-      <div class="brand-overlay"></div>
-      <div class="brand-content">
-        <img src="recursos/COMUNICA.jpeg" alt="Descripción 5" >
-        <h2>Participa, reporta y mantén tu comunidad segura.</h2>
+      <div class="modal-brand">
+        <div class="brand-overlay"></div>
+        <div class="brand-content">
+          <img src="recursos/COMUNICA.jpeg" alt="Descripción 5" />
+          <h2>Participa, reporta y mantén tu comunidad segura.</h2>
 
-        <!-- <div class="brand-decorations">
+          <!-- <div class="brand-decorations">
           <span class="dot"></span>
           <span class="dot"></span>
           <span class="dot"></span>
         </div> -->
-      </div>
-    </div>
-
-    <div class="modal-form-container">
-      @if(vistaAuth() === 'login') {
-      <div class="form-header fade-in">
-        <h2>Iniciar Sesión</h2>
-        <p class="subtitle">Bienvenido de nuevo</p>
-      </div>
-      <form [formGroup]="loginForm" (ngSubmit)="enviarLogin()" class="form-login fade-in">
-        <div class="form-group form-floating">
-          <input type="email" formControlName="email" id="loginEmail" placeholder=" ">
-          <label for="loginEmail">Correo electrónico</label>
-          @if(isInvalid(loginForm, 'email')) { <small class="error-msg"><svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none"></svg> Email inválido</small> }
         </div>
-        <div class="form-group form-floating">
-          <input type="password" formControlName="password" id="loginPassword" placeholder=" ">
-          <label for="loginPassword">Contraseña</label>
-          @if(isInvalid(loginForm, 'password')) { <small class="error-msg"><svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none"></svg>Mínimo 8 caracteres, mayúscula, número y especial.</small> }
-        </div>
-        <button type="submit" class="btn-submit" [disabled]="loginForm.invalid">
-          <span class="btn-text">Ingresar</span>
-        </button>
-      </form>
-      <p class="auth-switch-text fade-in">¿No tienes cuenta? <a (click)="cambiarVista('registro')" class="link-hover">Regístrate</a></p>
-      } @else {
-      <div class="form-header fade-in">
-        <h2>Crear Cuenta</h2>
       </div>
 
-      <div class="stepper-container fade-in">
-        <div class="step" [class.active]="pasoRegistro() >= 1">1</div>
-        <div class="step-line" [class.active]="pasoRegistro() >= 2"></div>
-        <div class="step" [class.active]="pasoRegistro() >= 2">2</div>
-        <div class="step-line" [class.active]="pasoRegistro() >= 3"></div>
-        <div class="step" [class.active]="pasoRegistro() >= 3">3</div>
-      </div>
-
-      <form [formGroup]="registroForm" (ngSubmit)="enviarRegistro()" class="form-registro">
-
-        @if(pasoRegistro() === 1) {
-        <div class="form-step slide-in">
-          <div class="form-group form-floating">
-            <input type="text" formControlName="numeroCedula" id="regCedula" placeholder=" ">
-            <label for="regCedula">Cédula</label>
-            @if(isInvalid(registroForm, 'numeroCedula')) { <small class="error-msg">ejemplo 001-000700-2300A</small> }
+      <div class="modal-form-container">
+        @if (vistaAuth() === 'login') {
+          <div class="form-header fade-in">
+            <h2>Iniciar Sesión</h2>
+            <p class="subtitle">Bienvenido de nuevo</p>
           </div>
-          <div class="form-group form-floating">
-            <input type="text" formControlName="nombres" id="regNombres" placeholder=" ">
-            <label for="regNombres">Nombres</label>
-            @if(isInvalid(registroForm, 'nombres')) { <small class="error-msg">Requerido</small> }
-          </div>
-          <div class="form-group form-floating">
-            <input type="text" formControlName="sexo" id="regSexo" placeholder=" ">
-            <label for="regSexo">Sexo (M/F)</label>
-            @if(isInvalid(registroForm, 'sexo')) { <small class="error-msg">Máximo 1 carácter (M o F)</small> }
-          </div>
-          <div class="form-group form-floating">
-            <input type="text" formControlName="apellidos" id="regApellidos" placeholder=" ">
-            <label for="regApellidos">Apellidos</label>
-            @if(isInvalid(registroForm, 'apellidos')) { <small class="error-msg">Requerido</small> }
-          </div>
-          <div class="nav-botones">
-            <button type="button" class="btn-siguiente btn-submit" (click)="siguientePaso()" [disabled]="!pasoValido(1)">Siguiente</button>
-          </div>
-        </div>
-        }
-
-        @if(pasoRegistro() === 2) {
-        <div class="form-step slide-in">
-          <div class="form-group form-floating grid-full">
-            <input type="email" formControlName="correo" id="regCorreo" placeholder=" ">
-            <label for="regCorreo">Correo</label>
-            @if(isInvalid(registroForm, 'correo')) { <small class="error-msg">Email inválido</small> }
-          </div>
-          <div class="form-group form-floating grid-full">
-            <input type="password" formControlName="contrasena" id="regContrasena" placeholder=" ">
-            <label for="regContrasena">Contraseña</label>
-            @if(isInvalid(registroForm, 'contrasena')) { <small class="error-msg">Mín. 8 caracteres, mayúscula, número y especial.</small> }
-          </div>
-          <div class="form-group form-floating grid-full">
-            <input type="password" formControlName="confirmationContra" id="regConfContra" placeholder=" ">
-            <label for="regConfContra">Confirmar Contraseña</label>
-            @if(isInvalid(registroForm, 'confirmationContra')) { <small class="error-msg">Requerido, debe coincidir.</small> }
-          </div>
-          <div class="nav-botones nav-botones-flex">
-            <button type="button" class="btn-atras" (click)="pasoAnterior()">Atrás</button>
-            <button type="button" class="btn-siguiente btn-submit" (click)="siguientePaso()" [disabled]="!pasoValido(2)">Siguiente</button>
-          </div>
-        </div>
-        }
-
-        @if(pasoRegistro() === 3) {
-        <div class="form-step slide-in">
-          <div class="form-group form-floating grid-full">
-            <select formControlName="idDepartamento" id="regDepto" (change)="onDepartamentoChange($any($event.target).value)" class="custom-select">
-              <option value="" disabled selected hidden></option>
-              @for (d of departamentos(); track d.id) {
-                <option [value]="d.id">{{ d.nomDepartamento }}</option>
+          <form [formGroup]="loginForm" (ngSubmit)="enviarLogin()" class="form-login fade-in">
+            <div class="form-group form-floating">
+              <input type="email" formControlName="email" id="loginEmail" placeholder=" " />
+              <label for="loginEmail">Correo electrónico</label>
+              @if (isInvalid(loginForm, 'email')) {
+                <small class="error-msg"
+                  ><svg
+                    viewBox="0 0 24 24"
+                    width="14"
+                    height="14"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    fill="none"
+                  ></svg>
+                  Email inválido</small
+                >
               }
-            </select>
-            <label for="regDepto" class="select-label">Departamento</label>
-          </div>
-          <div class="form-group form-floating grid-full">
-            <select formControlName="idMunicipio" id="regMuni" (change)="onMunicipioChange($any($event.target).value)" class="custom-select">
-              <option value="" disabled selected hidden></option>
-            @if (municipios().length > 0) {
-              @for (m of municipios(); track m.id) {
-                <option [value]="m.id">{{ m.nomMunicipio }}</option>
+            </div>
+            <div class="form-group form-floating">
+              <input
+                type="password"
+                formControlName="password"
+                id="loginPassword"
+                placeholder=" "
+              />
+              <label for="loginPassword">Contraseña</label>
+              @if (isInvalid(loginForm, 'password')) {
+                <small class="error-msg"
+                  ><svg
+                    viewBox="0 0 24 24"
+                    width="14"
+                    height="14"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    fill="none"
+                  ></svg
+                  >Mínimo 8 caracteres, mayúscula, número y especial.</small
+                >
               }
-            } @else {
-              <option value="" disabled>No hay municipios disponibles</option>
+            </div>
+            <button type="submit" class="btn-submit" [disabled]="loginForm.invalid">
+              <span class="btn-text">Ingresar</span>
+            </button>
+          </form>
+          <p class="auth-switch-text fade-in">
+            ¿No tienes cuenta?
+            <a (click)="cambiarVista('registro')" class="link-hover">Regístrate</a>
+          </p>
+        } @else {
+          <div class="form-header fade-in">
+            <h2>Crear Cuenta</h2>
+          </div>
+
+          <div class="stepper-container fade-in">
+            <div class="step" [class.active]="pasoRegistro() >= 1">1</div>
+            <div class="step-line" [class.active]="pasoRegistro() >= 2"></div>
+            <div class="step" [class.active]="pasoRegistro() >= 2">2</div>
+            <div class="step-line" [class.active]="pasoRegistro() >= 3"></div>
+            <div class="step" [class.active]="pasoRegistro() >= 3">3</div>
+          </div>
+
+          <form [formGroup]="registroForm" (ngSubmit)="enviarRegistro()" class="form-registro">
+            @if (pasoRegistro() === 1) {
+              <div class="form-step slide-in">
+                <div class="form-group form-floating">
+                  <input
+                    type="text"
+                    formControlName="numeroCedula"
+                    id="regCedula"
+                    placeholder=" "
+                  />
+                  <label for="regCedula">Cédula</label>
+                  @if (isInvalid(registroForm, 'numeroCedula')) {
+                    <small class="error-msg">ejemplo 001-000700-2300A</small>
+                  }
+                </div>
+                <div class="form-group form-floating">
+                  <input type="text" formControlName="nombres" id="regNombres" placeholder=" " />
+                  <label for="regNombres">Nombres</label>
+                  @if (isInvalid(registroForm, 'nombres')) {
+                    <small class="error-msg">Requerido</small>
+                  }
+                </div>
+                <div class="form-group form-floating">
+                  <input type="text" formControlName="sexo" id="regSexo" placeholder=" " />
+                  <label for="regSexo">Sexo (M/F)</label>
+                  @if (isInvalid(registroForm, 'sexo')) {
+                    <small class="error-msg">Máximo 1 carácter (M o F)</small>
+                  }
+                </div>
+                <div class="form-group form-floating">
+                  <input
+                    type="text"
+                    formControlName="apellidos"
+                    id="regApellidos"
+                    placeholder=" "
+                  />
+                  <label for="regApellidos">Apellidos</label>
+                  @if (isInvalid(registroForm, 'apellidos')) {
+                    <small class="error-msg">Requerido</small>
+                  }
+                </div>
+                <div class="nav-botones">
+                  <button
+                    type="button"
+                    class="btn-siguiente btn-submit"
+                    (click)="siguientePaso()"
+                    [disabled]="!pasoValido(1)"
+                  >
+                    Siguiente
+                  </button>
+                </div>
+              </div>
             }
-            </select>
-            @if (municipios().length > 0 && !municipioSeleccionado()) { <small class="error-msg">Requerido</small> }
-            <label for="regMuni" class="select-label">Municipio</label>
-          </div>
-          <div class="form-group form-floating grid-full">
-            <select formControlName="idSector" id="regSector" class="custom-select">
-              <option [value]="null" disabled selected hidden></option>
-              @if (sectores().length > 0) {
-                @for (s of sectores(); track s.id) {
-                  <option [value]="s.id">{{ s.nombreSector }}</option>
-                }
-              } @else {
-                <option [value]="null" disabled>No hay sectores disponibles</option>
-              }
-            </select>
-            @if (sectores().length > 0 && !registroForm.get('idSector')?.value) { <small class="error-msg">Requerido</small> }
-            <label for="regSector" class="select-label">Sector</label>
 
-          </div>
-          <div class="nav-botones nav-botones-flex">
-            <button type="button" class="btn-atras" (click)="pasoAnterior()">Atrás</button>
-            <button type="submit" class="btn-submit" [disabled]="registroForm.invalid">Registrarse</button>
-          </div>
-        </div>
+            @if (pasoRegistro() === 2) {
+              <div class="form-step slide-in">
+                <div class="form-group form-floating grid-full">
+                  <input type="email" formControlName="correo" id="regCorreo" placeholder=" " />
+                  <label for="regCorreo">Correo</label>
+                  @if (isInvalid(registroForm, 'correo')) {
+                    <small class="error-msg">Email inválido</small>
+                  }
+                </div>
+                <div class="form-group form-floating grid-full">
+                  <input
+                    type="password"
+                    formControlName="contrasena"
+                    id="regContrasena"
+                    placeholder=" "
+                  />
+                  <label for="regContrasena">Contraseña</label>
+                  @if (isInvalid(registroForm, 'contrasena')) {
+                    <small class="error-msg"
+                      >Mín. 8 caracteres, mayúscula, número y especial.</small
+                    >
+                  }
+                </div>
+                <div class="form-group form-floating grid-full">
+                  <input
+                    type="password"
+                    formControlName="confirmationContra"
+                    id="regConfContra"
+                    placeholder=" "
+                  />
+                  <label for="regConfContra">Confirmar Contraseña</label>
+                  @if (isInvalid(registroForm, 'confirmationContra')) {
+                    <small class="error-msg">Requerido, debe coincidir.</small>
+                  }
+                </div>
+                <div class="nav-botones nav-botones-flex">
+                  <button type="button" class="btn-atras" (click)="pasoAnterior()">Atrás</button>
+                  <button
+                    type="button"
+                    class="btn-siguiente btn-submit"
+                    (click)="siguientePaso()"
+                    [disabled]="!pasoValido(2)"
+                  >
+                    Siguiente
+                  </button>
+                </div>
+              </div>
+            }
+
+            @if (pasoRegistro() === 3) {
+              <div class="form-step slide-in">
+                <div class="form-group form-floating grid-full">
+                  <select
+                    formControlName="idDepartamento"
+                    id="regDepto"
+                    (change)="onDepartamentoChange($any($event.target).value)"
+                    class="custom-select"
+                  >
+                    <option value="" disabled selected hidden></option>
+                    @for (d of departamentos(); track d.id) {
+                      <option [value]="d.id">{{ d.nomDepartamento }}</option>
+                    }
+                  </select>
+                  <label for="regDepto" class="select-label">Departamento</label>
+                </div>
+                <div class="form-group form-floating grid-full">
+                  <select
+                    formControlName="idMunicipio"
+                    id="regMuni"
+                    (change)="onMunicipioChange($any($event.target).value)"
+                    class="custom-select"
+                  >
+                    <option value="" disabled selected hidden></option>
+                    @if (municipios().length > 0) {
+                      @for (m of municipios(); track m.id) {
+                        <option [value]="m.id">{{ m.nomMunicipio }}</option>
+                      }
+                    } @else {
+                      <option value="" disabled>No hay municipios disponibles</option>
+                    }
+                  </select>
+                  @if (municipios().length > 0 && !municipioSeleccionado()) {
+                    <small class="error-msg">Requerido</small>
+                  }
+                  <label for="regMuni" class="select-label">Municipio</label>
+                </div>
+                <div class="form-group form-floating grid-full">
+                  <select formControlName="idSector" id="regSector" class="custom-select">
+                    <option [value]="null" disabled selected hidden></option>
+                    @if (sectores().length > 0) {
+                      @for (s of sectores(); track s.id) {
+                        <option [value]="s.id">{{ s.nombreSector }}</option>
+                      }
+                    } @else {
+                      <option [value]="null" disabled>No hay sectores disponibles</option>
+                    }
+                  </select>
+                  @if (sectores().length > 0 && !registroForm.get('idSector')?.value) {
+                    <small class="error-msg">Requerido</small>
+                  }
+                  <label for="regSector" class="select-label">Sector</label>
+                </div>
+                <div class="nav-botones nav-botones-flex">
+                  <button type="button" class="btn-atras" (click)="pasoAnterior()">Atrás</button>
+                  <button type="submit" class="btn-submit" [disabled]="registroForm.invalid">
+                    Registrarse
+                  </button>
+                </div>
+              </div>
+            }
+          </form>
+          <p class="auth-switch-text fade-in">
+            ¿Ya tienes cuenta?
+            <a (click)="cambiarVista('login')" class="link-hover">Inicia Sesión</a>
+          </p>
         }
-      </form>
-      <p class="auth-switch-text fade-in">¿Ya tienes cuenta? <a (click)="cambiarVista('login')" class="link-hover">Inicia Sesión</a></p>
-      }
+      </div>
     </div>
   </div>
-</div>
 }
 
 <footer class="pie-de-pagina">
   <p>Instituciones Afiliadas</p>
   <div class="contenedor-imagenes">
-    <img src="recursos/bomberos.jpeg" alt="Descripción 1">
-    <img src="recursos/disnortedissur.jpeg" alt="Descripción 2">
-    <img src="recursos/enacal.png" alt="Descripción 3">
-    <img src="recursos/policia.jpg.jpeg" alt="Descripción 4">
+    <img src="recursos/bomberos.jpeg" alt="Descripción 1" />
+    <img src="recursos/disnortedissur.jpeg" alt="Descripción 2" />
+    <img src="recursos/enacal.png" alt="Descripción 3" />
+    <img src="recursos/policia.jpg.jpeg" alt="Descripción 4" />
   </div>
   <p>&copy; 2026 "Comunica" - Empieza ya</p>
 </footer>

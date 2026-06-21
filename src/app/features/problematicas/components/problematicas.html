@@ -4,6 +4,10 @@
       <h1 class="titulo-vista">Gestión de Problemáticas</h1>
       <p class="subtitulo-vista">Administra las problemáticas registradas en la plataforma.</p>
     </div>
+    <button class="btn-primario" (click)="cambiarFiltroInhabilitados()">
+      <i class="fa-solid fa-filter"></i>
+      {{ mostrarInhabilitados() ? 'Mostrar Activas' : 'Mostrar Inhabilitadas' }}
+    </button>
     <button class="btn-primario" (click)="abrirModalCrear()">
       <i class="fa-solid fa-plus"></i> Nueva Problemática
     </button>
@@ -27,26 +31,65 @@
       <tbody>
         @if (cargando() && problematicas().length === 0) {
           <tr>
-            <td colspan="3" class="texto-centro py-4">
+            <td colspan="2" class="texto-centro py-4">
               <div class="spinner"></div>
               Cargando...
             </td>
           </tr>
         } @else if (problematicas().length === 0) {
           <tr>
-            <td colspan="3" class="texto-centro py-4 text-muted">
+            <td colspan="2" class="texto-centro py-4 text-muted">
               No hay problemáticas registradas.
             </td>
           </tr>
         } @else {
           @for (prob of problematicas(); track prob.id) {
-            <tr>
+            <tr [style.background-color]="prob.isDeleted ? '#fee2e2' : ''">
               <td class="font-medium">{{ prob.problema }}</td>
               <td>
-                <div class="acciones-celda">
-                  <button class="btn-icono editar" (click)="abrirModalEditar(prob)" title="Editar">
-                    <i class="fa-solid fa-pen"></i>
-                  </button>
+                <div
+                  style="
+                    display: flex;
+                    gap: 8px;
+                    justify-content: flex-start;
+                    align-items: center;
+                    white-space: nowrap;
+                  "
+                >
+                  @if (prob.isDeleted) {
+                    <button
+                      class="btn-icono restaurar"
+                      (click)="abrirModalRestaurar(prob)"
+                      title="Restaurar"
+                      style="color: #10b981"
+                    >
+                      <i class="fa-solid fa-rotate-left"></i>
+                    </button>
+                  } @else {
+                    <button
+                      class="btn-icono"
+                      (click)="abrirModalInstituciones(prob)"
+                      title="Asignar Instituciones"
+                      style="color: #3b82f6"
+                    >
+                      <i class="fa-solid fa-building"></i>
+                    </button>
+                    <button
+                      class="btn-icono editar"
+                      (click)="abrirModalEditar(prob)"
+                      title="Editar"
+                    >
+                      <i class="fa-solid fa-pen"></i>
+                    </button>
+                    <button
+                      class="btn-icono eliminar"
+                      (click)="abrirModalEliminar(prob)"
+                      title="Eliminar"
+                      style="color: #ef4444"
+                    >
+                      <i class="fa-solid fa-trash"></i>
+                    </button>
+                  }
                 </div>
               </td>
             </tr>
@@ -57,41 +100,234 @@
   </div>
 </div>
 
-<!-- Modal -->
+<!-- Modal Principal (Crear/Editar/Eliminar/Restaurar) -->
 @if (mostrarModal()) {
   <div class="modal-backdrop">
     <div class="modal-contenedor">
       <div class="modal-cabecera">
         <h2 class="modal-titulo">
-          {{ modalModo() === 'crear' ? 'Nueva Problemática' : 'Editar Problemática' }}
+          {{
+            modalModo() === 'crear'
+              ? 'Nueva'
+              : modalModo() === 'editar'
+                ? 'Editar'
+                : modalModo() === 'eliminar'
+                  ? 'Eliminar'
+                  : 'Restaurar'
+          }}
+          Problemática
         </h2>
         <button class="btn-cerrar" (click)="cerrarModal()">
           <i class="fa-solid fa-xmark"></i>
         </button>
       </div>
       <div class="modal-cuerpo">
-        <div class="form-grupo">
-          <label for="problema">Nombre de la Problemática</label>
-          <input
-            type="text"
-            id="problema"
-            class="form-input"
-            [(ngModel)]="problematicaActual().problema"
-            placeholder="Ej. Baches en la calle"
-          />
-        </div>
+        @if (modalModo() === 'eliminar' || modalModo() === 'restaurar') {
+          <p class="texto-centro" style="font-size: 1.1rem; padding: 20px 0">
+            ¿Está seguro de que desea
+            <strong>{{ modalModo() === 'eliminar' ? 'eliminar' : 'restaurar' }}</strong> la
+            problemática seleccionada?
+          </p>
+        } @else {
+          <div class="form-grupo">
+            <label for="problema">Nombre de la Problemática</label>
+            <input
+              type="text"
+              id="problema"
+              class="form-input"
+              [(ngModel)]="problematicaActual().problema"
+              placeholder="Ej. Baches en la calle"
+            />
+          </div>
+        }
       </div>
       <div class="modal-pie">
         <button class="btn-secundario" (click)="cerrarModal()" [disabled]="cargando()">
           Cancelar
         </button>
-        <button class="btn-primario" (click)="guardarProblematica()" [disabled]="cargando()">
+        <button
+          class="btn-primario"
+          [style.background-color]="
+            modalModo() === 'eliminar' ? '#ef4444' : modalModo() === 'restaurar' ? '#10b981' : ''
+          "
+          (click)="guardarProblematica()"
+          [disabled]="cargando()"
+        >
           @if (cargando()) {
-            <i class="fa-solid fa-spinner fa-spin mr-2"></i> Guardando...
+            <i class="fa-solid fa-spinner fa-spin mr-2"></i>
+            {{
+              modalModo() === 'eliminar'
+                ? 'Eliminando...'
+                : modalModo() === 'restaurar'
+                  ? 'Restaurando...'
+                  : 'Guardando...'
+            }}
           } @else {
-            Guardar
+            {{
+              modalModo() === 'eliminar'
+                ? 'Eliminar'
+                : modalModo() === 'restaurar'
+                  ? 'Restaurar'
+                  : 'Guardar'
+            }}
           }
         </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- Modal Instituciones Asociadas -->
+@if (mostrarModalInstituciones()) {
+  <div class="modal-backdrop" style="z-index: 1050">
+    <div class="modal-contenedor" style="max-width: 600px">
+      <div class="modal-cabecera">
+        <h2 class="modal-titulo">Instituciones Asociadas</h2>
+        <button class="btn-cerrar" (click)="cerrarModalInstituciones()">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <div class="modal-cuerpo" style="max-height: 70vh; overflow-y: auto">
+        <p style="margin-bottom: 15px; color: #475569">
+          Problemática: <strong>{{ problematicaActiva()?.problema }}</strong>
+        </p>
+
+        <!-- Búsqueda en Cascada -->
+        <div
+          style="background-color: #f8fafc; padding: 15px; border-radius: 8px; margin-bottom: 20px"
+        >
+          <h3 style="font-size: 1.1rem; margin-bottom: 10px; font-weight: 600; color: #1e293b">
+            Asignar Nueva Institución
+          </h3>
+
+          <div class="form-grupo mt-4">
+            <label for="idDepartamentoAsignar" style="font-weight: 500">1. Departamento</label>
+            <select
+              id="idDepartamentoAsignar"
+              class="form-input"
+              [ngModel]="filtroDepartamento()"
+              (ngModelChange)="onFiltroDepartamentoChange($event)"
+            >
+              <option [value]="undefined" disabled selected>Seleccione un departamento</option>
+              @for (dep of departamentos(); track dep.id) {
+                <option [value]="dep.id">{{ dep.nom_departamento || dep.nomDepartamento }}</option>
+              }
+            </select>
+          </div>
+
+          <div class="form-grupo mt-4">
+            <label for="idMunicipioAsignar" style="font-weight: 500">2. Municipio</label>
+            <select
+              id="idMunicipioAsignar"
+              class="form-input"
+              [ngModel]="filtroMunicipio()"
+              (ngModelChange)="onFiltroMunicipioChange($event)"
+              [disabled]="!filtroDepartamento()"
+            >
+              <option [value]="undefined" disabled selected>Seleccione un municipio</option>
+              @for (muni of municipiosFiltrados(); track muni.id) {
+                <option [value]="muni.id">{{ muni.nom_municipio || muni.nomMunicipio }}</option>
+              }
+            </select>
+          </div>
+
+          <div class="form-grupo mt-4">
+            <label for="idInstitucionAsignar" style="font-weight: 500">3. Institución</label>
+            <div style="display: flex; gap: 10px">
+              <select
+                id="idInstitucionAsignar"
+                class="form-input"
+                style="flex: 1"
+                [ngModel]="institucionSeleccionada()"
+                (ngModelChange)="institucionSeleccionada.set($event)"
+                [disabled]="!filtroMunicipio() || institucionesFiltradas().length === 0"
+              >
+                <option [value]="undefined" disabled selected>
+                  {{
+                    institucionesFiltradas().length > 0
+                      ? 'Seleccione una institución'
+                      : 'No hay instituciones en este municipio'
+                  }}
+                </option>
+                @for (inst of institucionesFiltradas(); track inst.id) {
+                  <option [value]="inst.id">{{ inst.nombreInstitucion }}</option>
+                }
+              </select>
+
+              <button
+                class="btn-primario"
+                (click)="asignarInstitucion()"
+                [disabled]="!institucionSeleccionada() || cargandoAsignacion()"
+              >
+                @if (cargandoAsignacion() && institucionSeleccionada()) {
+                  <i class="fa-solid fa-spinner fa-spin"></i>
+                } @else {
+                  <i class="fa-solid fa-plus"></i> Asignar
+                }
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Lista de Asociadas -->
+        <div>
+          <h3 style="font-size: 1.1rem; margin-bottom: 10px; font-weight: 600; color: #1e293b">
+            Instituciones Vinculadas
+          </h3>
+          @if (cargandoAsignacion() && institucionesAsociadas().length === 0) {
+            <p class="texto-centro py-4">
+              <span
+                class="spinner"
+                style="display: inline-block; width: 1em; height: 1em; margin-right: 5px"
+              ></span>
+              Cargando...
+            </p>
+          } @else if (institucionesAsociadas().length === 0) {
+            <p
+              class="text-muted texto-centro"
+              style="padding: 15px; background: #f1f5f9; border-radius: 8px"
+            >
+              No hay instituciones asociadas a esta problemática.
+            </p>
+          } @else {
+            <table
+              class="tabla-moderna"
+              style="margin-top: 0; box-shadow: none; border: 1px solid #e2e8f0"
+            >
+              <thead style="background-color: #f8fafc">
+                <tr>
+                  <th style="padding: 10px; font-size: 0.9rem">Institución</th>
+                  <th style="width: 80px; padding: 10px; text-align: center; font-size: 0.9rem">
+                    Acciones
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (inst of institucionesAsociadas(); track inst.id) {
+                  <tr>
+                    <td style="padding: 10px; font-size: 0.9rem; font-weight: 500">
+                      {{ inst.nombreInstitucion }}
+                    </td>
+                    <td style="padding: 10px; text-align: center">
+                      <button
+                        class="btn-icono eliminar"
+                        (click)="desasignarInstitucion(inst.id)"
+                        title="Desvincular"
+                        style="color: #ef4444"
+                      >
+                        <i class="fa-solid fa-trash"></i>
+                      </button>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          }
+        </div>
+      </div>
+      <div class="modal-pie" style="justify-content: flex-end">
+        <button class="btn-secundario" (click)="cerrarModalInstituciones()">Cerrar</button>
       </div>
     </div>
   </div>

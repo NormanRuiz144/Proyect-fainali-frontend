@@ -1,41 +1,57 @@
 <div class="contenedor-vista">
+  <div>
+    <h1 class="titulo-vista">Gestión de Ubicaciones</h1>
+    <p class="subtitulo-vista">Administra Departamentos, Municipios y Sectores.</p>
+  </div>
   <div class="cabecera-vista">
-    <div>
-      <h1 class="titulo-vista">Gestión de Ubicaciones</h1>
-      <p class="subtitulo-vista">Administra Departamentos, Municipios y Sectores.</p>
-    </div>
-    <div style="display: flex; gap: 12px; align-items: center">
+    <div style="display: flex; gap: 12px; align-items: center; justify-content: center">
       @if (activeTab() === 'municipios') {
-        <select
-          class="form-input"
-          [ngModel]="filtroDepartamento()"
-          (ngModelChange)="filtroDepartamento.set($event)"
-          style="max-width: 250px; padding: 10px"
-        >
-          <option [value]="undefined" selected>Todos los departamentos</option>
-          @for (dep of departamentos(); track dep.id) {
-            <option [value]="dep.id">{{ dep.nom_departamento || dep.nomDepartamento }}</option>
-          }
-        </select>
+        <div class="contenedorFiltros">
+          <p>Filtro de busqueda:</p>
+          <select
+            class="form-input"
+            [ngModel]="filtroDepartamento()"
+            (ngModelChange)="filtroDepartamento.set($event)"
+            style="max-width: 250px; padding: 10px"
+          >
+            <option [value]="undefined" selected>Todos los departamentos</option>
+            @for (dep of departamentos(); track dep.id) {
+              <option [value]="dep.id">{{ dep.nom_departamento || dep.nomDepartamento }}</option>
+            }
+          </select>
+        </div>
         <button class="btn-secundario" (click)="buscarFiltro()">
           <i class="fa-solid fa-search"></i> Buscar
         </button>
       }
 
       @if (activeTab() === 'sectores') {
-        <select class="form-input" [ngModel]="filtroDepartamentoSector()" (ngModelChange)="onFiltroDepartamentoSectorChange($event)" style="max-width: 250px; padding: 10px;">
-          <option [value]="undefined" selected>1. Selecciona Departamento</option>
-          @for (dep of departamentos(); track dep.id) {
-            <option [value]="dep.id">{{ dep.nom_departamento || dep.nomDepartamento }}</option>
-          }
-        </select>
-        
-        <select class="form-input" [ngModel]="filtroMunicipio()" (ngModelChange)="filtroMunicipio.set($event)" [disabled]="!filtroDepartamentoSector()" style="max-width: 250px; padding: 10px;">
-          <option [value]="undefined" selected>2. Todos los municipios</option>
-          @for (muni of municipiosParaFiltroSector(); track muni.id) {
-            <option [value]="muni.id">{{ muni.nom_municipio || muni.nomMunicipio }}</option>
-          }
-        </select>
+        <div class="contenedorFiltros">
+          <p>Filtros de busqueda:</p>
+          <select
+            class="form-input"
+            [ngModel]="filtroDepartamentoSector()"
+            (ngModelChange)="onFiltroDepartamentoSectorChange($event)"
+            style="max-width: 250px; padding: 10px"
+          >
+            <option [value]="undefined" selected>1. Selecciona Departamento</option>
+            @for (dep of departamentos(); track dep.id) {
+              <option [value]="dep.id">{{ dep.nom_departamento || dep.nomDepartamento }}</option>
+            }
+          </select>
+          <select
+            class="form-input"
+            [ngModel]="filtroMunicipio()"
+            (ngModelChange)="filtroMunicipio.set($event)"
+            [disabled]="!filtroDepartamentoSector()"
+            style="max-width: 250px; padding: 10px"
+          >
+            <option [value]="undefined" selected>2. Todos los municipios</option>
+            @for (muni of municipiosParaFiltroSector(); track muni.id) {
+              <option [value]="muni.id">{{ muni.nom_municipio || muni.nomMunicipio }}</option>
+            }
+          </select>
+        </div>
         <button class="btn-secundario" (click)="buscarFiltro()" [disabled]="!filtroMunicipio()">
           <i class="fa-solid fa-search"></i> Buscar
         </button>
@@ -50,6 +66,10 @@
               ? 'Municipio'
               : 'Sector'
         }}
+      </button>
+      <button class="btn-primario" (click)="cambiarFiltroInhabilitados()">
+        <i class="fa-solid fa-filter"></i>
+        {{ mostrarInhabilitados() ? 'Mostrar Activas' : 'Mostrar Inhabilitadas' }}
       </button>
     </div>
   </div>
@@ -131,12 +151,44 @@
         } @else {
           @if (activeTab() === 'departamentos') {
             @for (dep of departamentos(); track dep.id) {
-              <tr>
+              <tr [style.background-color]="dep.isDeleted ? '#fee2e2' : ''">
                 <td class="font-medium">{{ dep.nom_departamento || dep.nomDepartamento }}</td>
                 <td>
-                  <button class="btn-icono editar" (click)="abrirModalEditar(dep)" title="Editar">
-                    <i class="fa-solid fa-pen"></i>
-                  </button>
+                  <div
+                    style="
+                      display: flex;
+                      gap: 8px;
+                      justify-content: flex-start;
+                      white-space: nowrap;
+                    "
+                  >
+                    @if (dep.isDeleted) {
+                      <button
+                        class="btn-icono restaurar"
+                        (click)="abrirModalRestaurar(dep)"
+                        title="Restaurar"
+                        style="color: #10b981"
+                      >
+                        <i class="fa-solid fa-rotate-left"></i>
+                      </button>
+                    } @else {
+                      <button
+                        class="btn-icono editar"
+                        (click)="abrirModalEditar(dep)"
+                        title="Editar"
+                      >
+                        <i class="fa-solid fa-pen"></i>
+                      </button>
+                      <button
+                        class="btn-icono eliminar"
+                        (click)="abrirModalEliminar(dep)"
+                        title="Eliminar"
+                        style="color: #ef4444"
+                      >
+                        <i class="fa-solid fa-trash"></i>
+                      </button>
+                    }
+                  </div>
                 </td>
               </tr>
             }
@@ -144,15 +196,47 @@
 
           @if (activeTab() === 'municipios') {
             @for (muni of municipios(); track muni.id) {
-              <tr>
+              <tr [style.background-color]="muni.isDeleted ? '#fee2e2' : ''">
                 <td class="font-medium">{{ muni.nom_municipio || muni.nomMunicipio }}</td>
                 <td class="text-gray-500">
                   {{ getNombreDepartamento(muni.id_departamento || muni.idDepartamento) }}
                 </td>
                 <td>
-                  <button class="btn-icono editar" (click)="abrirModalEditar(muni)" title="Editar">
-                    <i class="fa-solid fa-pen"></i>
-                  </button>
+                  <div
+                    style="
+                      display: flex;
+                      gap: 8px;
+                      justify-content: flex-start;
+                      white-space: nowrap;
+                    "
+                  >
+                    @if (muni.isDeleted) {
+                      <button
+                        class="btn-icono restaurar"
+                        (click)="abrirModalRestaurar(muni)"
+                        title="Restaurar"
+                        style="color: #10b981"
+                      >
+                        <i class="fa-solid fa-rotate-left"></i>
+                      </button>
+                    } @else {
+                      <button
+                        class="btn-icono editar"
+                        (click)="abrirModalEditar(muni)"
+                        title="Editar"
+                      >
+                        <i class="fa-solid fa-pen"></i>
+                      </button>
+                      <button
+                        class="btn-icono eliminar"
+                        (click)="abrirModalEliminar(muni)"
+                        title="Eliminar"
+                        style="color: #ef4444"
+                      >
+                        <i class="fa-solid fa-trash"></i>
+                      </button>
+                    }
+                  </div>
                 </td>
               </tr>
             }
@@ -160,7 +244,7 @@
 
           @if (activeTab() === 'sectores') {
             @for (sec of sectores(); track sec.id) {
-              <tr>
+              <tr [style.background-color]="sec.isDeleted ? '#fee2e2' : ''">
                 <td class="font-medium">
                   {{ sec.nombre_sector || sec.nombreSector || sec.nomSector }}
                 </td>
@@ -168,9 +252,41 @@
                   {{ getNombreMunicipio(sec.id_municipios || sec.idMunicipios || sec.idMunicipio) }}
                 </td>
                 <td>
-                  <button class="btn-icono editar" (click)="abrirModalEditar(sec)" title="Editar">
-                    <i class="fa-solid fa-pen"></i>
-                  </button>
+                  <div
+                    style="
+                      display: flex;
+                      gap: 8px;
+                      justify-content: flex-start;
+                      white-space: nowrap;
+                    "
+                  >
+                    @if (sec.isDeleted) {
+                      <button
+                        class="btn-icono restaurar"
+                        (click)="abrirModalRestaurar(sec)"
+                        title="Restaurar"
+                        style="color: #10b981"
+                      >
+                        <i class="fa-solid fa-rotate-left"></i>
+                      </button>
+                    } @else {
+                      <button
+                        class="btn-icono editar"
+                        (click)="abrirModalEditar(sec)"
+                        title="Editar"
+                      >
+                        <i class="fa-solid fa-pen"></i>
+                      </button>
+                      <button
+                        class="btn-icono eliminar"
+                        (click)="abrirModalEliminar(sec)"
+                        title="Eliminar"
+                        style="color: #ef4444"
+                      >
+                        <i class="fa-solid fa-trash"></i>
+                      </button>
+                    }
+                  </div>
                 </td>
               </tr>
             }
@@ -187,7 +303,15 @@
     <div class="modal-contenedor">
       <div class="modal-cabecera">
         <h2 class="modal-titulo">
-          {{ modalModo() === 'crear' ? 'Nuevo' : 'Editar' }}
+          {{
+            modalModo() === 'crear'
+              ? 'Nuevo'
+              : modalModo() === 'editar'
+                ? 'Editar'
+                : modalModo() === 'eliminar'
+                  ? 'Eliminar'
+                  : 'Restaurar'
+          }}
           {{
             activeTab() === 'departamentos'
               ? 'Departamento'
@@ -202,74 +326,105 @@
       </div>
 
       <div class="modal-cuerpo">
-        @if (activeTab() === 'departamentos') {
-          <div class="form-grupo">
-            <label for="nomDepartamento">Nombre del Departamento</label>
-            <input
-              type="text"
-              id="nomDepartamento"
-              class="form-input"
-              [(ngModel)]="formDepartamento().nomDepartamento"
-              placeholder="Ej. Guatemala"
-            />
-          </div>
-        }
+        @if (modalModo() === 'eliminar' || modalModo() === 'restaurar') {
+          <p class="texto-centro" style="font-size: 1.1rem; padding: 20px 0">
+            ¿Está seguro de que desea
+            <strong>{{ modalModo() === 'eliminar' ? 'eliminar' : 'restaurar' }}</strong> el
+            {{
+              activeTab() === 'departamentos'
+                ? 'departamento'
+                : activeTab() === 'municipios'
+                  ? 'municipio'
+                  : 'sector'
+            }}
+            seleccionado?
+          </p>
+        } @else {
+          @if (activeTab() === 'departamentos') {
+            <div class="form-grupo">
+              <label for="nomDepartamento">Nombre del Departamento</label>
+              <input
+                type="text"
+                id="nomDepartamento"
+                class="form-input"
+                [(ngModel)]="formDepartamento().nomDepartamento"
+                placeholder="Ej. Guatemala"
+              />
+            </div>
+          }
 
-        @if (activeTab() === 'municipios') {
-          <div class="form-grupo">
-            <label for="nomMunicipio">Nombre del Municipio</label>
-            <input
-              type="text"
-              id="nomMunicipio"
-              class="form-input"
-              [(ngModel)]="formMunicipio().nomMunicipio"
-              placeholder="Ej. Mixco"
-            />
-          </div>
-          <div class="form-grupo mt-4">
-            <label for="idDepartamento">Departamento</label>
-            <select
-              id="idDepartamento"
-              class="form-input"
-              [(ngModel)]="formMunicipio().idDepartamento"
-            >
-              <option [value]="undefined" disabled selected>Selecciona un departamento</option>
-              @for (dep of departamentos(); track dep.id) {
-                <option [value]="dep.id">{{ dep.nom_departamento || dep.nomDepartamento }}</option>
-              }
-            </select>
-          </div>
-        }
+          @if (activeTab() === 'municipios') {
+            <div class="form-grupo">
+              <label for="nomMunicipio">Nombre del Municipio</label>
+              <input
+                type="text"
+                id="nomMunicipio"
+                class="form-input"
+                [(ngModel)]="formMunicipio().nomMunicipio"
+                placeholder="Ej. Mixco"
+              />
+            </div>
+            <div class="form-grupo mt-4">
+              <label for="idDepartamento">Departamento</label>
+              <select
+                id="idDepartamento"
+                class="form-input"
+                [(ngModel)]="formMunicipio().idDepartamento"
+              >
+                <option [value]="undefined" disabled selected>Selecciona un departamento</option>
+                @for (dep of departamentos(); track dep.id) {
+                  <option [value]="dep.id">
+                    {{ dep.nom_departamento || dep.nomDepartamento }}
+                  </option>
+                }
+              </select>
+            </div>
+          }
 
-        @if (activeTab() === 'sectores') {
-          <div class="form-grupo">
-            <label for="nomSector">Nombre del Sector</label>
-            <input
-              type="text"
-              id="nomSector"
-              class="form-input"
-              [(ngModel)]="formSector().nomSector"
-              placeholder="Ej. Zona 1"
-            />
-          </div>
-          <div class="form-grupo mt-4">
-            <label for="idDepartamentoSectorModal">1. Departamento (Requerido)</label>
-            <select id="idDepartamentoSectorModal" class="form-input" [ngModel]="formSectorDepartamento()" (ngModelChange)="onFormSectorDepartamentoChange($event)">
-              <option [value]="undefined" disabled selected>Selecciona un departamento primero</option>
-              @for (dep of departamentos(); track dep.id) {
-                <option [value]="dep.id">{{ dep.nom_departamento || dep.nomDepartamento }}</option>
-              }
-            </select>
-          </div>
-          <div class="form-grupo mt-4">
-            <label for="idMunicipio">2. Municipio</label>
-            <select id="idMunicipio" class="form-input" [(ngModel)]="formSector().idMunicipio" [disabled]="!formSectorDepartamento()">
-              <option [value]="undefined" disabled selected>Selecciona un municipio</option>
-              @for (muni of municipiosParaModalSector(); track muni.id) {
-                <option [value]="muni.id">{{ muni.nom_municipio || muni.nomMunicipio }}</option>
-              }
-            </select>
-          </div>
+          @if (activeTab() === 'sectores') {
+            <div class="form-grupo">
+              <label for="nomSector">Nombre del Sector</label>
+              <input
+                type="text"
+                id="nomSector"
+                class="form-input"
+                [(ngModel)]="formSector().nomSector"
+                placeholder="Ej. Zona 1"
+              />
+            </div>
+            <div class="form-grupo mt-4">
+              <label for="idDepartamentoSectorModal">1. Departamento (Requerido)</label>
+              <select
+                id="idDepartamentoSectorModal"
+                class="form-input"
+                [ngModel]="formSectorDepartamento()"
+                (ngModelChange)="onFormSectorDepartamentoChange($event)"
+              >
+                <option [value]="undefined" disabled selected>
+                  Selecciona un departamento primero
+                </option>
+                @for (dep of departamentos(); track dep.id) {
+                  <option [value]="dep.id">
+                    {{ dep.nom_departamento || dep.nomDepartamento }}
+                  </option>
+                }
+              </select>
+            </div>
+            <div class="form-grupo mt-4">
+              <label for="idMunicipio">2. Municipio</label>
+              <select
+                id="idMunicipio"
+                class="form-input"
+                [(ngModel)]="formSector().idMunicipio"
+                [disabled]="!formSectorDepartamento()"
+              >
+                <option [value]="undefined" disabled selected>Selecciona un municipio</option>
+                @for (muni of municipiosParaModalSector(); track muni.id) {
+                  <option [value]="muni.id">{{ muni.nom_municipio || muni.nomMunicipio }}</option>
+                }
+              </select>
+            </div>
+          }
         }
       </div>
 
@@ -277,11 +432,31 @@
         <button class="btn-secundario" (click)="cerrarModal()" [disabled]="cargando()">
           Cancelar
         </button>
-        <button class="btn-primario" (click)="guardar()" [disabled]="cargando()">
+        <button
+          class="btn-primario"
+          [style.background-color]="
+            modalModo() === 'eliminar' ? '#ef4444' : modalModo() === 'restaurar' ? '#10b981' : ''
+          "
+          (click)="guardar()"
+          [disabled]="cargando()"
+        >
           @if (cargando()) {
-            <i class="fa-solid fa-spinner fa-spin mr-2"></i> Guardando...
+            <i class="fa-solid fa-spinner fa-spin mr-2"></i>
+            {{
+              modalModo() === 'eliminar'
+                ? 'Eliminando...'
+                : modalModo() === 'restaurar'
+                  ? 'Restaurando...'
+                  : 'Guardando...'
+            }}
           } @else {
-            Guardar
+            {{
+              modalModo() === 'eliminar'
+                ? 'Eliminar'
+                : modalModo() === 'restaurar'
+                  ? 'Restaurar'
+                  : 'Guardar'
+            }}
           }
         </button>
       </div>

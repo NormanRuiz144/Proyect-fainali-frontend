@@ -1,3 +1,5 @@
+@import 'leaflet/dist/leaflet.css';
+
 :root {
   --primario: #1c4d8d;
   --secundario: #0bd692;
@@ -42,8 +44,6 @@ body {
   font-weight: bold;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
 }
-
-@import 'leaflet/dist/leaflet.css';
 
 /* --- ESTRUCTURA DE SECCIÓN Y LAYOUT GLOBALES --- */
 .seccion-layout {

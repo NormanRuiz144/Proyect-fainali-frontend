@@ -1,6 +1,6 @@
 import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../../../auth/service/auth-service';
-import { Component, signal, inject, OnInit } from '@angular/core';
+import { Component, signal, inject, OnInit, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { DashboardService } from '../../dashboard/service/dashboard';
@@ -21,6 +21,31 @@ export class LayoutAdmin {
 
   menuAbierto = signal(false);
   instituciones = signal<any[]>([]);
+
+  nombreCompletoUsuario = computed(() => {
+    const user = this.estadoAdminService.usuarioLogueado();
+    return user ? `${user.nombres} ${user.apellidos}` : 'Administrador';
+  });
+
+  nombreInstitucionUsuario = computed(() => {
+    const user = this.estadoAdminService.usuarioLogueado();
+    if (!user) return 'Comunica';
+    
+    // Si es Super-Admin, mostramos "Super Administrador" o la institución seleccionada actualmente
+    if (user.rol?.rol === 'Super-Admin') {
+      const selectedId = this.estadoAdminService.institucionSeleccionadaId();
+      if (selectedId === null) {
+        return 'Todas las Instituciones';
+      }
+      const inst = this.instituciones().find(i => i.id === selectedId);
+      return inst ? inst.nombreInstitucion : 'Super-Admin';
+    }
+
+    // Si es admin normal, mostramos la institución a la que pertenece
+    const userInstId = user.idInstitucion;
+    const inst = this.instituciones().find(i => i.id === userInstId);
+    return inst ? inst.nombreInstitucion : 'Administración';
+  });
 
   menuAdmin = [
     { texto: 'Panel de Control', icono: 'fa-solid fa-chart-line', url: '/admin/dashboard' },
