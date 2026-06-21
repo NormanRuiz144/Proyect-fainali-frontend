@@ -7,53 +7,6 @@
   --white: #ffffff;
 }
 
-.navbar-contenido {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0.75rem 2rem;
-  background: linear-gradient(135deg, var(--primario, #3d39af) 0%, #2a2786 100%);
-  color: white;
-}
-
-.menu-escritorio {
-  display: flex;
-  gap: 1.5rem;
-}
-
-.enlace-nav {
-  color: white;
-  text-decoration: none;
-  font-weight: 500;
-  transition: opacity 0.2s;
-}
-
-.enlace-nav:hover {
-  opacity: 0.8;
-}
-
-.logged-in-msg {
-  margin: 0;
-  font-weight: 600;
-  font-size: 0.95rem;
-}
-
-.btn-logout {
-  padding: 0.5rem 1.25rem;
-  border: none;
-  border-radius: 8px;
-  font-weight: 600;
-  font-size: 0.9rem;
-  cursor: pointer;
-  transition: transform 0.2s, box-shadow 0.2s;
-  background: rgba(255, 255, 255, 0.15);
-  color: white;
-  border: 1px solid rgba(255, 255, 255, 0.3);
-}
-
-.btn-logout:hover {
-  background: rgba(255, 255, 255, 0.25);
-}
 
 
 
@@ -538,32 +491,67 @@
 }
 
 
+.pie-de-pagina {
+    padding: 140px 20px 60px;
+    text-align: center;
+    background: linear-gradient(135deg, var(--primario) 0%, #2a6bbd 100%);
+    color: white;
+    position: relative;
+}
+
+.pie-de-pagina::before {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: 0;
+    width: 100%;
+    height: 120px;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 120'%3E%3Cpath fill='%23ffffff' d='M0,70 C360,10 1080,110 1440,60 L1440,0 L0,0 Z'/%3E%3C/svg%3E") no-repeat top;
+    background-size: cover;
+    pointer-events: none;
+    z-index: 1;
+}
+
 /* Este es el contenedor que envuelve las imágenes */
 .contenedor-imagenes {
-    display: flex;            /* Los pone uno al lado del otro */
-    justify-content: center;  /* Los centra horizontalmente */
-    align-items: center;      /* Los alinea verticalmente por si tienen distintos tamaños */
-    gap: 40px;                /* Espacio uniforme entre cada logo */
-    padding: 30px;            /* Espacio arriba y abajo */
-    flex-wrap: wrap;          /* Si hay poco espacio (celulares), se acomodan solos */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 40px;
+    padding: 30px;
+    flex-wrap: wrap;
 }
 
 /* Este ajusta las imágenes para que no se vean gigantes */
+/* Este ajusta las imágenes para que no se vean gigantes */
 .contenedor-imagenes img {
-    height: 50px;             /* Ajusta esta altura a tu gusto */
-    width: auto;              /* Mantiene la proporción original */
-    /*filter: grayscale(100%);   Opcional: los hace blanco y negro */
-    transition: 0.3s;         /* Suaviza el efecto al pasar el mouse */
-    opacity: 0.7;             /* Los hace un poco transparentes */
+    height: 90px;
+    width: 90px;
+    object-fit: contain;
+    border-radius: 12px;
+    background: white;
+    padding: 10px;
+    transition: all 0.3s ease;
+    opacity: 0.95;
 }
 
-
+.contenedor-imagenes img:hover {
+    opacity: 1;
+}
 
 /* Estilo para el texto de copyright */
 .pie-de-pagina p {
     text-align: center;
     font-size: 14px;
-    color: #666;
-    margin-top: 10px;
+    color: rgba(255, 255, 255, 0.85);
+    margin: 10px 0;
+    font-weight: 500;
+}
+
+.pie-de-pagina p:first-child {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: white;
+    margin-bottom: 20px;
 }
 

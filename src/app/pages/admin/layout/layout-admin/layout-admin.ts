@@ -62,6 +62,7 @@ export class LayoutAdmin {
 
   cerrarSesion() {
     this.authService.logout();
+    this.estadoAdminService.cerrarSesion();
     this.router.navigate(['/inicio']);
   }
 }

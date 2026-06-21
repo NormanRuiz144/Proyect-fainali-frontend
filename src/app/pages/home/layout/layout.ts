@@ -41,13 +41,6 @@ export class Layout {
   regPasswordVisible = signal(false);
   regConfirmVisible = signal(false);
 
-  //Enlaces de navegacion
-  enlaces = [{ ruta: '/inicio', etiqueta: 'Inicio' }];
-  //navegar en los enlaces
-  async navegar(ruta: string) {
-    this.router.navigate([ruta]);
-  }
-
   esModal = this.interactionService.modalAuth;
   vistaAuth = this.interactionService.vistaAuth;
 
@@ -197,6 +190,7 @@ export class Layout {
     this.authService.iniciarSesion(email, password).subscribe({
       next: async (res) => {
         await this.interactionService.hideLoading();
+        console.log('RESPUESTA COMPLETA DEL LOGIN:', JSON.stringify(res, null, 2));
 
         // Error 1: La propiedad 'cerrarModal' no existe
         this.cerrarModal();

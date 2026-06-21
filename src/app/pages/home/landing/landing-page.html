@@ -1,6 +1,9 @@
 <div class="landing-container">
   <header class="hero">
-    <div class="hero-content">
+    <div class="hero-content reveal">
+      <div class="hero-logo-card">
+        <img class="hero-logo" src="recursos/COMUNICA.jpeg" alt="Comunica Logo">
+      </div>
       <h1>Transforma tu Comunidad</h1>
       <p>
         Tu voz es el primer paso para mejorar nuestras calles. Reporta baches, fallos eléctricos y
@@ -8,24 +11,24 @@
       </p>
       @if (!authService.estaAutenticado()) {
         <div class="cta-group">
-          <button class="btn-primary" (click)="abrirRegistro()">Registrarse</button>
-          <button class="btn-primary" (click)="abrirLogin()">Iniciar Sesión</button>
+          <button class="btn-hero-primary" (click)="abrirRegistro()">Registrarse</button>
+          <button class="btn-hero-secondary" (click)="abrirLogin()">Iniciar Sesión</button>
         </div>
       }
     </div>
   </header>
 
   <section class="about-section">
-    <div class="section-title">
-      <h2>¿Qué es el Sistema de Reportes Comunitarios "ComunityWarning"?</h2>
+    <div class="section-title reveal">
+      <h2>¿Qué es el Sistema de Reportes Comunitarios "Comunica"?</h2>
       <p>
         Una plataforma digital diseñada para conectar a los ciudadanos con las instituciones
-        responsables, facilitando la gestión de problemas de infraestructura pública.
+        encargadas de solucionar problematicas en la comunidad, facilitando la gestión de problemas de infraestructura pública.
       </p>
     </div>
 
     <div class="features-grid">
-      <div class="feature-card">
+      <div class="feature-card reveal reveal-delay-1">
         <div class="icon">🚧</div>
         <h3>Reporte de Baches</h3>
         <p>
@@ -33,14 +36,14 @@
           tráfico.
         </p>
       </div>
-      <div class="feature-card">
+      <div class="feature-card reveal reveal-delay-2">
         <div class="icon">🔌</div>
         <h3>Cables y Tendido</h3>
         <p>
           Informa sobre cables caídos o en mal estado que representen un peligro para los vecinos.
         </p>
       </div>
-      <div class="feature-card">
+      <div class="feature-card reveal reveal-delay-3">
         <div class="icon">💡</div>
         <h3>Alumbrado Público</h3>
         <p>Asegura que tu sector esté iluminado reportando luminarias apagadas o dañadas.</p>
@@ -49,23 +52,30 @@
   </section>
 
   <section class="steps-section">
-    <h2>¿Cómo empezar?</h2>
-    <div class="steps-container">
-      <div class="step">
-        <span class="step-number">1</span>
+    <h2 class="reveal">¿Cómo empezar?</h2>
+    <div class="timeline-container">
+      <div class="step reveal reveal-delay-1">
+        <div class="step-icon">
+          <i class="fa-solid fa-camera"></i>
+        </div>
         <h4>Identifica</h4>
         <p>Encuentra un problema en tu comunidad y toma una foto.</p>
       </div>
-      <div class="step">
-        <span class="step-number">2</span>
+      <div class="step reveal reveal-delay-2">
+        <div class="step-icon">
+          <i class="fa-solid fa-paper-plane"></i>
+        </div>
         <h4>Reporta</h4>
         <p>Sube la ubicación y descripción desde tu celular o computadora.</p>
       </div>
-      <div class="step">
-        <span class="step-number">3</span>
+      <div class="step reveal reveal-delay-3">
+        <div class="step-icon">
+          <i class="fa-solid fa-bell"></i>
+        </div>
         <h4>Seguimiento</h4>
         <p>Recibe notificaciones cuando las instituciones comiencen a trabajar en la solución.</p>
       </div>
     </div>
   </section>
 </div>
+

@@ -1,18 +1,3 @@
-<div class="navbar-contenido">
-  <!--Enlaces Navegacion-->
-  <div class="menu-escritorio">
-    @for (link of enlaces; track link.etiqueta){
-    <a (click)="navegar(link.ruta)" class="enlace-nav" style="cursor:pointer">{{link.etiqueta}}</a>
-    }
-  </div>
-
-  @if (authService.estaAutenticado()) {
-    <p class="logged-in-msg">Estas logueado</p>
-    <button class="btn-logout" (click)="salir()">Cerrar Sesión</button>
-  }
-</div>
-
-
 <!-- Contenido dinamico-->
 <main class="cuerpo-layout">
   <router-outlet></router-outlet>
@@ -189,5 +174,5 @@
     <img src="recursos/enacal.png" alt="Descripción 3">
     <img src="recursos/policia.jpg.jpeg" alt="Descripción 4">
   </div>
-  <p>&copy; 2026 "ComunityWarning" - Empieza ya</p>
+  <p>&copy; 2026 "Comunica" - Empieza ya</p>
 </footer>

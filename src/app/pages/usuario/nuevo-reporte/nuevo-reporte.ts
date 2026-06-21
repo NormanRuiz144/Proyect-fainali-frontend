@@ -2,6 +2,7 @@ import { Component, signal, OnInit, AfterViewInit, OnDestroy, inject } from '@an
 import { CommonModule } from '@angular/common';
 import * as L from 'leaflet';
 import { NuevoReporteService } from './service/nuevo-reporte.service';
+import { AuthService } from '../../../auth/service/auth-service';
 
 @Component({
   selector: 'app-nuevo-reporte',
@@ -12,8 +13,9 @@ import { NuevoReporteService } from './service/nuevo-reporte.service';
 })
 export class NuevoReporte implements OnInit, AfterViewInit, OnDestroy {
   private reporteService = inject(NuevoReporteService);
+  private authService = inject(AuthService);
   ubicacionObtenida = signal(false);
-  
+
   // Señales para los catálogos
   instituciones = signal<any[]>([]);
   problematicas = signal<any[]>([]);
@@ -26,7 +28,7 @@ export class NuevoReporte implements OnInit, AfterViewInit, OnDestroy {
   // Señal para manejar el placeholder dinámico
   placeholderActual = signal<string>('Ej: Describe detalladamente el problema, su ubicación exacta y cómo afecta a la comunidad.');
 
-  // Diccionario con los ejemplos. 
+  // Diccionario con los ejemplos.
   ejemplosProblematicas: Record<string, string> = {
     'Fuga de agua en la calle': 'Ej: Hay una fuga de agua masiva frente a la pulpería de Doña María. El agua está llegando hasta la calle principal.',
     'Incendio': 'Ej: Hay un incendio en un predio baldío cerca del mercado central, las llamas están creciendo rápidamente.',
@@ -43,7 +45,7 @@ export class NuevoReporte implements OnInit, AfterViewInit, OnDestroy {
     'Alteracion y disturbio': 'Polic',
     'Baches en la calle': 'Alcald',
     'Aguas estancadas': 'MINSA',
-    'Cables tendidos': 'ENATREL', 
+    'Cables tendidos': 'ENATREL',
   };
 
   private map: L.Map | undefined;
@@ -119,7 +121,7 @@ export class NuevoReporte implements OnInit, AfterViewInit, OnDestroy {
     const idSeleccionado = (event.target as HTMLSelectElement).value;
     // Buscamos la problemática seleccionada en el arreglo
     const problema = this.problematicas().find(p => p.id.toString() === idSeleccionado);
-    
+
     // Si encontramos la problemática y tenemos un ejemplo para ella en el diccionario:
     if (problema && this.ejemplosProblematicas[problema.problema]) {
       this.placeholderActual.set(this.ejemplosProblematicas[problema.problema]);
@@ -128,7 +130,7 @@ export class NuevoReporte implements OnInit, AfterViewInit, OnDestroy {
       const palabraClaveInst = this.institucionPorProblema[problema.problema];
       if (palabraClaveInst) {
         // Buscamos la institución en la lista que contenga la palabra clave (ignorando mayúsculas)
-        const instEncontrada = this.instituciones().find(i => 
+        const instEncontrada = this.instituciones().find(i =>
           i.nombreInstitucion.toLowerCase().includes(palabraClaveInst.toLowerCase())
         );
 
@@ -158,7 +160,7 @@ export class NuevoReporte implements OnInit, AfterViewInit, OnDestroy {
       (position) => {
         const lat = position.coords.latitude;
         const lng = position.coords.longitude;
-        
+
         this.ubicacionObtenida.set(true);
 
         if (this.map && this.marker) {
@@ -179,7 +181,7 @@ export class NuevoReporte implements OnInit, AfterViewInit, OnDestroy {
     event.preventDefault();
     const lat = this.marker?.getLatLng().lat;
     const lng = this.marker?.getLatLng().lng;
-    
+
     // Obtener valores de los inputs por su ID
     const idProblematica = (document.getElementById('problematica') as HTMLSelectElement).value;
     const idInstitucion = (document.getElementById('institucion') as HTMLSelectElement).value;
@@ -192,16 +194,21 @@ export class NuevoReporte implements OnInit, AfterViewInit, OnDestroy {
       return;
     }
 
+    const usuario = this.authService.usuarioActual();
+    if (!usuario?.id) {
+      alert('Debes iniciar sesión para enviar un reporte.');
+      return;
+    }
+
     const formData = new FormData();
-    // Valores fijos temporales (mientras no hay login)
-    formData.append('idUsuario', '2'); 
+    formData.append('idUsuario', usuario.id.toString());
     formData.append('nvlPrioridad', '5');
 
     // Valores del formulario
     formData.append('idProblematica', idProblematica);
     formData.append('idInstitucion', idInstitucion);
     formData.append('idSector', idSector);
-    
+
     // El backend espera una "ubicacion", mandaremos las coordenadas y la descripción juntas
     const ubicacionCombinada = `Lat: ${lat}, Lng: ${lng} | Desc: ${descripcion}`;
     formData.append('ubicacion', ubicacionCombinada);
