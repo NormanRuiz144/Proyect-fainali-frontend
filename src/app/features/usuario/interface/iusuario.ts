@@ -25,7 +25,16 @@ export interface IUsuario {
   updatedAt?: string;
   rol?: { id: number; rol: string };
   Institucion?: { id: number; nombreInstitucion: string; idMunicipio: number };
-  sector?: { id: number; nombreSector: string };
+  sector?: { 
+    id: number; 
+    nombreSector: string; 
+    idMunicipios: number;
+    municipio?: {
+      id: number;
+      nomMunicipio: string;
+      idDepartamentos: number;
+    }
+  };
 }
 
 export interface IUsuarioListaItem {

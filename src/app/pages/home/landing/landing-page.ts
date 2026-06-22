@@ -29,7 +29,7 @@ export class LandingPage {
       // Redirigir a la página principal de la aplicación
       console.log('Navegando');
       if (this.rolUsuario == 'default') {
-        this.router.navigate(['/nuevo-reporte']);
+        this.router.navigate(['/reportes']);
       } else if (this.rolUsuario == 'admin') {
         this.router.navigate(['/admin']);
       } else if (this.rolUsuario == 'Super-Admin') {

@@ -120,7 +120,7 @@
     <!-- Modal de Detalle (Maqueta) -->
     @if (reporteSeleccionado()) {
       <div class="modal-fondo" (click)="cerrarModal()">
-        <div class="modal-caja" (click)="$event.stopPropagation()" style="max-width: 600px">
+        <div class="modal-caja" (click)="$event.stopPropagation()" style="max-width: 600px; max-height: 90vh; overflow-y: auto;">
           <button class="boton-cerrar" (click)="cerrarModal()">
             <i class="fa-solid fa-xmark"></i>
           </button>
@@ -201,6 +201,15 @@
               <p style="margin: 5px 0 0 0; font-weight: 500; white-space: pre-wrap;">
                 {{ reporteSeleccionado()?.descripcion || 'Sin descripción' }}
               </p>
+            </div>
+            <div style="grid-column: 1 / -1;">
+              <small style="color: #94a3b8; font-weight: bold; text-transform: uppercase"
+                >Ubicación Geográfica</small
+              >
+              <p style="margin: 5px 0 10px 0; font-size: 0.9em; color: #64748b;">
+                {{ reporteSeleccionado()?.ubicacion || 'Sin coordenadas GPS' }}
+              </p>
+              <div id="mapa-admin" style="height: 180px; width: 100%; border-radius: 8px; border: 1px solid #e2e8f0; z-index: 1;"></div>
             </div>
           </div>
 

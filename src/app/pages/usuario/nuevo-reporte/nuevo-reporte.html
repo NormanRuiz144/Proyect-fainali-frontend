@@ -1,103 +1,266 @@
-<section class="portal-ciudadano">
-  <div class="contenedor-formulario">
-    <div class="encabezado-portal">
-      <div class="icono-portal">
-        <i class="fa-solid fa-bullhorn"></i>
-      </div>
-      <h2>Reportar un Problema</h2>
-      <p>Ayúdanos a mejorar nuestra comunidad. Completa la información y resolveremos la incidencia lo más pronto posible.</p>
+<div class="contenedor-admin">
+  <aside class="sidebar-admin">
+    <div class="sidebar-cabecera">
+      <img src="/logo/comunica_logo.jpeg" alt="Comunica Logo" class="logo-imagen">
+      <span class="etiqueta-admin">CIUDADANO</span>
     </div>
 
-    <form class="formulario-reporte" (submit)="enviarReporte($event)">
+    <nav class="sidebar-navegacion">
+      <button class="enlace-menu" [class.activo]="vistaActual() === 'nuevo'" (click)="cambiarVista('nuevo')">
+        <i class="fa-solid fa-plus-circle icono-menu"></i>
+        <span class="texto-enalce">Nuevo Reporte</span>
+      </button>
       
-      <!-- Paso 1: Tipo de Problema -->
-      <div class="grupo-campo">
-        <label for="problematica"><i class="fa-solid fa-triangle-exclamation"></i> ¿Qué tipo de problema es?</label>
-        <select id="problematica" class="input-portal" required (change)="cambiarPlaceholder($event)">
-          <option value="" disabled selected>Selecciona una opción...</option>
-          <option *ngFor="let prob of problematicas()" [value]="prob.id">{{ prob.problema }}</option>
-        </select>
+      <button class="enlace-menu" [class.activo]="vistaActual() === 'historial'" (click)="cambiarVista('historial')">
+        <i class="fa-solid fa-list-ul icono-menu"></i>
+        <span class="texto-enalce">Historial de Reportes</span>
+      </button>
+
+      <button class="enlace-menu" [class.activo]="vistaActual() === 'perfil'" (click)="cambiarVista('perfil')">
+        <i class="fa-solid fa-user-gear icono-menu"></i>
+        <span class="texto-enalce">Configuración de Perfil</span>
+      </button>
+    </nav>
+
+    <div class="sidebar-footer">
+      <button class="boton-salir-admin" (click)="cerrarSesion()">
+        <i class="fa-solid fa-arrow-right-from-bracket"></i> Cerrar Sesión
+      </button>
+    </div>
+  </aside>
+
+  <div class="contenido-principal">
+    <header class="cabecera-admin">
+      <div class="perfil-admin">
+        <div class="info-texto">
+          <span class="nombre-usuario" *ngIf="usuarioActual()">{{ usuarioActual().nombres }} {{ usuarioActual().apellidos }}</span>
+          <span class="rol-usuario">Ciudadano</span>
+        </div>
+      </div>
+    </header>
+
+    <main class="cuerpo-admin">
+      
+      <!-- VISTA: NUEVO REPORTE -->
+      <div [style.display]="vistaActual() === 'nuevo' ? 'block' : 'none'">
+        <div class="contenedor-formulario">
+          <div class="encabezado-portal">
+            <div class="icono-portal">
+              <i class="fa-solid fa-bullhorn"></i>
+            </div>
+            <h2>Reportar un Problema</h2>
+            <p>Ayúdanos a mejorar nuestra comunidad. Completa la información y resolveremos la incidencia lo más pronto posible.</p>
+          </div>
+
+          <form class="formulario-reporte" (submit)="enviarReporte($event)">
+            <div class="grupo-campo">
+              <label for="problematica"><i class="fa-solid fa-triangle-exclamation"></i> ¿Qué tipo de problema es?</label>
+              <select id="problematica" class="input-portal" required (change)="cambiarPlaceholder($event)">
+                <option value="" disabled selected>Selecciona una opción...</option>
+                <option *ngFor="let prob of problematicas()" [value]="prob.id">{{ prob.problema }}</option>
+              </select>
+            </div>
+
+            <div class="grupo-campo">
+              <label for="descripcion"><i class="fa-solid fa-align-left"></i> Brinda más detalles (Descripción)</label>
+              <textarea id="descripcion" class="input-portal textarea-portal" [placeholder]="placeholderActual()" required rows="3"></textarea>
+            </div>
+
+            <div class="grupo-campo">
+              <label for="institucion"><i class="fa-solid fa-building-flag"></i> ¿A qué institución va dirigido?</label>
+              <select id="institucion" class="input-portal" required [value]="institucionSeleccionada()" (change)="institucionSeleccionada.set($any($event.target).value)">
+                <option value="" disabled selected>Selecciona la institución responsable...</option>
+                <option *ngFor="let inst of instituciones()" [value]="inst.id.toString()">{{ inst.nombreInstitucion }}</option>
+              </select>
+            </div>
+
+            <div class="grupo-campo">
+              <label for="municipio"><i class="fa-solid fa-city"></i> ¿En qué municipio te encuentras?</label>
+              <select id="municipio" class="input-portal" required>
+                <option value="" disabled selected>Selecciona tu municipio...</option>
+                <option *ngFor="let mun of municipios()" [value]="mun.id">{{ mun.nomMunicipio }}</option>
+              </select>
+            </div>
+
+            <div class="grupo-campo">
+              <label for="sector"><i class="fa-solid fa-map"></i> ¿En qué sector/barrio ocurrió?</label>
+              <select id="sector" class="input-portal" required>
+                <option value="" disabled selected>Selecciona tu barrio o sector...</option>
+                <option *ngFor="let sec of sectores()" [value]="sec.id">{{ sec.nombreSector }}</option>
+              </select>
+            </div>
+
+            <div class="grupo-campo">
+              <label><i class="fa-solid fa-location-crosshairs"></i> Ubicación Exacta (GPS)</label>
+              <div class="contenedor-mapa">
+                <div class="estado-gps">
+                  <button type="button" class="btn-gps" (click)="obtenerUbicacion()">
+                    <i class="fa-solid fa-satellite-dish"></i> Obtener mi ubicación actual
+                  </button>
+                  <span class="texto-coordenadas" *ngIf="ubicacionObtenida()">¡Ubicación capturada con éxito!</span>
+                </div>
+                <div id="mapa-ubicacion" style="height: 300px; width: 100%; z-index: 1;"></div>
+              </div>
+            </div>
+
+            <div class="grupo-campo">
+              <label><i class="fa-solid fa-camera"></i> Evidencia Fotográfica</label>
+              <div class="zona-archivos">
+                <i class="fa-solid fa-cloud-arrow-up icono-subida"></i>
+                <h4>Haz clic o arrastra tus fotos aquí</h4>
+                <p>Sube hasta 6 imágenes del problema (JPG, PNG). Máximo 20MB.</p>
+                <input type="file" id="archivos-evidencia" multiple accept="image/png, image/jpeg, image/webp" class="input-archivo-oculto" (change)="onFileSelected($event)">
+                <button type="button" class="btn-subir-falso">Seleccionar Archivos</button>
+              </div>
+
+              <div class="contenedor-previsualizacion" *ngIf="imagenesPrevisualizacion().length > 0">
+                <div class="tarjeta-previsualizacion" *ngFor="let img of imagenesPrevisualizacion(); let i = index" (click)="ampliarImagen(img.url)" title="Hacer clic para ver en grande">
+                  <img [src]="img.url" [alt]="img.name">
+                  <button type="button" class="btn-eliminar-foto" (click)="eliminarImagen(i); $event.stopPropagation()" title="Eliminar imagen">
+                    <i class="fa-solid fa-xmark"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div class="acciones-formulario">
+              <button type="button" class="btn-portal-secundario" (click)="cambiarVista('historial')">Cancelar</button>
+              <button type="submit" class="btn-portal-primario">
+                <i class="fa-solid fa-paper-plane"></i> Enviar Reporte
+              </button>
+            </div>
+
+          </form>
+        </div>
       </div>
 
-      <!-- Paso 2: Descripción -->
-      <div class="grupo-campo">
-        <label for="descripcion"><i class="fa-solid fa-align-left"></i> Brinda más detalles (Descripción)</label>
-        <textarea id="descripcion" class="input-portal textarea-portal" [placeholder]="placeholderActual()" required rows="3"></textarea>
-      </div>
-
-      <!-- Paso 3: Institución a la que va dirigido -->
-      <div class="grupo-campo">
-        <label for="institucion"><i class="fa-solid fa-building-flag"></i> ¿A qué institución va dirigido?</label>
-        <select id="institucion" class="input-portal" required [value]="institucionSeleccionada()" (change)="institucionSeleccionada.set($any($event.target).value)">
-          <option value="" disabled selected>Selecciona la institución responsable...</option>
-          <option *ngFor="let inst of instituciones()" [value]="inst.id.toString()">{{ inst.nombreInstitucion }}</option>
-        </select>
-      </div>
-
-      <!-- Paso 4: Municipio (Filtro) -->
-      <div class="grupo-campo">
-        <label for="municipio"><i class="fa-solid fa-city"></i> ¿En qué municipio te encuentras?</label>
-        <select id="municipio" class="input-portal" required>
-          <option value="" disabled selected>Selecciona tu municipio...</option>
-          <option *ngFor="let mun of municipios()" [value]="mun.id">{{ mun.nomMunicipio }}</option>
-        </select>
-      </div>
-
-      <!-- Paso 5: Sector -->
-      <div class="grupo-campo">
-        <label for="sector"><i class="fa-solid fa-map"></i> ¿En qué sector/barrio ocurrió?</label>
-        <select id="sector" class="input-portal" required>
-          <option value="" disabled selected>Selecciona tu barrio o sector...</option>
-          <option *ngFor="let sec of sectores()" [value]="sec.id">{{ sec.nombreSector }}</option>
-        </select>
-      </div>
-
-      <!-- Paso 4: GPS y Mapa -->
-      <div class="grupo-campo">
-        <label><i class="fa-solid fa-location-crosshairs"></i> Ubicación Exacta (GPS)</label>
-        <div class="contenedor-mapa">
+      <!-- VISTA: HISTORIAL -->
+      <ng-container *ngIf="vistaActual() === 'historial'">
+        <div style="width: 100%; display: flex; flex-direction: column; gap: 20px;">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <h2 style="color: #0f2854; margin-top: 0;">Historial de Reportes</h2>
+            
+            <div style="display: flex; align-items: center; gap: 10px;" *ngIf="historialReportes().length > 0">
+              <label for="filtroInst" style="font-size: 0.9rem; font-weight: 600; color: #475569;"><i class="fa-solid fa-filter"></i> Filtrar por:</label>
+              <select id="filtroInst" class="input-portal" style="width: 250px; padding: 8px 12px;" 
+                      [value]="filtroInstitucion()" (change)="filtroInstitucion.set($any($event.target).value)">
+                <option value="todas">Todas las instituciones</option>
+                <option *ngFor="let inst of institucionesHistorial" [value]="inst.id">{{ inst.nombre }}</option>
+              </select>
+            </div>
+          </div>
           
-          <div class="estado-gps">
-            <button type="button" class="btn-gps" (click)="obtenerUbicacion()">
-              <i class="fa-solid fa-satellite-dish"></i> Obtener mi ubicación actual
-            </button>
-            <span class="texto-coordenadas" *ngIf="ubicacionObtenida()">¡Ubicación capturada con éxito!</span>
-          </div>
-
-          <div id="mapa-ubicacion" style="height: 300px; width: 100%; z-index: 1;"></div>
-        </div>
-      </div>
-
-      <!-- Paso 5: Evidencia Fotográfica -->
-      <div class="grupo-campo">
-        <label><i class="fa-solid fa-camera"></i> Evidencia Fotográfica</label>
-        <div class="zona-archivos">
-          <i class="fa-solid fa-cloud-arrow-up icono-subida"></i>
-          <h4>Haz clic o arrastra tus fotos aquí</h4>
-          <p>Sube hasta 6 imágenes del problema (JPG, PNG). Máximo 20MB.</p>
-          <input type="file" id="archivos-evidencia" multiple accept="image/png, image/jpeg, image/webp" class="input-archivo-oculto" (change)="onFileSelected($event)">
-          <button type="button" class="btn-subir-falso">Seleccionar Archivos</button>
-        </div>
-
-        <!-- Contenedor de Previsualización de Imágenes -->
-        <div class="contenedor-previsualizacion" *ngIf="imagenesPrevisualizacion().length > 0">
-          <div class="tarjeta-previsualizacion" *ngFor="let img of imagenesPrevisualizacion(); let i = index" (click)="ampliarImagen(img.url)" title="Hacer clic para ver en grande">
-            <img [src]="img.url" [alt]="img.name">
-            <button type="button" class="btn-eliminar-foto" (click)="eliminarImagen(i); $event.stopPropagation()" title="Eliminar imagen">
-              <i class="fa-solid fa-xmark"></i>
+          <div *ngIf="historialReportes().length === 0" style="text-align: center; padding: 40px; background: white; border-radius: 20px; border: 1px dashed #cbd5e1;">
+            <i class="fa-solid fa-clipboard-list" style="font-size: 40px; color: #94a3b8; margin-bottom: 15px;"></i>
+            <h3 style="color: #334155;">No tienes reportes aún</h3>
+            <p style="color: #64748b;">Parece que no has reportado ningún problema en tu comunidad. ¡Anímate a crear uno nuevo!</p>
+            <button class="btn-portal-primario" style="margin: 20px auto 0; width: 200px;" (click)="cambiarVista('nuevo')">
+              Crear Nuevo Reporte
             </button>
           </div>
+
+          <div *ngIf="historialReportes().length > 0" style="display: flex; gap: 24px; align-items: flex-start;">
+            
+            <div style="width: 350px; display: flex; flex-direction: column; gap: 15px; flex-shrink: 0; max-height: calc(100vh - 200px); overflow-y: auto; padding-right: 10px;">
+              <div class="tarjeta-reporte-mini" *ngFor="let rep of reportesFiltrados" 
+                  (click)="reporteSeleccionado.set(rep)"
+                  [class.activo]="reporteSeleccionado()?.id === rep.id">
+                <div class="header-tarjeta-mini">
+                  <span class="fecha-mini">{{rep.fechaGen | date:'shortDate'}}</span>
+                  <span class="estado-badge" [ngClass]="rep.estado?.toLowerCase() || 'pendiente'">{{rep.estado || 'Pendiente'}}</span>
+                </div>
+                <p class="problema-mini">{{rep.problematica?.problema || 'Reporte'}}</p>
+                <p class="institucion-mini"><i class="fa-solid fa-building"></i> {{rep.institucion?.nombreInstitucion}}</p>
+              </div>
+            </div>
+
+            <!-- Detalle Reporte Seleccionado -->
+            <div class="contenedor-detalle" *ngIf="reporteSeleccionado()" style="margin: 0; flex-grow: 1;">
+              <div class="encabezado-detalle">
+                <h2>Detalle del Reporte</h2>
+                <span class="estado-badge" [ngClass]="reporteSeleccionado().estado?.toLowerCase() || 'pendiente'">
+                  {{reporteSeleccionado().estado || 'Pendiente'}}
+                </span>
+              </div>
+              <div class="info-detalle-grid">
+                <div class="info-item">
+                  <span class="info-label">Fecha</span>
+                  <span class="info-valor">{{reporteSeleccionado().fechaGen | date:'mediumDate'}}</span>
+                </div>
+                <div class="info-item">
+                  <span class="info-label">Problema</span>
+                  <span class="info-valor">{{reporteSeleccionado().problematica?.problema}}</span>
+                </div>
+                <div class="info-item">
+                  <span class="info-label">Institución Asignada</span>
+                  <span class="info-valor">{{reporteSeleccionado().institucion?.nombreInstitucion}}</span>
+                </div>
+              </div>
+              <div class="info-detalle">
+                <p><strong>Descripción:</strong></p>
+                <div class="descripcion-box">{{reporteSeleccionado().descripcion}}</div>
+              </div>
+            </div>
+
+          </div>
         </div>
-      </div>
+      </ng-container>
 
-      <div class="acciones-formulario">
-        <button type="button" class="btn-portal-secundario">Cancelar</button>
-        <button type="submit" class="btn-portal-primario">
-          <i class="fa-solid fa-paper-plane"></i> Enviar Reporte
-        </button>
-      </div>
+      <!-- VISTA: PERFIL -->
+      <ng-container *ngIf="vistaActual() === 'perfil'">
+        <div class="contenedor-formulario">
+          <div class="encabezado-portal">
+            <div class="icono-portal">
+              <i class="fa-solid fa-user-gear"></i>
+            </div>
+            <h2>Configuración de Perfil</h2>
+            <p>Actualiza tu información personal y dirección domiciliar.</p>
+          </div>
 
-    </form>
+          <form class="formulario-reporte" (submit)="guardarPerfil(); $event.preventDefault()">
+            
+            <div class="grupo-campo">
+              <label for="correoPerfil"><i class="fa-solid fa-envelope"></i> Correo Electrónico</label>
+              <input type="email" id="correoPerfil" class="input-portal" required 
+                     [value]="perfilForm().correo" 
+                     (input)="perfilForm.update(f => ({...f, correo: $any($event.target).value}))">
+            </div>
+
+            <div class="grupo-campo">
+              <label for="perfilDepto"><i class="fa-solid fa-map"></i> Departamento</label>
+              <select id="perfilDepto" class="input-portal" [value]="perfilForm().idDepartamento" (change)="onPerfilDepartamentoChange($event)">
+                <option value="">Selecciona tu departamento...</option>
+                <option *ngFor="let dept of perfilDepartamentos()" [value]="dept.id">{{ dept.nomDepartamento }}</option>
+              </select>
+            </div>
+
+            <div class="grupo-campo" *ngIf="perfilMunicipios().length > 0">
+              <label for="perfilMuni"><i class="fa-solid fa-city"></i> Municipio</label>
+              <select id="perfilMuni" class="input-portal" [value]="perfilForm().idMunicipio" (change)="onPerfilMunicipioChange($event)">
+                <option value="">Selecciona tu municipio...</option>
+                <option *ngFor="let mun of perfilMunicipios()" [value]="mun.id">{{ mun.nomMunicipio }}</option>
+              </select>
+            </div>
+
+            <div class="grupo-campo" *ngIf="perfilSectores().length > 0">
+              <label for="perfilSector"><i class="fa-solid fa-location-dot"></i> Barrio o Sector (Dirección)</label>
+              <select id="perfilSector" class="input-portal" [value]="perfilForm().idSector" (change)="onPerfilSectorChange($event)">
+                <option value="">Selecciona tu barrio o sector...</option>
+                <option *ngFor="let sec of perfilSectores()" [value]="sec.id">{{ sec.nombreSector }}</option>
+              </select>
+            </div>
+
+            <div class="acciones-formulario">
+              <button type="submit" class="btn-portal-primario">
+                <i class="fa-solid fa-floppy-disk"></i> Guardar Cambios
+              </button>
+            </div>
+
+          </form>
+        </div>
+      </ng-container>
+
+    </main>
   </div>
 
   <!-- Modal para ver la imagen ampliada (Lightbox) -->
@@ -109,4 +272,4 @@
       <img [src]="imagenAmpliada()" alt="Evidencia ampliada" class="imagen-ampliada">
     </div>
   </div>
-</section>
+</div>

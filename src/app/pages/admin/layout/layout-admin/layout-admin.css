@@ -17,7 +17,7 @@
 
 .sidebar-admin {
   width: 280px;
-  background-color: #ffffff;
+  background-color: #0b2e59;
   border-right: 1px solid #e2e8f0;
   display: flex;
   flex-direction: column;
@@ -39,6 +39,7 @@
   justify-content: center;
   width: 100%;
   text-align: center;
+  color: #ffffff;
 }
 
 .boton-cerrar-sidebar {
@@ -67,7 +68,7 @@
 .etiqueta-admin {
   font-size: 10px;
   font-weight: 800;
-  color: var(--primario);
+  color: #ffffff;
   letter-spacing: 2px;
   text-transform: uppercase;
 }
@@ -84,7 +85,7 @@
   display: flex;
   align-items: center;
   text-decoration: none;
-  color: #64748b;
+  color: #94a3b8;
   padding: 14px 20px;
   border-radius: 14px;
   font-weight: 600;
