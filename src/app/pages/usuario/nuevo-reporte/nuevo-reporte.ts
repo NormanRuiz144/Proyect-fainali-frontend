@@ -1,8 +1,10 @@
 import { Component, signal, OnInit, AfterViewInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
 import * as L from 'leaflet';
 import { NuevoReporteService } from './service/nuevo-reporte.service';
 import { AuthService } from '../../../auth/service/auth-service';
+import { UbicacionService } from '../../../features/ubicacion/service/ubicacion-service';
 
 @Component({
   selector: 'app-nuevo-reporte',
@@ -13,7 +15,11 @@ import { AuthService } from '../../../auth/service/auth-service';
 })
 export class NuevoReporte implements OnInit, AfterViewInit, OnDestroy {
   private reporteService = inject(NuevoReporteService);
+  private ubicacionService = inject(UbicacionService);
   private authService = inject(AuthService);
+  private router = inject(Router);
+  menuAbierto = signal(false);
+  municipioSeleccionado = signal(false);
   ubicacionObtenida = signal(false);
   
   // Señal para almacenar las previsualizaciones de imágenes y sus archivos correspondientes
@@ -68,8 +74,19 @@ export class NuevoReporte implements OnInit, AfterViewInit, OnDestroy {
   private cargarCatalogos(): void {
     this.reporteService.obtenerInstituciones().subscribe(res => this.instituciones.set(res.lista_Instituciones || res));
     this.reporteService.obtenerProblematicas().subscribe(res => this.problematicas.set(res.lista_Problematicas || res));
-    this.reporteService.obtenerSectores().subscribe(res => this.sectores.set(res.lista_Sectores || res));
     this.reporteService.obtenerMunicipios().subscribe(res => this.municipios.set(res.lista_Municipios || res));
+  }
+
+  onMunicipioChange(event: Event) {
+    const id = Number((event.target as HTMLSelectElement).value);
+    this.sectores.set([]);
+    this.municipioSeleccionado.set(true);
+    if (id) {
+      this.ubicacionService.obtenerSectoresPorMunicipio(id).subscribe({
+        next: (data) => this.sectores.set(data),
+        error: () => this.sectores.set([]),
+      });
+    }
   }
 
   ngAfterViewInit(): void {
@@ -258,6 +275,11 @@ export class NuevoReporte implements OnInit, AfterViewInit, OnDestroy {
 
   cerrarModalImagen() {
     this.imagenAmpliada.set(null);
+  }
+
+  cerrarSesion() {
+    this.authService.logout();
+    this.router.navigate(['/inicio']);
   }
 
   enviarReporte(event: Event) {

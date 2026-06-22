@@ -44,6 +44,13 @@ export class Layout {
   esModal = this.interactionService.modalAuth;
   vistaAuth = this.interactionService.vistaAuth;
 
+  //Enlaces de navegacion
+  enlaces = [{ ruta: '/inicio', etiqueta: '' }];
+  //navegar en los enlaces
+  async navegar(ruta: string) {
+    this.router.navigate([ruta]);
+  }
+
   //Definir Formulario
   loginForm!: FormGroup;
   registroForm!: FormGroup;

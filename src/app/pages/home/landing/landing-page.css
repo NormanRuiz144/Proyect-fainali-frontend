@@ -330,9 +330,28 @@ button {
   border-radius: 50%;
   background: #e8eeff;
   box-shadow: 0 4px 12px rgba(28, 77, 141, 0.15);
-  margin-bottom: 20px;
+  margin-bottom: 12px;
   position: relative;
   z-index: 2;
+}
+
+.imagen-ejemplo {
+  width: 220px;
+  height: 180px;
+  object-fit: cover;
+  border-radius: 16px;
+  margin: 0 auto 15px;
+  box-shadow: 0 4px 12px rgba(15, 40, 84, 0.12);
+  display: block;
+}
+
+.video-tutorial {
+  width: 220px;
+  height: auto;
+  border-radius: 16px;
+  margin: 0 auto 15px;
+  box-shadow: 0 4px 12px rgba(15, 40, 84, 0.12);
+  display: block;
 }
 
 .step h4 {

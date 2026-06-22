@@ -6,7 +6,24 @@
       </div>
       <h2>Reportar un Problema</h2>
       <p>Ayúdanos a mejorar nuestra comunidad. Completa la información y resolveremos la incidencia lo más pronto posible.</p>
+      <button type="button" class="btn-menu-drawer" (click)="menuAbierto.set(!menuAbierto())">
+        <i class="fa-solid fa-bars"></i>
+      </button>
     </div>
+
+    @if (menuAbierto()) {
+      <div class="drawer-overlay" (click)="menuAbierto.set(false)"></div>
+      <div class="drawer-panel">
+        <button type="button" class="drawer-cerrar" (click)="menuAbierto.set(false)">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+        <div class="drawer-contenido">
+          <button type="button" class="drawer-item" (click)="cerrarSesion()">
+            <i class="fa-solid fa-right-from-bracket"></i> Cerrar Sesión
+          </button>
+        </div>
+      </div>
+    }
 
     <form class="formulario-reporte" (submit)="enviarReporte($event)">
       
@@ -37,7 +54,7 @@
       <!-- Paso 4: Municipio (Filtro) -->
       <div class="grupo-campo">
         <label for="municipio"><i class="fa-solid fa-city"></i> ¿En qué municipio te encuentras?</label>
-        <select id="municipio" class="input-portal" required>
+        <select id="municipio" class="input-portal" required (change)="onMunicipioChange($event)">
           <option value="" disabled selected>Selecciona tu municipio...</option>
           <option *ngFor="let mun of municipios()" [value]="mun.id">{{ mun.nomMunicipio }}</option>
         </select>
@@ -46,7 +63,7 @@
       <!-- Paso 5: Sector -->
       <div class="grupo-campo">
         <label for="sector"><i class="fa-solid fa-map"></i> ¿En qué sector/barrio ocurrió?</label>
-        <select id="sector" class="input-portal" required>
+        <select id="sector" class="input-portal" required [disabled]="!municipioSeleccionado()">
           <option value="" disabled selected>Selecciona tu barrio o sector...</option>
           <option *ngFor="let sec of sectores()" [value]="sec.id">{{ sec.nombreSector }}</option>
         </select>
