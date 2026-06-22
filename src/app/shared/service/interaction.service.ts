@@ -76,6 +76,11 @@ export class InteractionService {
       err?.message ||
       'Error desconocido';
 
+    // Si es un error 401 (No autorizado) y ya no hay token (ej. durante el logout), omitimos la alerta molesta
+    if (err?.status === 401 && !localStorage.getItem('token')) {
+      return;
+    }
+
     this.showError('Ops!', backendMessage, 'Cerrar');
   }
 }

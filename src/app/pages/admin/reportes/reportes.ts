@@ -1,6 +1,7 @@
 import { Component, inject, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import * as L from 'leaflet';
 import { ReportesService } from './service/reportes';
 import { IReporte, IRespuestaReportes } from './interface/ireporte';
 import { EstadoAdminService } from '../../../shared/service/estado-admin.service';
@@ -59,6 +60,10 @@ export class Reportes implements OnInit {
   // Estado para el modal
   reporteSeleccionado = signal<IReporte | null>(null);
   nuevoEstadoSeleccionado = signal('Pendiente');
+  
+  // Mapa
+  private map: L.Map | undefined;
+  private marker: L.Marker | undefined;
 
   ngOnInit(): void {
     this.cargarReportes();
@@ -102,10 +107,65 @@ export class Reportes implements OnInit {
   abrirModal(reporte: IReporte) {
     this.reporteSeleccionado.set(reporte);
     this.nuevoEstadoSeleccionado.set(reporte.estado);
+    
+    // Parse coordinates and load map
+    setTimeout(() => {
+      this.initMap(reporte.ubicacion);
+    }, 100);
   }
 
   cerrarModal() {
     this.reporteSeleccionado.set(null);
+    if (this.map) {
+      this.map.remove();
+      this.map = undefined;
+    }
+  }
+
+  private initMap(ubicacionStr: string) {
+    if (this.map) {
+      this.map.remove();
+    }
+
+    // Configuración para arreglar el problema de las imágenes de Leaflet en Angular
+    const iconRetinaUrl = 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png';
+    const iconUrl = 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png';
+    const shadowUrl = 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png';
+    const iconDefault = L.icon({
+      iconRetinaUrl,
+      iconUrl,
+      shadowUrl,
+      iconSize: [25, 41],
+      iconAnchor: [12, 41],
+      popupAnchor: [1, -34],
+      tooltipAnchor: [16, -28],
+      shadowSize: [41, 41]
+    });
+    L.Marker.prototype.options.icon = iconDefault;
+
+    let lat = 14.1; // Default Honduras lat
+    let lng = -87.2; // Default Honduras lng
+
+    // Intentar extraer lat y lng de "Lat: X, Lng: Y"
+    if (ubicacionStr) {
+      const match = ubicacionStr.match(/Lat:\s*([-0-9.]+),\s*Lng:\s*([-0-9.]+)/i);
+      if (match && match.length === 3) {
+        lat = parseFloat(match[1]);
+        lng = parseFloat(match[2]);
+      }
+    }
+
+    this.map = L.map('mapa-admin', {
+      center: [lat, lng],
+      zoom: 15
+    });
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap contributors'
+    }).addTo(this.map);
+
+    this.marker = L.marker([lat, lng]).addTo(this.map);
+    this.map.invalidateSize();
   }
 
   actualizarEstado() {

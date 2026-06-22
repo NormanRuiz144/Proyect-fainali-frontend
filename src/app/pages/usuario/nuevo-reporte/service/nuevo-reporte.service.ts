@@ -14,6 +14,10 @@ export class NuevoReporteService {
     return this.http.post(this.url, datos);
   }
 
+  obtenerHistorialUsuario(): Observable<any> {
+    return this.http.get(environment.API_URL + '/reportes/historial');
+  }
+
   obtenerInstituciones(): Observable<any> {
     return this.http.get(environment.API_URL + '/instituciones/listar');
   }

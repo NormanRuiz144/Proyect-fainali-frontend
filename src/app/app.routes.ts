@@ -21,7 +21,7 @@ export const routes: Routes = [
   },
   // Portal Ciudadano
   {
-    path: 'nuevo-reporte',
+    path: 'reportes',
     loadComponent: () =>
       import('./pages/usuario/nuevo-reporte/nuevo-reporte').then((c) => c.NuevoReporte),
   },

@@ -207,7 +207,7 @@ export class Layout {
         } else if (res.data.user.rol.rol == 'Super-Admin') {
           this.router.navigate(['/superAdmin/problematicas']);
         } else {
-          this.router.navigate(['/nuevo-reporte']);
+          this.router.navigate(['/reportes']);
         }
         console.log('Info del usuario:', res.data);
         await this.interactionService.showToast(`Bienvenido a Comunica!`);
@@ -256,7 +256,7 @@ export class Layout {
         this.authService.establecerSesion(res);
         this.cerrarModal();
         await this.interactionService.showToast('Cuenta creada correctamente', 'success');
-        this.router.navigate(['/nuevo-reporte']);
+        this.router.navigate(['/reportes']);
       },
       error: async (err) => {
         await this.interactionService.hideLoading();

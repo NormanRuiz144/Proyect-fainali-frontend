@@ -1,23 +1,49 @@
 import { Component, signal, OnInit, AfterViewInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import * as L from 'leaflet';
 import { NuevoReporteService } from './service/nuevo-reporte.service';
 import { AuthService } from '../../../auth/service/auth-service';
+import { UsuarioService } from '../../../features/usuario/service/usuario-service';
 import { UbicacionService } from '../../../features/ubicacion/service/ubicacion-service';
+import { InteractionService } from '../../../shared/service/interaction.service';
 
 @Component({
   selector: 'app-nuevo-reporte',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, FormsModule],
   templateUrl: './nuevo-reporte.html',
   styleUrl: './nuevo-reporte.css'
 })
 export class NuevoReporte implements OnInit, AfterViewInit, OnDestroy {
   private reporteService = inject(NuevoReporteService);
+  public authService = inject(AuthService);
+  private usuarioService = inject(UsuarioService);
   private ubicacionService = inject(UbicacionService);
-  private authService = inject(AuthService);
+  private interactionService = inject(InteractionService);
+  private router = inject(Router);
   municipioSeleccionado = signal(false);
   ubicacionObtenida = signal(false);
+  
+  // Señales para el Dashboard del Ciudadano
+  vistaActual = signal<'nuevo' | 'historial' | 'perfil'>('historial');
+  historialReportes = signal<any[]>([]);
+  filtroInstitucion = signal<string>('todas');
+  sidebarAbierto = signal<boolean>(true);
+  reporteSeleccionado = signal<any>(null);
+  
+  // Datos de Perfil
+  usuarioActual = signal<any>(null);
+  perfilDepartamentos = signal<any[]>([]);
+  perfilMunicipios = signal<any[]>([]);
+  perfilSectores = signal<any[]>([]);
+  perfilForm = signal({
+    correo: '',
+    idDepartamento: '',
+    idMunicipio: '',
+    idSector: ''
+  });
   
   // Señal para almacenar las previsualizaciones de imágenes y sus archivos correspondientes
   imagenesPrevisualizacion = signal<{ url: string, name: string, file: File }[]>([]);
@@ -66,6 +92,150 @@ export class NuevoReporte implements OnInit, AfterViewInit, OnDestroy {
 
   ngOnInit(): void {
     this.cargarCatalogos();
+    this.cargarHistorial();
+    this.cargarDatosPerfil();
+  }
+
+  private cargarHistorial(): void {
+    this.reporteService.obtenerHistorialUsuario().subscribe({
+      next: (res) => {
+        const reportes = res.lista_Reportes || res.data || [];
+        this.historialReportes.set(reportes);
+        
+        // Si no hay historial, mostramos el formulario
+        if (reportes.length === 0) {
+          this.vistaActual.set('nuevo');
+        } else {
+          this.vistaActual.set('historial');
+          this.reporteSeleccionado.set(reportes[0]); // Seleccionar el primer reporte
+        }
+      },
+      error: (err) => {
+        console.error('Error cargando historial', err);
+        this.vistaActual.set('nuevo');
+      }
+    });
+  }
+
+  // Obtener la lista de instituciones únicas a partir del historial del usuario
+  get institucionesHistorial() {
+    const reportes = this.historialReportes();
+    const insts = new Map();
+    reportes.forEach(r => {
+      if (r.institucion) {
+        insts.set(r.institucion.id, r.institucion.nombreInstitucion);
+      }
+    });
+    return Array.from(insts.entries()).map(([id, nombre]) => ({ id, nombre }));
+  }
+
+  // Retornar los reportes filtrados por institución
+  get reportesFiltrados() {
+    const filtro = this.filtroInstitucion();
+    if (filtro === 'todas') {
+      return this.historialReportes();
+    }
+    return this.historialReportes().filter(r => r.institucion?.id?.toString() === filtro);
+  }
+
+  private cargarDatosPerfil(): void {
+    const usuario = this.authService.usuarioActual();
+    if (usuario) {
+      this.usuarioActual.set(usuario);
+      this.perfilForm.update(f => ({ ...f, correo: usuario.correo }));
+      
+      this.ubicacionService.obtenerDepartamentos().subscribe(res => this.perfilDepartamentos.set(res));
+      
+      // Si el usuario ya tiene un sector asignado, cargar la cadena completa (dpto, muni, sector).
+      if (usuario.sector?.municipio) {
+        const idDpto = usuario.sector.municipio.idDepartamentos || (usuario.sector.municipio as any)['id_departamentos'];
+        const idMuni = usuario.sector.idMunicipios || (usuario.sector as any)['id_municipios'];
+        const idSect = usuario.sector.id;
+
+        if (idDpto) {
+          this.perfilForm.update(f => ({ ...f, idDepartamento: idDpto.toString() }));
+          this.ubicacionService.obtenerMunicipiosPorDepartamento(idDpto).subscribe(res => {
+            this.perfilMunicipios.set(res);
+            if (idMuni) {
+              this.perfilForm.update(f => ({ ...f, idMunicipio: idMuni.toString() }));
+              this.ubicacionService.obtenerSectoresPorMunicipio(idMuni).subscribe(resSectores => {
+                this.perfilSectores.set(resSectores);
+                if (idSect) {
+                  this.perfilForm.update(f => ({ ...f, idSector: idSect.toString() }));
+                }
+              });
+            }
+          });
+        }
+      } else if (usuario.idSector) {
+         this.perfilForm.update(f => ({ ...f, idSector: usuario.idSector.toString() }));
+      }
+    }
+  }
+
+  cambiarVista(vista: 'nuevo' | 'historial' | 'perfil') {
+    this.vistaActual.set(vista);
+    if (window.innerWidth <= 1024) {
+      this.sidebarAbierto.set(false);
+    }
+    if (vista === 'nuevo') {
+      setTimeout(() => {
+        this.map?.invalidateSize();
+      }, 100);
+    }
+  }
+
+  async cerrarSesion() {
+    const confirm = await this.interactionService.confirmar('Cerrar Sesión', '¿Seguro que deseas salir?');
+    if (confirm) {
+      this.authService.logout();
+      this.router.navigate(['/inicio']);
+    }
+  }
+
+  onPerfilDepartamentoChange(event: Event) {
+    const id = (event.target as HTMLSelectElement).value;
+    this.perfilForm.update(f => ({ ...f, idDepartamento: id, idMunicipio: '', idSector: '' }));
+    this.perfilMunicipios.set([]);
+    this.perfilSectores.set([]);
+    if (id) {
+      this.ubicacionService.obtenerMunicipiosPorDepartamento(Number(id)).subscribe(res => this.perfilMunicipios.set(res));
+    }
+  }
+
+  onPerfilMunicipioChange(event: Event) {
+    const id = (event.target as HTMLSelectElement).value;
+    this.perfilForm.update(f => ({ ...f, idMunicipio: id, idSector: '' }));
+    this.perfilSectores.set([]);
+    if (id) {
+      this.ubicacionService.obtenerSectoresPorMunicipio(Number(id)).subscribe(res => this.perfilSectores.set(res));
+    }
+  }
+
+  onPerfilSectorChange(event: Event) {
+    const id = (event.target as HTMLSelectElement).value;
+    this.perfilForm.update(f => ({ ...f, idSector: id }));
+  }
+
+  async guardarPerfil() {
+    const usuario = this.usuarioActual();
+    if (!usuario) return;
+
+    await this.interactionService.showLoading();
+    const datosActualizados: any = {};
+    if (this.perfilForm().correo) datosActualizados.correo = this.perfilForm().correo;
+    if (this.perfilForm().idSector) datosActualizados.idSector = Number(this.perfilForm().idSector);
+
+    this.usuarioService.actualizarUsuario(usuario.id, datosActualizados).subscribe({
+      next: async (res) => {
+        await this.interactionService.hideLoading();
+        await this.interactionService.showToast('Perfil actualizado correctamente', 'success');
+      },
+      error: async (err) => {
+        await this.interactionService.hideLoading();
+        await this.interactionService.mostrarError(err);
+      }
+    });
   }
 
   private cargarCatalogos(): void {
@@ -100,9 +270,9 @@ export class NuevoReporte implements OnInit, AfterViewInit, OnDestroy {
 
   private initMap(): void {
     // Configuración para arreglar el problema de las imágenes de Leaflet en Angular
-    const iconRetinaUrl = 'assets/marker-icon-2x.png';
-    const iconUrl = 'assets/marker-icon.png';
-    const shadowUrl = 'assets/marker-shadow.png';
+    const iconRetinaUrl = 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png';
+    const iconUrl = 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png';
+    const shadowUrl = 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png';
     const iconDefault = L.icon({
       iconRetinaUrl,
       iconUrl,
@@ -301,8 +471,6 @@ export class NuevoReporte implements OnInit, AfterViewInit, OnDestroy {
     // Valores dinámicos del usuario autenticado
     formData.append('idUsuario', usuarioLogueado.id.toString()); 
     formData.append('nvlPrioridad', '5');
-
-    // Valores del formulario
     formData.append('idProblematica', idProblematica);
     formData.append('idInstitucion', idInstitucion);
     formData.append('idSector', idSector);
@@ -312,7 +480,7 @@ export class NuevoReporte implements OnInit, AfterViewInit, OnDestroy {
     formData.append('ubicacion', ubicacionGPS);
     formData.append('descripcion', descripcion);
 
-    // Adjuntar imágenes si existen en nuestra señal (permite eliminación previa al envío)
+    // Adjuntar imágenes si existen en nuestra señal
     const imagenes = this.imagenesPrevisualizacion();
     if (imagenes.length > 0) {
       for (let i = 0; i < imagenes.length; i++) {
@@ -320,17 +488,19 @@ export class NuevoReporte implements OnInit, AfterViewInit, OnDestroy {
       }
     }
 
+    // Enviar reporte a través del servicio
     this.reporteService.crearReporte(formData).subscribe({
-      next: (respuesta) => {
-        alert('¡Reporte enviado con exito man!\n' + respuesta.mensaje);
+      next: async (respuesta) => {
+        await this.interactionService.showToast('Reporte enviado con éxito', 'success');
         (event.target as HTMLFormElement).reset(); // Limpiar el formulario
         this.limpiarImagenes();
+        // Recargar el historial para que aparezca el nuevo reporte
+        this.cargarHistorial();
+        this.vistaActual.set('historial');
       },
-      error: (error) => {
+      error: async (error) => {
         console.error('Error enviando reporte:', error);
-        // Extraer el mensaje detallado del backend
-        const mensajeDetalle = error?.error?.mensaje || error?.error?.message || error?.message || 'Error desconocido';
-        alert('Hubo un problema enviando el reporte.\nDetalle: ' + mensajeDetalle);
+        await this.interactionService.mostrarError(error);
       }
     });
   }
