@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { UbicacionService } from '../service/ubicacion.service';
 import { Departamento, Municipio, Sector } from '../interface/ubicacion.interface';
+import { PaginationMeta } from '../../problematicas/interface/problematica';
 
 type Tab = 'departamentos' | 'municipios' | 'sectores';
 type ModalMode = 'crear' | 'editar' | 'eliminar' | 'restaurar';
@@ -43,6 +44,22 @@ export class UbicacionComponent implements OnInit {
   filtroDepartamentoSector = signal<number | undefined>(undefined);
   formSectorDepartamento = signal<number | undefined>(undefined);
   mostrarInhabilitados = signal(false);
+
+  // Signals para interactuar con las paginas
+  paginaActual = signal<number>(1);
+  paginacion = signal<PaginationMeta | null>(null);
+  paginas = computed(() => {
+    const meta = this.paginacion();
+    if (!meta) return [];
+    const paginas: number[] = [];
+    const rango = 2;
+    const inicio = Math.max(meta.firstPage, meta.currentPage - rango);
+    const fin = Math.min(meta.lastPage, meta.currentPage + rango);
+    for (let i = inicio; i <= fin; i++) {
+      paginas.push(i);
+    }
+    return paginas;
+  });
 
   municipiosParaFiltroSector = computed(() => {
     const depId = Number(this.filtroDepartamentoSector());
@@ -90,11 +107,16 @@ export class UbicacionComponent implements OnInit {
 
     const tab = this.activeTab();
     if (tab === 'departamentos') {
-      this.ubicacionService.obtenerDepartamentos().subscribe({
+      this.ubicacionService.obtenerDepartamentosPag(this.paginaActual().toString()).subscribe({
         next: (res) => {
           this.departamentos.set(
-            res.lista_Departamentos.filter((d) => d.isDeleted == this.mostrarInhabilitados()) || [],
+            res.lista_Departamentos.data.filter(
+              (d) => d.isDeleted == this.mostrarInhabilitados(),
+            ) || [],
           );
+          this.paginacion.set(res.lista_Departamentos.meta);
+          this.paginaActual.set(res.lista_Departamentos.meta.currentPage);
+
           this.cargando.set(false);
         },
         error: (err) => {
@@ -105,11 +127,14 @@ export class UbicacionComponent implements OnInit {
       });
     } else if (tab === 'municipios') {
       this.cargarDepartamentosSilencioso();
-      this.ubicacionService.obtenerMunicipios().subscribe({
+      this.ubicacionService.obtenerMunicipiosPag(this.paginaActual().toString()).subscribe({
         next: (res) => {
           this.municipios.set(
-            res.lista_Municipios.filter((d) => d.isDeleted == this.mostrarInhabilitados()) || [],
+            res.lista_Municipios.data.filter((d) => d.isDeleted == this.mostrarInhabilitados()) ||
+              [],
           );
+          this.paginacion.set(res.lista_Municipios.meta);
+          this.paginaActual.set(res.lista_Municipios.meta.currentPage);
           this.cargando.set(false);
         },
         error: (err) => {
@@ -121,11 +146,13 @@ export class UbicacionComponent implements OnInit {
     } else if (tab === 'sectores') {
       this.cargarDepartamentosSilencioso();
       this.cargarMunicipiosSilencioso();
-      this.ubicacionService.obtenerSectores().subscribe({
+      this.ubicacionService.obtenerSectoresPag(this.paginaActual().toString()).subscribe({
         next: (res) => {
           this.sectores.set(
-            res.lista_Sectores.filter((d) => d.isDeleted == this.mostrarInhabilitados()) || [],
+            res.lista_Sectores.data.filter((d) => d.isDeleted == this.mostrarInhabilitados()) || [],
           );
+          this.paginacion.set(res.lista_Sectores.meta);
+          this.paginaActual.set(res.lista_Sectores.meta.currentPage);
           this.cargando.set(false);
         },
         error: (err) => {
@@ -137,14 +164,22 @@ export class UbicacionComponent implements OnInit {
     }
   }
 
+  irPagina(pag: number) {
+    if (pag < 1 || pag > (this.paginacion()?.lastPage ?? 1) || pag === this.paginaActual()) return;
+    this.paginaActual.set(pag);
+    this.cargarDatos();
+  }
+
   buscarFiltro() {
     this.cargando.set(true);
     this.error.set(null);
+    this.paginacion.set(null);
     const tab = this.activeTab();
 
     if (tab === 'municipios') {
       const depId = this.filtroDepartamento();
       if (!depId || depId === undefined || String(depId) === 'undefined') {
+        this.paginaActual.set(1);
         this.cargarDatos();
         return;
       }
@@ -163,6 +198,7 @@ export class UbicacionComponent implements OnInit {
     } else if (tab === 'sectores') {
       const muniId = this.filtroMunicipio();
       if (!muniId || muniId === undefined || String(muniId) === 'undefined') {
+        this.paginaActual.set(1);
         this.cargarDatos();
         return;
       }
@@ -182,19 +218,22 @@ export class UbicacionComponent implements OnInit {
   }
 
   cargarDepartamentosSilencioso() {
-    if (this.departamentos().length === 0) {
-      this.ubicacionService.obtenerDepartamentos().subscribe({
-        next: (res) => this.departamentos.set(res.lista_Departamentos || []),
-      });
-    }
+    // if (this.departamentos().length === 0) {
+    this.ubicacionService.obtenerDepartamentos().subscribe({
+      next: (res) => {
+        this.departamentos.set(res.lista_Departamentos || []);
+        console.log('departa', res);
+      },
+    });
+    // }
   }
 
   cargarMunicipiosSilencioso() {
-    if (this.municipios().length === 0) {
-      this.ubicacionService.obtenerMunicipios().subscribe({
-        next: (res) => this.municipios.set(res.lista_Municipios || []),
-      });
-    }
+    // if (this.municipios().length === 0) {
+    this.ubicacionService.obtenerMunicipios().subscribe({
+      next: (res) => this.municipios.set(res.lista_Municipios || []),
+    });
+    // }
   }
 
   // --- Helpers for Display ---

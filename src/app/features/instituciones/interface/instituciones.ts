@@ -1,3 +1,5 @@
+import { PaginationMeta } from '../../problematicas/interface/problematica';
+
 export interface Institucion {
   id: number;
   nombreInstitucion: string;
@@ -9,6 +11,10 @@ export interface Institucion {
 
 export interface ListarInstitucionesResponse {
   lista_Instituciones: Institucion[];
+}
+
+export interface ListarInstitucionPagResponse {
+  lista_Instituciones: { meta: PaginationMeta; data: Institucion[] };
 }
 
 export interface CrearInstitucionResponse {

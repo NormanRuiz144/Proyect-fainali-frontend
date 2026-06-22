@@ -295,6 +295,57 @@
       </tbody>
     </table>
   </div>
+
+  @if (paginacion(); as p) {
+    <div class="paginacion">
+      <span class="paginacion-info">
+        Mostrando página {{ p.currentPage }} de {{ p.lastPage }} ({{ p.total }} registros)
+      </span>
+      <div class="paginacion-botones">
+        <button
+          class="btn-pagina"
+          [disabled]="!p.previousPageUrl"
+          (click)="irPagina(p.firstPage)"
+          title="Primera página"
+        >
+          <i class="fa-solid fa-angles-left"></i>
+        </button>
+        <button
+          class="btn-pagina"
+          [disabled]="!p.previousPageUrl"
+          (click)="irPagina(p.currentPage - 1)"
+          title="Anterior"
+        >
+          <i class="fa-solid fa-angle-left"></i>
+        </button>
+        @for (pag of paginas(); track pag) {
+          <button
+            class="btn-pagina"
+            [class.activa]="pag === p.currentPage"
+            (click)="irPagina(pag)"
+          >
+            {{ pag }}
+          </button>
+        }
+        <button
+          class="btn-pagina"
+          [disabled]="!p.nextPageUrl"
+          (click)="irPagina(p.currentPage + 1)"
+          title="Siguiente"
+        >
+          <i class="fa-solid fa-angle-right"></i>
+        </button>
+        <button
+          class="btn-pagina"
+          [disabled]="!p.nextPageUrl"
+          (click)="irPagina(p.lastPage)"
+          title="Última página"
+        >
+          <i class="fa-solid fa-angles-right"></i>
+        </button>
+      </div>
+    </div>
+  }
 </div>
 
 <!-- Modal -->

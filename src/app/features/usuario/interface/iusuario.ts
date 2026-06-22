@@ -1,3 +1,5 @@
+import { PaginationMeta } from '../../problematicas/interface/problematica';
+
 export interface IRegistro {
   numeroCedula: string;
   nombres: string;
@@ -40,6 +42,9 @@ export interface IUsuarioListaItem {
 
 export interface IListarUsuariosResponse {
   lista: IUsuarioListaItem[];
+}
+export interface IListarUsuariosPagResponse {
+  lista: { meta: PaginationMeta; data: IUsuarioListaItem[] };
 }
 
 export interface IOperacionUsuarioResponse {

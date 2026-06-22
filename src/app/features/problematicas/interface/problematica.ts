@@ -11,6 +11,21 @@ export interface Problematica {
 export interface ListarProblematicasResponse {
   lista_Problematicas: Problematica[];
 }
+export interface PaginationMeta {
+  total: number;
+  perPage: number;
+  currentPage: number;
+  lastPage: number;
+  firstPage: number;
+  firstPageUrl: string;
+  lastPageUrl: string;
+  nextPageUrl: string | null;
+  previousPageUrl: string | null;
+}
+
+export interface ListarProblematicasPagResponse {
+  lista_Problematicas: { meta: PaginationMeta; data: Problematica[] };
+}
 
 export interface CrearProblematicaResponse {
   mensaje: string;

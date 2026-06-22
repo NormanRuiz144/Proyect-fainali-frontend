@@ -6,6 +6,7 @@ import {
   CrearInstitucionResponse,
   Institucion,
   ListarInstitucionesResponse,
+  ListarInstitucionPagResponse,
 } from '../interface/instituciones';
 import { Observable } from 'rxjs';
 
@@ -17,7 +18,11 @@ export class InstitucionesService {
   private apiUrl = `${environment.API_URL}/instituciones`;
 
   obtenerInstituciones(): Observable<ListarInstitucionesResponse> {
-    return this.http.get<ListarInstitucionesResponse>(`${this.apiUrl}/listar`);
+    return this.http.get<ListarInstitucionesResponse>(`${this.apiUrl}/listar/pagina`);
+  }
+
+  obtenerInstitucionesPag(pag: string): Observable<ListarInstitucionPagResponse> {
+    return this.http.get<ListarInstitucionPagResponse>(`${this.apiUrl}/listar/pagina/?page=${pag}`);
   }
 
   crearInstitucion(

@@ -4,7 +4,7 @@ import { Observable } from 'rxjs';
 import { environment } from '../../../../environment/environment';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class NuevoReporteService {
   private http = inject(HttpClient);
@@ -19,7 +19,7 @@ export class NuevoReporteService {
   }
 
   obtenerProblematicas(): Observable<any> {
-    return this.http.get(environment.API_URL + '/problematica/listar');
+    return this.http.get(environment.API_URL + '/problematica/listar/pagina/null');
   }
 
   obtenerSectores(): Observable<any> {

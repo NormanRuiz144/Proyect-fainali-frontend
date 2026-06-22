@@ -1,3 +1,6 @@
+import { PaginationMeta } from '../../problematicas/interface/problematica';
+import { Sector } from './ubicacion.interface';
+
 export interface ISector {
   id: number;
   nombreSector: string;
@@ -6,4 +9,8 @@ export interface ISector {
 
 export interface SectorResponse {
   lista_Sectores: ISector[];
+}
+
+export interface ListarSectorPagResponse {
+  lista_Sectores: { meta: PaginationMeta; data: Sector[] };
 }

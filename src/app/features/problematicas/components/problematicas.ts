@@ -2,7 +2,7 @@ import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ProblematicaService } from '../service/problematica.service';
-import { Problematica } from '../interface/problematica';
+import { PaginationMeta, Problematica } from '../interface/problematica';
 import { Institucion } from '../../instituciones/interface/instituciones';
 import { InstitucionesService } from '../../instituciones/service/instituciones.service';
 import { Departamento, Municipio } from '../../ubicacion/interface/ubicacion.interface';
@@ -48,6 +48,22 @@ export class ProblematicasComponent implements OnInit {
   filtroMunicipio = signal<number | undefined>(undefined);
   institucionSeleccionada = signal<number | undefined>(undefined);
 
+  // Signals para interactuar con las paginas
+  paginaActual = signal<number>(1);
+  paginacion = signal<PaginationMeta | null>(null);
+  paginas = computed(() => {
+    const meta = this.paginacion();
+    if (!meta) return [];
+    const paginas: number[] = [];
+    const rango = 2;
+    const inicio = Math.max(meta.firstPage, meta.currentPage - rango);
+    const fin = Math.min(meta.lastPage, meta.currentPage + rango);
+    for (let i = inicio; i <= fin; i++) {
+      paginas.push(i);
+    }
+    return paginas;
+  });
+
   municipiosFiltrados = computed(() => {
     const depId = Number(this.filtroDepartamento());
     if (!depId || isNaN(depId)) return [];
@@ -63,17 +79,19 @@ export class ProblematicasComponent implements OnInit {
   });
 
   ngOnInit() {
-    this.cargarProblematicas();
+    this.cargarProblematicas(this.paginaActual());
   }
 
-  cargarProblematicas() {
+  cargarProblematicas(pag: number) {
     this.cargando.set(true);
-    this.problematicaService.obtenerProblematicas().subscribe({
+    this.problematicaService.obtenerProblematicasPag(String(pag)).subscribe({
       next: (res) => {
         if (res.lista_Problematicas) {
           this.problematicas.set(
-            res.lista_Problematicas.filter((p) => p.isDeleted == this.mostrarInhabilitados()),
+            res.lista_Problematicas.data.filter((p) => p.isDeleted == this.mostrarInhabilitados()),
           );
+          this.paginacion.set(res.lista_Problematicas.meta);
+          this.paginaActual.set(res.lista_Problematicas.meta.currentPage);
         }
 
         this.cargando.set(false);
@@ -84,6 +102,11 @@ export class ProblematicasComponent implements OnInit {
         this.cargando.set(false);
       },
     });
+  }
+
+  irPagina(pag: number) {
+    if (pag < 1 || pag > (this.paginacion()?.lastPage ?? 1) || pag === this.paginaActual()) return;
+    this.cargarProblematicas(pag);
   }
 
   abrirModalCrear() {
@@ -124,7 +147,7 @@ export class ProblematicasComponent implements OnInit {
       if (this.modalModo() === 'eliminar') {
         this.problematicaService.eliminarProblematica(id).subscribe({
           next: () => {
-            this.cargarProblematicas();
+            this.cargarProblematicas(this.paginaActual());
             this.cerrarModal();
           },
           error: (err) => {
@@ -136,7 +159,7 @@ export class ProblematicasComponent implements OnInit {
       } else {
         this.problematicaService.restaurarProblematica(id).subscribe({
           next: () => {
-            this.cargarProblematicas();
+            this.cargarProblematicas(this.paginaActual());
             this.cerrarModal();
           },
           error: (err) => {
@@ -160,7 +183,7 @@ export class ProblematicasComponent implements OnInit {
     if (this.modalModo() === 'crear') {
       this.problematicaService.crearProblematica(problematica).subscribe({
         next: () => {
-          this.cargarProblematicas();
+          this.cargarProblematicas(this.paginaActual());
           this.cerrarModal();
         },
         error: (err) => {
@@ -173,7 +196,7 @@ export class ProblematicasComponent implements OnInit {
       if (problematica.id) {
         this.problematicaService.actualizarProblematica(problematica.id, problematica).subscribe({
           next: () => {
-            this.cargarProblematicas();
+            this.cargarProblematicas(this.paginaActual());
             this.cerrarModal();
           },
           error: (err) => {
@@ -302,6 +325,6 @@ export class ProblematicasComponent implements OnInit {
 
   cambiarFiltroInhabilitados() {
     this.mostrarInhabilitados.set(!this.mostrarInhabilitados());
-    this.cargarProblematicas();
+    this.cargarProblematicas(this.paginaActual());
   }
 }

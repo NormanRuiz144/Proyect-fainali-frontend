@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { ReportesService } from '../reportes/service/reportes';
 import { IReporte } from '../reportes/interface/ireporte';
 import { EstadoAdminService } from '../../../shared/service/estado-admin.service';
+import { PaginationMeta } from '../../../features/problematicas/interface/problematica';
 
 @Component({
   selector: 'app-historial',
@@ -29,6 +30,104 @@ export class Historial implements OnInit {
 
   // esto almacena el reporte seleccionado para ver en el modal
   reporteSeleccionado = signal<IReporte | null>(null);
+
+  // paginación client-side para la lista de usuarios (10 por página)
+  usuariosPerPage = 10;
+  usuariosPaginaActual = signal(1);
+  usuariosPaginacion = computed<PaginationMeta | null>(() => {
+    const total = this.usuariosConReportes().length;
+    const currentPage = this.usuariosPaginaActual();
+    const lastPage = Math.max(1, Math.ceil(total / this.usuariosPerPage));
+    return {
+      total,
+      perPage: this.usuariosPerPage,
+      currentPage,
+      lastPage,
+      firstPage: 1,
+      firstPageUrl: '',
+      lastPageUrl: '',
+      nextPageUrl: currentPage < lastPage ? '' : null,
+      previousPageUrl: currentPage > 1 ? '' : null,
+    };
+  });
+
+  usuariosPaginas = computed(() => {
+    const meta = this.usuariosPaginacion();
+    if (!meta) return [];
+    const paginas: number[] = [];
+    const rango = 2;
+    const inicio = Math.max(meta.firstPage, meta.currentPage - rango);
+    const fin = Math.min(meta.lastPage, meta.currentPage + rango);
+    for (let i = inicio; i <= fin; i++) {
+      paginas.push(i);
+    }
+    return paginas;
+  });
+
+  usuariosPaginados = computed(() => {
+    const todos = this.usuariosConReportes();
+    const pag = this.usuariosPaginaActual();
+    const inicio = (pag - 1) * this.usuariosPerPage;
+    return todos.slice(inicio, inicio + this.usuariosPerPage);
+  });
+
+  irPaginaUsuarios(pag: number) {
+    const meta = this.usuariosPaginacion();
+    if (!meta) return;
+    if (pag < 1 || pag > meta.lastPage || pag === this.usuariosPaginaActual()) return;
+    this.usuariosPaginaActual.set(pag);
+  }
+
+  onBusquedaChange() {
+    this.usuariosPaginaActual.set(1);
+  }
+
+  // paginación client-side para los reportes del usuario
+  reportesPerPage = 5;
+  reportesPaginaActual = signal(1);
+  reportesPaginacion = computed<PaginationMeta | null>(() => {
+    const total = this.reportesDelUsuarioSeleccionado().length;
+    const currentPage = this.reportesPaginaActual();
+    const lastPage = Math.max(1, Math.ceil(total / this.reportesPerPage));
+    return {
+      total,
+      perPage: this.reportesPerPage,
+      currentPage,
+      lastPage,
+      firstPage: 1,
+      firstPageUrl: '',
+      lastPageUrl: '',
+      nextPageUrl: currentPage < lastPage ? '' : null,
+      previousPageUrl: currentPage > 1 ? '' : null,
+    };
+  });
+
+  reportesPaginas = computed(() => {
+    const meta = this.reportesPaginacion();
+    if (!meta) return [];
+    const paginas: number[] = [];
+    const rango = 2;
+    const inicio = Math.max(meta.firstPage, meta.currentPage - rango);
+    const fin = Math.min(meta.lastPage, meta.currentPage + rango);
+    for (let i = inicio; i <= fin; i++) {
+      paginas.push(i);
+    }
+    return paginas;
+  });
+
+  reportesPaginados = computed(() => {
+    const todos = this.reportesDelUsuarioSeleccionado();
+    const pag = this.reportesPaginaActual();
+    const inicio = (pag - 1) * this.reportesPerPage;
+    return todos.slice(inicio, inicio + this.reportesPerPage);
+  });
+
+  irPaginaReportes(pag: number) {
+    const meta = this.reportesPaginacion();
+    if (!meta) return;
+    if (pag < 1 || pag > meta.lastPage || pag === this.reportesPaginaActual()) return;
+    this.reportesPaginaActual.set(pag);
+  }
 
   ngOnInit(): void {
     this.cargarReportesComunidad();
@@ -121,11 +220,13 @@ export class Historial implements OnInit {
   // esto selecciona un usuario específico para ver su historial
   seleccionarUsuario(usuario: any) {
     this.usuarioSeleccionado.set(usuario);
+    this.reportesPaginaActual.set(1);
   }
 
   // esto quita la selección para volver al buscador de usuarios
   deseleccionarUsuario() {
     this.usuarioSeleccionado.set(null);
+    this.reportesPaginaActual.set(1);
   }
 
   // esto abre el modal para visualizar los detalles de un reporte
