@@ -6,6 +6,7 @@ import {
   ActualizarProblematicaResponse,
   cargarInstitucionesAsociadasResponse,
   CrearProblematicaResponse,
+  ListarProblematicasPagResponse,
   ListarProblematicasResponse,
   Problematica,
 } from '../interface/problematica';
@@ -18,7 +19,13 @@ export class ProblematicaService {
   private apiUrl = `${environment.API_URL}/problematica`;
 
   obtenerProblematicas(): Observable<ListarProblematicasResponse> {
-    return this.http.get<ListarProblematicasResponse>(`${this.apiUrl}/listar`);
+    return this.http.get<ListarProblematicasResponse>(`${this.apiUrl}/listar/pagina`);
+  }
+
+  obtenerProblematicasPag(pag: string): Observable<ListarProblematicasPagResponse> {
+    return this.http.get<ListarProblematicasPagResponse>(
+      environment.API_URL + `/problematica/listar/pagina/?page=${pag}`,
+    );
   }
 
   crearProblematica(problematica: Partial<Problematica>): Observable<CrearProblematicaResponse> {

@@ -31,7 +31,8 @@
             type="text"
             class="input-busqueda"
             placeholder="Buscar usuario por número de cédula, nombres o apellidos..."
-            [(ngModel)]="terminoBusquedaUsuario"
+            [ngModel]="terminoBusquedaUsuario()"
+            (ngModelChange)="terminoBusquedaUsuario.set($event); onBusquedaChange()"
           />
         </div>
       </div>
@@ -45,7 +46,7 @@
             gap: 20px;
           "
         >
-          @for (usr of usuariosConReportes(); track usr.id || usr.numeroCedula) {
+          @for (usr of usuariosPaginados(); track usr.id || usr.numeroCedula) {
             <div
               class="tarjeta-resort"
               style="
@@ -141,6 +142,57 @@
               No se encontraron usuarios con reportes bajo este criterio de búsqueda.
             </div>
           }
+
+          @if (usuariosPaginacion(); as p) {
+            <div class="paginacion">
+              <span class="paginacion-info">
+                Mostrando página {{ p.currentPage }} de {{ p.lastPage }} ({{ p.total }} registros)
+              </span>
+              <div class="paginacion-botones">
+                <button
+                  class="btn-pagina"
+                  [disabled]="p.currentPage <= 1"
+                  (click)="irPaginaUsuarios(1)"
+                  title="Primera página"
+                >
+                  <i class="fa-solid fa-angles-left"></i>
+                </button>
+                <button
+                  class="btn-pagina"
+                  [disabled]="p.currentPage <= 1"
+                  (click)="irPaginaUsuarios(p.currentPage - 1)"
+                  title="Anterior"
+                >
+                  <i class="fa-solid fa-angle-left"></i>
+                </button>
+                @for (pag of usuariosPaginas(); track pag) {
+                  <button
+                    class="btn-pagina"
+                    [class.activa]="pag === p.currentPage"
+                    (click)="irPaginaUsuarios(pag)"
+                  >
+                    {{ pag }}
+                  </button>
+                }
+                <button
+                  class="btn-pagina"
+                  [disabled]="p.currentPage >= p.lastPage"
+                  (click)="irPaginaUsuarios(p.currentPage + 1)"
+                  title="Siguiente"
+                >
+                  <i class="fa-solid fa-angle-right"></i>
+                </button>
+                <button
+                  class="btn-pagina"
+                  [disabled]="p.currentPage >= p.lastPage"
+                  (click)="irPaginaUsuarios(p.lastPage)"
+                  title="Última página"
+                >
+                  <i class="fa-solid fa-angles-right"></i>
+                </button>
+              </div>
+            </div>
+          }
         </div>
       } @else {
         <!-- esto muestra el historial completo de reportes del usuario seleccionado -->
@@ -209,7 +261,7 @@
                 </tr>
               </thead>
               <tbody>
-                @for (rep of reportesDelUsuarioSeleccionado(); track rep.id) {
+                @for (rep of reportesPaginados(); track rep.id) {
                   <tr>
                     <!-- <td style="font-weight: bold; color: var(--primario);">#{{ rep.id }}</td> -->
                     <!-- <td style="max-width: 300px">
@@ -278,6 +330,57 @@
               </tbody>
             </table>
           </div>
+
+          @if (reportesPaginacion(); as p) {
+            <div class="paginacion">
+              <span class="paginacion-info">
+                Mostrando página {{ p.currentPage }} de {{ p.lastPage }} ({{ p.total }} registros)
+              </span>
+              <div class="paginacion-botones">
+                <button
+                  class="btn-pagina"
+                  [disabled]="p.currentPage <= 1"
+                  (click)="irPaginaReportes(1)"
+                  title="Primera página"
+                >
+                  <i class="fa-solid fa-angles-left"></i>
+                </button>
+                <button
+                  class="btn-pagina"
+                  [disabled]="p.currentPage <= 1"
+                  (click)="irPaginaReportes(p.currentPage - 1)"
+                  title="Anterior"
+                >
+                  <i class="fa-solid fa-angle-left"></i>
+                </button>
+                @for (pag of reportesPaginas(); track pag) {
+                  <button
+                    class="btn-pagina"
+                    [class.activa]="pag === p.currentPage"
+                    (click)="irPaginaReportes(pag)"
+                  >
+                    {{ pag }}
+                  </button>
+                }
+                <button
+                  class="btn-pagina"
+                  [disabled]="p.currentPage >= p.lastPage"
+                  (click)="irPaginaReportes(p.currentPage + 1)"
+                  title="Siguiente"
+                >
+                  <i class="fa-solid fa-angle-right"></i>
+                </button>
+                <button
+                  class="btn-pagina"
+                  [disabled]="p.currentPage >= p.lastPage"
+                  (click)="irPaginaReportes(p.lastPage)"
+                  title="Última página"
+                >
+                  <i class="fa-solid fa-angles-right"></i>
+                </button>
+              </div>
+            </div>
+          }
         </div>
       }
     }

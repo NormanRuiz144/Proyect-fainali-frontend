@@ -5,6 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { Departamento, Municipio } from '../../ubicacion/interface/ubicacion.interface';
 import { UbicacionService } from '../../ubicacion/service/ubicacion.service';
+import { PaginationMeta } from '../../problematicas/interface/problematica';
 
 @Component({
   selector: 'app-instituciones',
@@ -31,6 +32,22 @@ export class InstitucionesComponent implements OnInit {
   filtroDepartamento = signal<number | undefined>(undefined);
   filtroMunicipio = signal<number | undefined>(undefined);
 
+  // Signals para interactuar con las paginas
+  paginaActual = signal<number>(1);
+  paginacion = signal<PaginationMeta | null>(null);
+  paginas = computed(() => {
+    const meta = this.paginacion();
+    if (!meta) return [];
+    const paginas: number[] = [];
+    const rango = 2;
+    const inicio = Math.max(meta.firstPage, meta.currentPage - rango);
+    const fin = Math.min(meta.lastPage, meta.currentPage + rango);
+    for (let i = inicio; i <= fin; i++) {
+      paginas.push(i);
+    }
+    return paginas;
+  });
+
   formSectorDepartamento = signal<number | undefined>(undefined);
   formMunicipio = signal<Partial<Municipio>>({});
   fromInstitucion = signal<Partial<Institucion>>({
@@ -40,19 +57,23 @@ export class InstitucionesComponent implements OnInit {
   });
 
   ngOnInit() {
-    this.cargarInstituciones();
+    this.cargarInstituciones(this.paginaActual());
     this.cargarDatos();
   }
 
-  cargarInstituciones() {
+  cargarInstituciones(pag: number) {
     this.cargando.set(true);
-    this.instituticionService.obtenerInstituciones().subscribe({
+    this.instituticionService.obtenerInstitucionesPag(String(pag)).subscribe({
       next: (res) => {
         if (res.lista_Instituciones) {
           this.instituciones.set(
-            res.lista_Instituciones.filter((i) => i.isDeleted == this.mostrarInhabilitados()),
+            res.lista_Instituciones.data,
+            // res.lista_Instituciones.data.filter((i) => i.isDeleted == this.mostrarInhabilitados()),
           );
+          this.paginacion.set(res.lista_Instituciones.meta);
+          this.paginaActual.set(res.lista_Instituciones.meta.currentPage);
         }
+
         this.cargando.set(false);
       },
       error: (err) => {
@@ -61,6 +82,12 @@ export class InstitucionesComponent implements OnInit {
         this.cargando.set(false);
       },
     });
+  }
+
+  irPagina(pag: number) {
+    if (pag < 1 || pag > (this.paginacion()?.lastPage ?? 1) || pag === this.paginaActual()) return;
+    this.paginaActual.set(pag);
+    this.cargarInstituciones(pag);
   }
 
   cargarDepartamentosSilencioso() {
@@ -134,7 +161,7 @@ export class InstitucionesComponent implements OnInit {
       if (this.modalModo() === 'eliminar') {
         this.instituticionService.eliminarInstitucion(id).subscribe({
           next: () => {
-            this.cargarInstituciones();
+            this.cargarInstituciones(this.paginaActual());
             this.cerrarModal();
           },
           error: (err) => {
@@ -146,7 +173,7 @@ export class InstitucionesComponent implements OnInit {
       } else {
         this.instituticionService.restaurarInstitucion(id).subscribe({
           next: () => {
-            this.cargarInstituciones();
+            this.cargarInstituciones(this.paginaActual());
             this.cerrarModal();
           },
           error: (err) => {
@@ -165,14 +192,13 @@ export class InstitucionesComponent implements OnInit {
     }
 
     const institucion = this.fromInstitucion();
-    console.log(institucion);
     this.cargando.set(true);
 
     if (this.modalModo() === 'crear') {
       const data = this.fromInstitucion();
       this.instituticionService.crearInstitucion(data.idMunicipio!, institucion).subscribe({
         next: () => {
-          this.cargarInstituciones();
+          this.cargarInstituciones(this.paginaActual());
           this.cerrarModal();
         },
         error: (err) => {
@@ -185,7 +211,7 @@ export class InstitucionesComponent implements OnInit {
       if (institucion.id) {
         this.instituticionService.actualizarInstitucion(institucion.id, institucion).subscribe({
           next: () => {
-            this.cargarInstituciones();
+            this.cargarInstituciones(this.paginaActual());
             this.cerrarModal();
           },
           error: (err) => {
@@ -230,6 +256,6 @@ export class InstitucionesComponent implements OnInit {
 
   cambiarFiltroInhabilitados() {
     this.mostrarInhabilitados.set(!this.mostrarInhabilitados());
-    this.cargarInstituciones();
+    this.cargarInstituciones(this.paginaActual());
   }
 }

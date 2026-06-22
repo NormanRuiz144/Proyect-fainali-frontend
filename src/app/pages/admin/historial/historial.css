@@ -4,3 +4,54 @@
   border-radius: 8px;
   box-shadow: 8px;
 }
+
+.paginacion {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 24px;
+  background: white;
+  border-top: 1px solid #e2e8f0;
+}
+
+.paginacion-info {
+  font-size: 13px;
+  color: #64748b;
+}
+
+.paginacion-botones {
+  display: flex;
+  gap: 4px;
+}
+
+.btn-pagina {
+  min-width: 36px;
+  height: 36px;
+  border: 1px solid #e2e8f0;
+  background: white;
+  color: #1e293b;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.btn-pagina:hover:not(:disabled):not(.activa) {
+  background-color: #f1f5f9;
+  border-color: #cbd5e1;
+}
+
+.btn-pagina.activa {
+  background-color: #0b2e59;
+  color: white;
+  border-color: #0b2e59;
+}
+
+.btn-pagina:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}

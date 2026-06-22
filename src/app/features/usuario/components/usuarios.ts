@@ -9,6 +9,7 @@ import { UbicacionService } from '../../ubicacion/service/ubicacion.service';
 import { Departamento, Municipio, Sector } from '../../ubicacion/interface/ubicacion.interface';
 import { IRoles } from '../../roles/interface/roles';
 import { RolesService } from '../../roles/service/roles.service';
+import { PaginationMeta } from '../../problematicas/interface/problematica';
 
 @Component({
   selector: 'app-usuarios',
@@ -35,6 +36,22 @@ export class UsuariosComponent implements OnInit {
 
   formSectorDepartamento = signal<number | undefined>(undefined);
   formSectorMunicipio = signal<number | undefined>(undefined);
+
+  // Signals para interactuar con las paginas
+  paginaActual = signal<number>(1);
+  paginacion = signal<PaginationMeta | null>(null);
+  paginas = computed(() => {
+    const meta = this.paginacion();
+    if (!meta) return [];
+    const paginas: number[] = [];
+    const rango = 2;
+    const inicio = Math.max(meta.firstPage, meta.currentPage - rango);
+    const fin = Math.min(meta.lastPage, meta.currentPage + rango);
+    for (let i = inicio; i <= fin; i++) {
+      paginas.push(i);
+    }
+    return paginas;
+  });
 
   municipiosParaSector = computed(() => {
     const depId = Number(this.formSectorDepartamento());
@@ -80,17 +97,19 @@ export class UsuariosComponent implements OnInit {
   });
 
   ngOnInit() {
-    this.cargarUsuarios();
+    this.cargarUsuarios(this.paginaActual());
     this.cargarDatosFormulario();
   }
 
-  cargarUsuarios() {
+  cargarUsuarios(pag: number) {
     this.cargando.set(true);
     this.error.set(null);
-    this.usuarioService.obtenerUsuarios().subscribe({
+    this.usuarioService.obtenerUsuarios(String(pag)).subscribe({
       next: (res) => {
         if (res.lista) {
-          this.usuarios.set(res.lista.filter((u) => u.idRol !== 1));
+          this.usuarios.set(res.lista.data.filter((u) => u.idRol !== 1));
+          this.paginacion.set(res.lista.meta);
+          this.paginaActual.set(res.lista.meta.currentPage);
         }
         this.cargando.set(false);
       },
@@ -100,6 +119,12 @@ export class UsuariosComponent implements OnInit {
         this.cargando.set(false);
       },
     });
+  }
+
+  irPagina(pag: number) {
+    if (pag < 1 || pag > (this.paginacion()?.lastPage ?? 1) || pag === this.paginaActual()) return;
+    this.paginaActual.set(pag);
+    this.cargarUsuarios(pag);
   }
 
   cargarDatosFormulario() {
@@ -230,7 +255,7 @@ export class UsuariosComponent implements OnInit {
         })
         .subscribe({
           next: () => {
-            this.cargarUsuarios();
+            this.cargarUsuarios(this.paginaActual());
             this.cerrarModal();
           },
           error: (err) => {
@@ -255,7 +280,7 @@ export class UsuariosComponent implements OnInit {
         })
         .subscribe({
           next: () => {
-            this.cargarUsuarios();
+            this.cargarUsuarios(this.paginaActual());
             this.cerrarModal();
           },
           error: (err) => {
@@ -294,7 +319,7 @@ export class UsuariosComponent implements OnInit {
     this.cargando.set(true);
     this.usuarioService.reasignarUsuario(userId, data).subscribe({
       next: () => {
-        this.cargarUsuarios();
+        this.cargarUsuarios(this.paginaActual());
         this.cerrarModalReasignar();
       },
       error: (err) => {
@@ -322,7 +347,7 @@ export class UsuariosComponent implements OnInit {
     this.cargando.set(true);
     this.usuarioService.bajaUsuario(userId, idInstitucion).subscribe({
       next: () => {
-        this.cargarUsuarios();
+        this.cargarUsuarios(this.paginaActual());
         this.cerrarModalBaja();
       },
       error: (err) => {
