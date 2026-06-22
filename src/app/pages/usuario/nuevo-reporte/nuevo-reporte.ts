@@ -1,6 +1,5 @@
 import { Component, signal, OnInit, AfterViewInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
 import * as L from 'leaflet';
 import { NuevoReporteService } from './service/nuevo-reporte.service';
 import { AuthService } from '../../../auth/service/auth-service';
@@ -17,8 +16,6 @@ export class NuevoReporte implements OnInit, AfterViewInit, OnDestroy {
   private reporteService = inject(NuevoReporteService);
   private ubicacionService = inject(UbicacionService);
   private authService = inject(AuthService);
-  private router = inject(Router);
-  menuAbierto = signal(false);
   municipioSeleccionado = signal(false);
   ubicacionObtenida = signal(false);
   
@@ -275,11 +272,6 @@ export class NuevoReporte implements OnInit, AfterViewInit, OnDestroy {
 
   cerrarModalImagen() {
     this.imagenAmpliada.set(null);
-  }
-
-  cerrarSesion() {
-    this.authService.logout();
-    this.router.navigate(['/inicio']);
   }
 
   enviarReporte(event: Event) {

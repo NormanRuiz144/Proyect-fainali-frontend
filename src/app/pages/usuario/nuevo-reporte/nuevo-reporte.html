@@ -6,24 +6,7 @@
       </div>
       <h2>Reportar un Problema</h2>
       <p>Ayúdanos a mejorar nuestra comunidad. Completa la información y resolveremos la incidencia lo más pronto posible.</p>
-      <button type="button" class="btn-menu-drawer" (click)="menuAbierto.set(!menuAbierto())">
-        <i class="fa-solid fa-bars"></i>
-      </button>
     </div>
-
-    @if (menuAbierto()) {
-      <div class="drawer-overlay" (click)="menuAbierto.set(false)"></div>
-      <div class="drawer-panel">
-        <button type="button" class="drawer-cerrar" (click)="menuAbierto.set(false)">
-          <i class="fa-solid fa-xmark"></i>
-        </button>
-        <div class="drawer-contenido">
-          <button type="button" class="drawer-item" (click)="cerrarSesion()">
-            <i class="fa-solid fa-right-from-bracket"></i> Cerrar Sesión
-          </button>
-        </div>
-      </div>
-    }
 
     <form class="formulario-reporte" (submit)="enviarReporte($event)">
       
