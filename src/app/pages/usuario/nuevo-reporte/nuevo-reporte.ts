@@ -73,16 +73,6 @@ export class NuevoReporte implements OnInit, AfterViewInit, OnDestroy {
     'Cables tendidos': 'Ej: Un camión pasó arrancando los cables de luz y ahora están colgando peligrosamente a media calle.',
   };
 
-  // Diccionario para vincular cada problema con una palabra clave de su Institución
-  institucionPorProblema: Record<string, string> = {
-    'Fuga de agua en la calle': 'ENACAL',
-    'Incendio': 'Polic',
-    'Alteracion y disturbio': 'Polic',
-    'Baches en la calle': 'Alcald',
-    'Aguas estancadas': 'MINSA',
-    'Cables tendidos': 'ENATREL',
-  };
-
   private map: L.Map | undefined;
   private marker: L.Marker | undefined;
 
@@ -239,9 +229,39 @@ export class NuevoReporte implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private cargarCatalogos(): void {
-    this.reporteService.obtenerInstituciones().subscribe(res => this.instituciones.set(res.lista_Instituciones || res));
-    this.reporteService.obtenerProblematicas().subscribe(res => this.problematicas.set(res.lista_Problematicas || res));
-    this.reporteService.obtenerMunicipios().subscribe(res => this.municipios.set(res.lista_Municipios || res));
+    this.reporteService.obtenerInstituciones().subscribe({
+      next: (res) => this.instituciones.set(res.lista_Instituciones || res),
+      error: (err) => {
+        console.error('Error cargando instituciones', err);
+        this.interactionService.mostrarError(err);
+      },
+    });
+    this.reporteService.obtenerMunicipios().subscribe({
+      next: (res) => this.municipios.set(res.lista_Municipios || res),
+      error: (err) => {
+        console.error('Error cargando municipios', err);
+        this.interactionService.mostrarError(err);
+      },
+    });
+  }
+
+  onInstitucionChange(event: Event) {
+    const id = (event.target as HTMLSelectElement).value;
+    this.institucionSeleccionada.set(id);
+    this.problematicas.set([]);
+    this.placeholderActual.set('Ej: Describe detalladamente el problema, su ubicación exacta y cómo afecta a la comunidad.');
+    if (id) {
+      this.reporteService.obtenerProblematicasPorInstitucion(Number(id)).subscribe({
+        next: (res) => {
+          const raw = res.lista_problematicas || [];
+          this.problematicas.set(raw.map((item: any) => item.problematica));
+        },
+        error: async (err) => {
+          console.error('Error cargando problemáticas por institución', err);
+          await this.interactionService.mostrarError(err);
+        },
+      });
+    }
   }
 
   onMunicipioChange(event: Event) {
@@ -328,25 +348,6 @@ export class NuevoReporte implements OnInit, AfterViewInit, OnDestroy {
       const nuevoPlaceholder = this.ejemplosProblematicas[problema.problema];
       console.log('💡 [cambiarPlaceholder] Seteando nuevo placeholder:', nuevoPlaceholder);
       this.placeholderActual.set(nuevoPlaceholder);
-
-      // LÓGICA DE AUTO-SELECCIÓN DE INSTITUCIÓN
-      const palabraClaveInst = this.institucionPorProblema[problema.problema];
-      console.log('🏢 [cambiarPlaceholder] Palabra clave de la institución vinculada:', palabraClaveInst);
-      if (palabraClaveInst) {
-        console.log('🏛️ [cambiarPlaceholder] Lista de instituciones disponibles en frontend:', this.instituciones());
-        // Buscamos la institución en la lista que contenga la palabra clave (ignorando mayúsculas)
-        const instEncontrada = this.instituciones().find(i =>
-          i.nombreInstitucion.toLowerCase().includes(palabraClaveInst.toLowerCase())
-        );
-
-        if (instEncontrada) {
-          console.log('✅ [cambiarPlaceholder] Institución encontrada automáticamente:', instEncontrada.nombreInstitucion, 'ID:', instEncontrada.id);
-          // Actualizamos la señal, lo que cambiará el select en el HTML (tipo string)
-          this.institucionSeleccionada.set(instEncontrada.id.toString());
-        } else {
-          console.warn('❌ [cambiarPlaceholder] No se encontró ninguna institución en la base de datos que contenga:', palabraClaveInst);
-        }
-      }
 
     } else {
       console.warn('⚠️ [cambiarPlaceholder] No hay coincidencia exacta para la problemática "' + (problema ? problema.problema : 'desconocida') + '" en tus diccionarios.');

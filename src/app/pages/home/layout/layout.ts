@@ -100,6 +100,7 @@ export class Layout {
   cargarDepartamentos() {
     this.ubicacionService.obtenerDepartamentos().subscribe({
       next: (data) => this.departamentos.set(data),
+      error: (err) => this.interactionService.mostrarError(err),
     });
   }
 
@@ -111,6 +112,7 @@ export class Layout {
     if (id) {
       this.ubicacionService.obtenerMunicipiosPorDepartamento(id).subscribe({
         next: (data) => this.municipios.set(data),
+        error: (err) => this.interactionService.mostrarError(err),
       });
     }
   }
@@ -122,7 +124,10 @@ export class Layout {
     if (id) {
       this.ubicacionService.obtenerSectoresPorMunicipio(id).subscribe({
         next: (data) => this.sectores.set(data),
-        error: () => this.sectores.set([]),
+        error: (err) => {
+          this.sectores.set([]);
+          this.interactionService.mostrarError(err);
+        },
       });
     }
   }
@@ -158,6 +163,7 @@ export class Layout {
     if (deptoId) {
       this.ubicacionService.obtenerMunicipiosPorDepartamento(Number(deptoId)).subscribe({
         next: (data) => this.municipios.set(data),
+        error: (err) => this.interactionService.mostrarError(err),
       });
     }
     if (municipioId) {
@@ -166,6 +172,7 @@ export class Layout {
           this.sectores.set(data);
           this.municipioSeleccionado.set(true);
         },
+        error: (err) => this.interactionService.mostrarError(err),
       });
     }
   }
