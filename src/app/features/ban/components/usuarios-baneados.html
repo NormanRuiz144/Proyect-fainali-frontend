@@ -1,0 +1,79 @@
+<div class="contenedor-vista">
+  <div class="cabecera-vista">
+    <div>
+      <h1 class="titulo-vista">Usuarios Baneados</h1>
+      <p class="subtitulo-vista">Gestiona los usuarios suspendidos de la plataforma.</p>
+    </div>
+  </div>
+
+  <div class="tarjeta-tabla">
+    <table class="tabla-moderna">
+      <thead>
+        <tr>
+          <th>Usuario</th>
+          <th>Motivo</th>
+          <th>Tipo</th>
+          <th>Días Restantes</th>
+          <th>Acción</th>
+        </tr>
+      </thead>
+      <tbody>
+        @if (cargando() && baneados().length === 0) {
+          <tr>
+            <td colspan="5" class="texto-centro py-4">
+              <div class="spinner"></div>
+              Cargando...
+            </td>
+          </tr>
+        } @else if (baneados().length === 0) {
+          <tr>
+            <td colspan="5" class="texto-centro py-4 text-muted">
+              No hay usuarios baneados actualmente.
+            </td>
+          </tr>
+        } @else {
+          @for (item of baneados(); track item.id) {
+            <tr>
+              <td>
+                <div class="usuario-info">
+                  <span class="font-medium">{{ item.usuario.nombres }} {{ item.usuario.apellidos }}</span>
+                  <span class="text-gray-500">{{ item.usuario.numeroCedula }}</span>
+                </div>
+              </td>
+              <td>{{ item.motivo }}</td>
+              <td>
+                @if (item.tipo === 'permanente') {
+                  <span class="badge-permanente">Permanente</span>
+                } @else {
+                  <span class="badge-temporal">Temporal</span>
+                }
+              </td>
+              <td>
+                @if (item.tipo === 'temporal' && item.fechaFin) {
+                  @let dias = diasRestantes(item.fechaFin);
+                  @if (dias !== null && dias > 0) {
+                    <span>{{ dias }} día(s)</span>
+                  } @else {
+                    <span class="text-gray-500">Por vencer</span>
+                  }
+                } @else {
+                  <span class="text-gray-500">&mdash;</span>
+                }
+              </td>
+              <td>
+                <button
+                  class="btn-icono unban"
+                  (click)="desbanear(item)"
+                  title="Desbanear usuario"
+                  [disabled]="cargando()"
+                >
+                  <i class="fa-solid fa-unlock"></i>
+                </button>
+              </td>
+            </tr>
+          }
+        }
+      </tbody>
+    </table>
+  </div>
+</div>

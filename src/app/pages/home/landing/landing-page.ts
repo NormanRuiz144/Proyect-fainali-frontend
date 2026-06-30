@@ -14,8 +14,6 @@ export class LandingPage implements AfterViewInit {
   public authService = inject(AuthService);
   private router = inject(Router);
 
-  private rolUsuario = this.authService.rolUsuario();
-
   ngAfterViewInit(): void {
     const observer = new IntersectionObserver(
       (entries) => {
@@ -25,7 +23,7 @@ export class LandingPage implements AfterViewInit {
           }
         });
       },
-      { threshold: 0.1, rootMargin: '0px 0px -40px 0px' }
+      { threshold: 0.1, rootMargin: '0px 0px -40px 0px' },
     );
 
     document.querySelectorAll('.reveal').forEach((el) => observer.observe(el));
@@ -41,13 +39,15 @@ export class LandingPage implements AfterViewInit {
 
   abrirApp() {
     if (this.authService.estaAutenticado()) {
+      const rolUsuario = this.authService.rolUsuario();
+      console.log(rolUsuario);
+
       // Redirigir a la página principal de la aplicación
-      console.log('Navegando');
-      if (this.rolUsuario == 'default') {
+      if (rolUsuario == 'default') {
         this.router.navigate(['/reportes']);
-      } else if (this.rolUsuario == 'admin') {
+      } else if (rolUsuario == 'Admin') {
         this.router.navigate(['/admin']);
-      } else if (this.rolUsuario == 'Super-Admin') {
+      } else if (rolUsuario == 'Super-Admin') {
         this.router.navigate(['/superAdmin']);
       } else {
         this.router.navigate(['/inicio']);

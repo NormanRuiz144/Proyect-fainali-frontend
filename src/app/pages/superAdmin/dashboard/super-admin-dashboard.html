@@ -1,0 +1,258 @@
+<section class="seccion-dashboard">
+  <div class="contenedor-dashboard">
+    <header class="cabecera-dashboard">
+      <div>
+        <h1>Dashboard Super Admin</h1>
+        <p>Visión global de reportes, instituciones, usuarios y moderación.</p>
+      </div>
+      <button class="btn-recargar" type="button" (click)="cargarDashboard()" [disabled]="cargando()">
+        <i class="fa-solid fa-rotate-right"></i>
+        Actualizar
+      </button>
+    </header>
+
+    @if (cargando()) {
+      <div class="estado-carga"><div class="spinner"></div></div>
+    } @else if (datos(); as d) {
+      <div class="grid-metricas">
+        <div class="tarjeta-metrica">
+          <div class="icono-metrica azul"><i class="fa-solid fa-file-lines"></i></div>
+          <div>
+            <span>Total Reportes</span>
+            <strong>{{ d.kpis.totalReportes }}</strong>
+          </div>
+        </div>
+        <div class="tarjeta-metrica">
+          <div class="icono-metrica verde"><i class="fa-solid fa-check-double"></i></div>
+          <div>
+            <span>Resolución Global</span>
+            <strong>{{ d.kpis.indiceResolucion }}%</strong>
+          </div>
+        </div>
+        <div class="tarjeta-metrica">
+          <div class="icono-metrica celeste"><i class="fa-solid fa-building"></i></div>
+          <div>
+            <span>Instituciones</span>
+            <strong>{{ d.instituciones.total }}</strong>
+          </div>
+        </div>
+        <div class="tarjeta-metrica">
+          <div class="icono-metrica naranja"><i class="fa-solid fa-triangle-exclamation"></i></div>
+          <div>
+            <span>Alertas</span>
+            <strong>{{ totalAlertas() }}</strong>
+          </div>
+        </div>
+        <div class="tarjeta-metrica">
+          <div class="icono-metrica morado"><i class="fa-solid fa-users"></i></div>
+          <div>
+            <span>Usuarios</span>
+            <strong>{{ d.usuariosModeracion.totalUsuarios }}</strong>
+          </div>
+        </div>
+        <div class="tarjeta-metrica">
+          <div class="icono-metrica rojo"><i class="fa-solid fa-ban"></i></div>
+          <div>
+            <span>Baneos Activos</span>
+            <strong>{{ d.kpis.baneosActivos }}</strong>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid-graficos">
+        <article class="panel-dashboard panel-amplio">
+          <div class="panel-header">
+            <h2>Tendencia de Reportes</h2>
+            <span>Últimos 7 días</span>
+          </div>
+          @if (tendenciaChart) {
+            <apx-chart
+              [series]="tendenciaChart.series"
+              [chart]="tendenciaChart.chart"
+              [xaxis]="tendenciaChart.xaxis"
+              [yaxis]="tendenciaChart.yaxis"
+              [stroke]="tendenciaChart.stroke"
+              [dataLabels]="tendenciaChart.dataLabels"
+              [colors]="tendenciaChart.colors"
+              [markers]="tendenciaChart.markers"
+              [grid]="tendenciaChart.grid"
+            />
+          }
+        </article>
+
+        <article class="panel-dashboard">
+          <div class="panel-header">
+            <h2>Estado de Reportes</h2>
+            <span>{{ d.kpis.reportesActivos }} activos</span>
+          </div>
+          @if (estadosChart) {
+            <apx-chart
+              [series]="estadosChart.series"
+              [chart]="estadosChart.chart"
+              [labels]="estadosChart.labels"
+              [colors]="estadosChart.colors"
+              [legend]="estadosChart.legend"
+              [dataLabels]="estadosChart.dataLabels"
+            />
+          }
+        </article>
+      </div>
+
+      <div class="grid-graficos">
+        <article class="panel-dashboard panel-amplio">
+          <div class="panel-header">
+            <h2>Carga por Institución</h2>
+            <span>Top {{ d.instituciones.ranking.length }}</span>
+          </div>
+          @if (institucionesChart && d.instituciones.ranking.length > 0) {
+            <apx-chart
+              [series]="institucionesChart.series"
+              [chart]="institucionesChart.chart"
+              [xaxis]="institucionesChart.xaxis"
+              [plotOptions]="institucionesChart.plotOptions"
+              [dataLabels]="institucionesChart.dataLabels"
+              [colors]="institucionesChart.colors"
+            />
+          } @else {
+            <p class="txt-vacio">No hay reportes institucionales.</p>
+          }
+        </article>
+
+        <article class="panel-dashboard">
+          <div class="panel-header">
+            <h2>Usuarios y Moderación</h2>
+            <span>{{ d.usuariosModeracion.ciudadanos }} ciudadanos</span>
+          </div>
+          <div class="lista-resumen">
+            @for (rol of d.usuariosModeracion.porRol; track rol.rol) {
+              <div class="fila-resumen">
+                <span>{{ nombreRolVisible(rol.rol) }}</span>
+                <strong>{{ rol.total }}</strong>
+              </div>
+            }
+            <div class="fila-resumen destacado">
+              <span>Baneos temporales</span>
+              <strong>{{ d.usuariosModeracion.baneos.temporales }}</strong>
+            </div>
+            <div class="fila-resumen destacado">
+              <span>Baneos permanentes</span>
+              <strong>{{ d.usuariosModeracion.baneos.permanentes }}</strong>
+            </div>
+          </div>
+        </article>
+      </div>
+
+      <div class="grid-tablas">
+        <article class="panel-dashboard">
+          <h2>Instituciones con Más Carga</h2>
+          <table class="tabla-dashboard">
+            <thead>
+              <tr>
+                <th>Institución</th>
+                <th>Activos</th>
+                <th>Resolución</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (inst of d.instituciones.ranking; track inst.id) {
+                <tr>
+                  <td>{{ inst.nombre }}</td>
+                  <td>{{ inst.reportesActivos }}</td>
+                  <td>{{ inst.indiceResolucion }}%</td>
+                </tr>
+              } @empty {
+                <tr><td colspan="3" class="txt-vacio">No hay instituciones con reportes.</td></tr>
+              }
+            </tbody>
+          </table>
+        </article>
+
+        <article class="panel-dashboard">
+          <h2>Problemas Frecuentes</h2>
+          <div class="lista-resumen">
+            @for (problema of d.problemasFrecuentes; track problema.problema) {
+              <div class="fila-resumen">
+                <span>{{ problema.problema }}</span>
+                <strong>{{ problema.total }}</strong>
+              </div>
+            } @empty {
+              <p class="txt-vacio">No hay problemáticas reportadas.</p>
+            }
+          </div>
+        </article>
+
+        <article class="panel-dashboard">
+          <h2>Zonas con Más Actividad</h2>
+          <div class="lista-resumen">
+            @for (zona of d.zonasActivas; track zona.sector + zona.municipio) {
+              <div class="fila-resumen">
+                <span>{{ zona.sector }} · {{ zona.municipio }}</span>
+                <strong>{{ zona.total }}</strong>
+              </div>
+            } @empty {
+              <p class="txt-vacio">No hay actividad por zona.</p>
+            }
+          </div>
+        </article>
+      </div>
+
+      <div class="grid-final">
+        <article class="panel-dashboard">
+          <div class="panel-header">
+            <h2>Alertas Operativas</h2>
+            <span>{{ totalAlertas() }} pendientes</span>
+          </div>
+          <div class="lista-alertas">
+            @for (reporte of d.alertas.reportesAltaPrioridad; track reporte.id) {
+              <div class="alerta-item critica">
+                <i class="fa-solid fa-arrow-up-wide-short"></i>
+                <span>Reporte #{{ reporte.id }} en alta prioridad</span>
+              </div>
+            }
+            @for (reporte of d.alertas.reportesPendientesAntiguos; track reporte.id) {
+              <div class="alerta-item advertencia">
+                <i class="fa-solid fa-clock"></i>
+                <span>Reporte #{{ reporte.id }} lleva {{ reporte.diasPendiente }} días pendiente</span>
+              </div>
+            }
+            @for (inst of d.alertas.institucionesSinAdmin; track inst.id) {
+              <div class="alerta-item info">
+                <i class="fa-solid fa-user-shield"></i>
+                <span>{{ inst.nombre }} no tiene admin asignado</span>
+              </div>
+            }
+            @for (ban of d.alertas.baneosPorVencer; track ban.userId) {
+              <div class="alerta-item info">
+                <i class="fa-solid fa-unlock-keyhole"></i>
+                <span>{{ ban.nombre }} se desbloquea en {{ ban.diasRestantes }} día(s)</span>
+              </div>
+            }
+            @if (totalAlertas() === 0) {
+              <p class="txt-vacio">No hay alertas operativas.</p>
+            }
+          </div>
+        </article>
+
+        <article class="panel-dashboard">
+          <div class="panel-header">
+            <h2>Actividad Reciente</h2>
+            <span>Últimos eventos</span>
+          </div>
+          <div class="lista-actividad">
+            @for (actividad of d.actividadReciente; track actividad.tipo + actividad.fecha + actividad.descripcion) {
+              <div class="actividad-item">
+                <span class="punto" [class]="actividad.tipo"></span>
+                <div>
+                  <p>{{ actividad.descripcion }}</p>
+                  <small>{{ formatDate(actividad.fecha) }}</small>
+                </div>
+              </div>
+            } @empty {
+              <p class="txt-vacio">No hay actividad reciente.</p>
+            }
+          </div>
+        </article>
+      </div>
+    }
+  </div>
+</section>

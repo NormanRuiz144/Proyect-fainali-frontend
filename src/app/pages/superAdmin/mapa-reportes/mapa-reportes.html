@@ -1,0 +1,129 @@
+<div class="contenedor-vista">
+  <header class="cabecera-vista">
+    <div>
+      <h1 class="titulo-vista">Mapa General de Reportes</h1>
+      <p class="subtitulo-vista">
+        Visualiza la distribución global de reportes registrados en la plataforma.
+      </p>
+    </div>
+  </header>
+
+  <section class="panel-filtros">
+    <div class="grupo-filtro">
+      <label for="estado">Estado</label>
+      <select
+        id="estado"
+        class="form-input"
+        [ngModel]="filtroEstado()"
+        (ngModelChange)="filtroEstado.set($event)"
+      >
+        <option value="">Todos</option>
+        <option value="Pendiente">Pendiente</option>
+        <option value="En Proceso">En Proceso</option>
+        <option value="Finalizado">Finalizado</option>
+      </select>
+    </div>
+
+    <div class="grupo-filtro">
+      <label for="institucion">Institución</label>
+      <select
+        id="institucion"
+        class="form-input"
+        [ngModel]="filtroInstitucion()"
+        (ngModelChange)="filtroInstitucion.set($event)"
+      >
+        <option value="">Todas</option>
+        @for (institucion of instituciones(); track institucion.id) {
+          <option [value]="institucion.id">{{ institucion.nombreInstitucion }}</option>
+        }
+      </select>
+    </div>
+
+    <div class="grupo-filtro">
+      <label for="problematica">Problemática</label>
+      <select
+        id="problematica"
+        class="form-input"
+        [ngModel]="filtroProblematica()"
+        (ngModelChange)="filtroProblematica.set($event)"
+      >
+        <option value="">Todas</option>
+        @for (problematica of problematicas(); track problematica.id) {
+          <option [value]="problematica.id">{{ problematica.problema }}</option>
+        }
+      </select>
+    </div>
+
+    <div class="grupo-filtro">
+      <label for="fechaDesde">Desde</label>
+      <input
+        id="fechaDesde"
+        class="form-input"
+        type="date"
+        [ngModel]="fechaDesde()"
+        (ngModelChange)="fechaDesde.set($event)"
+      />
+    </div>
+
+    <div class="grupo-filtro">
+      <label for="fechaHasta">Hasta</label>
+      <input
+        id="fechaHasta"
+        class="form-input"
+        type="date"
+        [ngModel]="fechaHasta()"
+        (ngModelChange)="fechaHasta.set($event)"
+      />
+    </div>
+
+    <div class="acciones-filtros">
+      <button class="btn-primario" (click)="aplicarFiltros()" [disabled]="cargando()">
+        <i class="fa-solid fa-filter"></i>
+        Aplicar
+      </button>
+      <button class="btn-secundario" (click)="limpiarFiltros()" [disabled]="cargando()">
+        <i class="fa-solid fa-rotate-left"></i>
+        Limpiar
+      </button>
+    </div>
+  </section>
+
+  <section class="resumen-mapa">
+    <article>
+      <span>Total filtrado</span>
+      <strong>{{ total() }}</strong>
+    </article>
+    <article>
+      <span>Con ubicación</span>
+      <strong>{{ totalConUbicacion() }}</strong>
+    </article>
+    <article>
+      <span>Sin ubicación</span>
+      <strong>{{ totalSinUbicacion() }}</strong>
+    </article>
+  </section>
+
+  <section class="mapa-contenedor">
+    @if (cargando()) {
+      <div class="estado-mapa">
+        <div class="spinner"></div>
+        Cargando reportes...
+      </div>
+    }
+
+    @if (!cargando() && reportes().length === 0) {
+      <div class="estado-mapa estado-vacio">
+        No hay reportes con ubicación para los filtros seleccionados.
+      </div>
+    }
+
+    <div id="mapa-general-reportes"></div>
+
+    <div class="leyenda-mapa">
+      <span><i class="estado-pendiente"></i> Pendiente</span>
+      <span><i class="estado-proceso"></i> En Proceso</span>
+      <span><i class="estado-finalizado"></i> Finalizado</span>
+      <span><i class="estado-prioridad"></i> Alta prioridad</span>
+    </div>
+  </section>
+</div>

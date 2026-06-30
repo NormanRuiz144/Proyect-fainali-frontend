@@ -35,10 +35,18 @@ export class NuevoReporte implements OnInit, AfterViewInit, OnDestroy {
   
   // Datos de Perfil
   usuarioActual = signal<any>(null);
+  perfilCargando = signal(false);
   perfilDepartamentos = signal<any[]>([]);
   perfilMunicipios = signal<any[]>([]);
   perfilSectores = signal<any[]>([]);
+  perfilErrores = signal<{ correo?: string; ubicacion?: string }>({});
   perfilForm = signal({
+    numeroCedula: '',
+    nombres: '',
+    apellidos: '',
+    sexo: '',
+    rol: '',
+    institucion: '',
     correo: '',
     idDepartamento: '',
     idMunicipio: '',
@@ -56,6 +64,8 @@ export class NuevoReporte implements OnInit, AfterViewInit, OnDestroy {
   problematicas = signal<any[]>([]);
   sectores = signal<any[]>([]);
   municipios = signal<any[]>([]);
+  municipioReporteId = signal<string>('');
+  sectorReporteId = signal<string>('');
 
   // Señal para manejar la institución autoseleccionada
   institucionSeleccionada = signal<string>('');
@@ -129,38 +139,96 @@ export class NuevoReporte implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private cargarDatosPerfil(): void {
-    const usuario = this.authService.usuarioActual();
-    if (usuario) {
-      this.usuarioActual.set(usuario);
-      this.perfilForm.update(f => ({ ...f, correo: usuario.correo }));
-      
-      this.ubicacionService.obtenerDepartamentos().subscribe(res => this.perfilDepartamentos.set(res));
-      
-      // Si el usuario ya tiene un sector asignado, cargar la cadena completa (dpto, muni, sector).
-      if (usuario.sector?.municipio) {
-        const idDpto = usuario.sector.municipio.idDepartamentos || (usuario.sector.municipio as any)['id_departamentos'];
-        const idMuni = usuario.sector.idMunicipios || (usuario.sector as any)['id_municipios'];
-        const idSect = usuario.sector.id;
-
-        if (idDpto) {
-          this.perfilForm.update(f => ({ ...f, idDepartamento: idDpto.toString() }));
-          this.ubicacionService.obtenerMunicipiosPorDepartamento(idDpto).subscribe(res => {
-            this.perfilMunicipios.set(res);
-            if (idMuni) {
-              this.perfilForm.update(f => ({ ...f, idMunicipio: idMuni.toString() }));
-              this.ubicacionService.obtenerSectoresPorMunicipio(idMuni).subscribe(resSectores => {
-                this.perfilSectores.set(resSectores);
-                if (idSect) {
-                  this.perfilForm.update(f => ({ ...f, idSector: idSect.toString() }));
-                }
-              });
-            }
-          });
+    this.perfilCargando.set(true);
+    this.authService.obtenerPerfilActual().subscribe({
+      next: (usuario) => {
+        this.aplicarDatosPerfil(usuario);
+        this.perfilCargando.set(false);
+      },
+      error: async () => {
+        const usuarioLocal = this.authService.usuarioActual();
+        if (usuarioLocal) {
+          this.aplicarDatosPerfil(usuarioLocal);
         }
-      } else if (usuario.idSector) {
-         this.perfilForm.update(f => ({ ...f, idSector: usuario.idSector.toString() }));
+        this.perfilCargando.set(false);
+        await this.interactionService.showToast(
+          'No se pudo refrescar el perfil desde el servidor. Se muestran los datos locales.',
+          'warning',
+        );
+      },
+    });
+  }
+
+  private aplicarDatosPerfil(usuario: any): void {
+    if (!usuario) return;
+
+    this.usuarioActual.set(usuario);
+    this.perfilForm.update((f) => ({
+      ...f,
+      numeroCedula: usuario.numeroCedula || '',
+      nombres: usuario.nombres || '',
+      apellidos: usuario.apellidos || '',
+      sexo: usuario.sexo || '',
+      rol: this.nombreRolVisible(usuario.rol?.rol || ''),
+      institucion: usuario.institucion?.nombreInstitucion || 'Ciudadano',
+      correo: usuario.correo || '',
+    }));
+
+    this.ubicacionService.obtenerDepartamentos().subscribe((res) => this.perfilDepartamentos.set(res));
+
+    if (usuario.sector?.municipio) {
+      const idDpto =
+        usuario.sector.municipio.idDepartamentos ||
+        (usuario.sector.municipio as any)['id_departamentos'];
+      const idMuni = usuario.sector.idMunicipios || (usuario.sector as any)['id_municipios'];
+      const idSect = usuario.sector.id;
+
+      if (idDpto) {
+        this.perfilForm.update((f) => ({ ...f, idDepartamento: idDpto.toString() }));
+        this.ubicacionService.obtenerMunicipiosPorDepartamento(idDpto).subscribe((res) => {
+          this.perfilMunicipios.set(res);
+          if (idMuni) {
+            this.perfilForm.update((f) => ({ ...f, idMunicipio: idMuni.toString() }));
+            this.ubicacionService.obtenerSectoresPorMunicipio(idMuni).subscribe((resSectores) => {
+              this.perfilSectores.set(resSectores);
+              if (idSect) {
+                this.perfilForm.update((f) => ({ ...f, idSector: idSect.toString() }));
+                this.preseleccionarUbicacionReporte(idMuni, idSect, resSectores);
+              }
+            });
+          }
+        });
       }
+    } else if (usuario.idSector) {
+      this.perfilForm.update((f) => ({ ...f, idSector: usuario.idSector.toString() }));
+      this.preseleccionarUbicacionReportePorSector(usuario.idSector);
     }
+  }
+
+  private preseleccionarUbicacionReporte(
+    idMunicipio: number,
+    idSector: number,
+    sectores: any[]
+  ): void {
+    this.municipioReporteId.set(idMunicipio.toString());
+    this.sectorReporteId.set(idSector.toString());
+    this.municipioSeleccionado.set(true);
+    this.sectores.set(sectores);
+  }
+
+  private preseleccionarUbicacionReportePorSector(idSector: number): void {
+    this.ubicacionService.obtenerSectorPorId(idSector).subscribe({
+      next: (sector: any) => {
+        const idMunicipio = sector.idMunicipios ?? sector.id_municipios ?? sector.idMunicipio;
+        if (!idMunicipio) return;
+
+        this.ubicacionService.obtenerSectoresPorMunicipio(Number(idMunicipio)).subscribe({
+          next: (sectores) => this.preseleccionarUbicacionReporte(idMunicipio, idSector, sectores),
+          error: () => this.sectores.set([]),
+        });
+      },
+      error: (err) => console.error('Error cargando sector del usuario', err),
+    });
   }
 
   cambiarVista(vista: 'nuevo' | 'historial' | 'perfil') {
@@ -186,6 +254,7 @@ export class NuevoReporte implements OnInit, AfterViewInit, OnDestroy {
   onPerfilDepartamentoChange(event: Event) {
     const id = (event.target as HTMLSelectElement).value;
     this.perfilForm.update(f => ({ ...f, idDepartamento: id, idMunicipio: '', idSector: '' }));
+    this.perfilErrores.update((errores) => ({ ...errores, ubicacion: undefined }));
     this.perfilMunicipios.set([]);
     this.perfilSectores.set([]);
     if (id) {
@@ -196,6 +265,7 @@ export class NuevoReporte implements OnInit, AfterViewInit, OnDestroy {
   onPerfilMunicipioChange(event: Event) {
     const id = (event.target as HTMLSelectElement).value;
     this.perfilForm.update(f => ({ ...f, idMunicipio: id, idSector: '' }));
+    this.perfilErrores.update((errores) => ({ ...errores, ubicacion: undefined }));
     this.perfilSectores.set([]);
     if (id) {
       this.ubicacionService.obtenerSectoresPorMunicipio(Number(id)).subscribe(res => this.perfilSectores.set(res));
@@ -205,27 +275,83 @@ export class NuevoReporte implements OnInit, AfterViewInit, OnDestroy {
   onPerfilSectorChange(event: Event) {
     const id = (event.target as HTMLSelectElement).value;
     this.perfilForm.update(f => ({ ...f, idSector: id }));
+    this.perfilErrores.update((errores) => ({ ...errores, ubicacion: undefined }));
+  }
+
+  onPerfilCorreoChange(event: Event) {
+    const correo = (event.target as HTMLInputElement).value.trim();
+    this.perfilForm.update((f) => ({ ...f, correo }));
+    this.perfilErrores.update((errores) => ({ ...errores, correo: undefined }));
+  }
+
+  private validarPerfil(): boolean {
+    const form = this.perfilForm();
+    const errores: { correo?: string; ubicacion?: string } = {};
+    const correo = form.correo.trim();
+    const correoValido = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(correo);
+
+    if (!correo) {
+      errores.correo = 'El correo electrónico es obligatorio.';
+    } else if (!correoValido || correo.length > 254) {
+      errores.correo = 'Ingrese un correo electrónico válido.';
+    }
+
+    const departamentoExiste = this.perfilDepartamentos().some((item) => item.id.toString() === form.idDepartamento);
+    const municipioExiste = this.perfilMunicipios().some((item) => item.id.toString() === form.idMunicipio);
+    const sectorExiste = this.perfilSectores().some((item) => item.id.toString() === form.idSector);
+
+    if (!form.idDepartamento || !form.idMunicipio || !form.idSector) {
+      errores.ubicacion = 'Debe seleccionar departamento, municipio y sector.';
+    } else if (!departamentoExiste || !municipioExiste || !sectorExiste) {
+      errores.ubicacion = 'La ubicación seleccionada no es válida.';
+    }
+
+    this.perfilErrores.set(errores);
+    return Object.keys(errores).length === 0;
   }
 
   async guardarPerfil() {
     const usuario = this.usuarioActual();
     if (!usuario) return;
+    if (!this.validarPerfil()) {
+      await this.interactionService.showToast('Revise los datos del perfil antes de guardar.', 'warning');
+      return;
+    }
 
     await this.interactionService.showLoading();
     const datosActualizados: any = {};
-    if (this.perfilForm().correo) datosActualizados.correo = this.perfilForm().correo;
-    if (this.perfilForm().idSector) datosActualizados.idSector = Number(this.perfilForm().idSector);
+    datosActualizados.correo = this.perfilForm().correo.trim();
+    datosActualizados.idSector = Number(this.perfilForm().idSector);
 
     this.usuarioService.actualizarUsuario(usuario.id, datosActualizados).subscribe({
-      next: async (res) => {
-        await this.interactionService.hideLoading();
-        await this.interactionService.showToast('Perfil actualizado correctamente', 'success');
+      next: () => {
+        this.authService.obtenerPerfilActual().subscribe({
+          next: async (perfil) => {
+            this.aplicarDatosPerfil(perfil);
+            await this.interactionService.hideLoading();
+            await this.interactionService.showToast('Perfil actualizado correctamente', 'success');
+          },
+          error: async () => {
+            await this.interactionService.hideLoading();
+            await this.interactionService.showToast(
+              'Perfil actualizado, pero no se pudo refrescar la información.',
+              'warning',
+            );
+          },
+        });
       },
       error: async (err) => {
         await this.interactionService.hideLoading();
         await this.interactionService.mostrarError(err);
       }
     });
+  }
+
+  nombreRolVisible(rol: string): string {
+    if (rol === 'Super-Admin') return 'Administrador de la plataforma';
+    if (rol === 'Admin') return 'Administrador de Institución';
+    if (rol === 'default' || rol === 'dafault') return 'Ciudadano';
+    return rol || 'Sin rol asignado';
   }
 
   private cargarCatalogos(): void {
@@ -267,13 +393,19 @@ export class NuevoReporte implements OnInit, AfterViewInit, OnDestroy {
   onMunicipioChange(event: Event) {
     const id = Number((event.target as HTMLSelectElement).value);
     this.sectores.set([]);
-    this.municipioSeleccionado.set(true);
+    this.sectorReporteId.set('');
+    this.municipioReporteId.set(id ? id.toString() : '');
+    this.municipioSeleccionado.set(!!id);
     if (id) {
       this.ubicacionService.obtenerSectoresPorMunicipio(id).subscribe({
         next: (data) => this.sectores.set(data),
         error: () => this.sectores.set([]),
       });
     }
+  }
+
+  onSectorChange(event: Event) {
+    this.sectorReporteId.set((event.target as HTMLSelectElement).value);
   }
 
   ngAfterViewInit(): void {
@@ -323,7 +455,7 @@ export class NuevoReporte implements OnInit, AfterViewInit, OnDestroy {
     this.marker.on('dragend', () => {
       const position = this.marker?.getLatLng();
       if (position) {
-        console.log(`Pin movido a: Lat ${position.lat}, Lng ${position.lng}`);
+        this.ubicacionObtenida.set(true);
       }
     });
 
@@ -336,21 +468,16 @@ export class NuevoReporte implements OnInit, AfterViewInit, OnDestroy {
   // Método para cambiar el placeholder dinámicamente
   cambiarPlaceholder(event: Event) {
     const idSeleccionado = (event.target as HTMLSelectElement).value;
-    console.log('🔍 [cambiarPlaceholder] ID de problemática seleccionado:', idSeleccionado);
-    console.log('📚 [cambiarPlaceholder] Problemáticas cargadas en el frontend:', this.problematicas());
 
     // Buscamos la problemática seleccionada en el arreglo
     const problema = this.problematicas().find(p => p.id.toString() === idSeleccionado);
-    console.log('🎯 [cambiarPlaceholder] Objeto problemática encontrado en la lista:', problema);
     
     // Si encontramos la problemática y tenemos un ejemplo para ella en el diccionario:
     if (problema && this.ejemplosProblematicas[problema.problema]) {
       const nuevoPlaceholder = this.ejemplosProblematicas[problema.problema];
-      console.log('💡 [cambiarPlaceholder] Seteando nuevo placeholder:', nuevoPlaceholder);
       this.placeholderActual.set(nuevoPlaceholder);
 
     } else {
-      console.warn('⚠️ [cambiarPlaceholder] No hay coincidencia exacta para la problemática "' + (problema ? problema.problema : 'desconocida') + '" en tus diccionarios.');
       // Mensaje por defecto si la problemática no está en el diccionario o es nula
       this.placeholderActual.set('Ej: Describe detalladamente el problema, su ubicación exacta y cómo afecta a la comunidad.');
     }
@@ -358,7 +485,7 @@ export class NuevoReporte implements OnInit, AfterViewInit, OnDestroy {
 
   obtenerUbicacion() {
     if (!navigator.geolocation) {
-      alert('Tu navegador no soporta geolocalización.');
+      this.interactionService.showToast('Tu navegador no soporta geolocalización.', 'warning');
       return;
     }
 
@@ -383,7 +510,10 @@ export class NuevoReporte implements OnInit, AfterViewInit, OnDestroy {
       },
       (error) => {
         console.error('Error obteniendo ubicación', error);
-        alert('No pudimos obtener tu ubicación. Por favor, mueve el pin rojo al lugar del problema manualmente.');
+        this.interactionService.showToast(
+          'No pudimos obtener tu ubicación. Mueve el pin rojo manualmente.',
+          'warning',
+        );
       },
       { enableHighAccuracy: true }
     );
@@ -397,7 +527,7 @@ export class NuevoReporte implements OnInit, AfterViewInit, OnDestroy {
       
       // Limitar a un máximo de 6 imágenes en total
       if (imagenesActuales.length + nuevosArchivos.length > 6) {
-        alert('Solo puedes subir hasta 6 imágenes en total.');
+        this.interactionService.showToast('Solo puedes subir hasta 6 imágenes en total.', 'warning');
         return;
       }
 
@@ -458,13 +588,13 @@ export class NuevoReporte implements OnInit, AfterViewInit, OnDestroy {
     const archivosInput = document.getElementById('archivos-evidencia') as HTMLInputElement;
 
     if (!idProblematica || !idInstitucion || !idSector || !descripcion) {
-      alert('Por favor, completa todos los campos requeridos.');
+      this.interactionService.showToast('Por favor, completa todos los campos requeridos.', 'warning');
       return;
     }
 
     const usuarioLogueado = this.authService.usuarioActual();
     if (!usuarioLogueado) {
-      alert('Debes iniciar sesión para poder enviar un reporte.');
+      this.interactionService.showToast('Debes iniciar sesión para poder enviar un reporte.', 'warning');
       return;
     }
 

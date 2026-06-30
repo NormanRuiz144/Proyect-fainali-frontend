@@ -245,15 +245,13 @@
         </p>
 
         <!-- Búsqueda en Cascada -->
-        <div
-          style="background-color: #f8fafc; padding: 15px; border-radius: 8px; margin-bottom: 20px"
-        >
-          <h3 style="font-size: 1.1rem; margin-bottom: 10px; font-weight: 600; color: #1e293b">
+        <div class="panel-filtros-asignacion">
+          <h3 class="titulo-filtros">
             Asignar Nueva Institución
           </h3>
 
           <div class="form-grupo mt-4">
-            <label for="idDepartamentoAsignar" style="font-weight: 500">1. Departamento</label>
+            <label for="idDepartamentoAsignar">1. Departamento</label>
             <select
               id="idDepartamentoAsignar"
               class="form-input"
@@ -268,7 +266,7 @@
           </div>
 
           <div class="form-grupo mt-4">
-            <label for="idMunicipioAsignar" style="font-weight: 500">2. Municipio</label>
+            <label for="idMunicipioAsignar">2. Municipio</label>
             <select
               id="idMunicipioAsignar"
               class="form-input"
@@ -284,12 +282,11 @@
           </div>
 
           <div class="form-grupo mt-4">
-            <label for="idInstitucionAsignar" style="font-weight: 500">3. Institución</label>
-            <div style="display: flex; gap: 10px">
+            <label for="idInstitucionAsignar">3. Institución</label>
+            <div class="fila-asignacion">
               <select
                 id="idInstitucionAsignar"
-                class="form-input"
-                style="flex: 1"
+                class="form-input select-asignacion"
                 [ngModel]="institucionSeleccionada()"
                 (ngModelChange)="institucionSeleccionada.set($event)"
                 [disabled]="!filtroMunicipio() || institucionesFiltradas().length === 0"

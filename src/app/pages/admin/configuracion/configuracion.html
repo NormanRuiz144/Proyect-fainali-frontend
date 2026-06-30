@@ -1,0 +1,108 @@
+<section class="contenedor-configuracion">
+  <header class="cabecera-vista">
+    <div>
+      <p class="etiqueta-seccion">Configuración institucional</p>
+      <h1>Problemáticas de la institución</h1>
+      <p>
+        Gestiona las problemáticas que puede atender
+        <strong>{{ institucionNombre() }}</strong>.
+      </p>
+    </div>
+  </header>
+
+  @if (sinInstitucion()) {
+    <div class="estado-vacio alerta">
+      <i class="fa-solid fa-building-circle-exclamation"></i>
+      <h2>No tienes una institución asignada</h2>
+      <p>Para gestionar problemáticas, tu usuario administrador debe pertenecer a una institución.</p>
+    </div>
+  } @else {
+    <div class="panel-asignacion">
+      <div class="campo-asignacion">
+        <label for="problematicaDisponible">Agregar problemática</label>
+        <select
+          id="problematicaDisponible"
+          [ngModel]="problematicaSeleccionada()"
+          (ngModelChange)="problematicaSeleccionada.set($event)"
+          [disabled]="cargando() || guardando() || problematicasDisponibles().length === 0"
+        >
+          <option [ngValue]="null">
+            {{
+              problematicasDisponibles().length > 0
+                ? 'Selecciona una problemática...'
+                : 'No hay problemáticas disponibles'
+            }}
+          </option>
+          @for (problematica of problematicasDisponibles(); track problematica.id) {
+            <option [ngValue]="problematica.id">{{ problematica.problema }}</option>
+          }
+        </select>
+      </div>
+
+      <button
+        type="button"
+        class="btn-primario"
+        (click)="agregarProblematica()"
+        [disabled]="cargando() || guardando() || !problematicaSeleccionada()"
+      >
+        @if (guardando()) {
+          <i class="fa-solid fa-spinner fa-spin"></i>
+        } @else {
+          <i class="fa-solid fa-plus"></i>
+        }
+        Agregar
+      </button>
+    </div>
+
+    <div class="tarjeta-listado">
+      <div class="tarjeta-cabecera">
+        <div>
+          <h2>Problemáticas asociadas</h2>
+          <p>{{ problematicasAsociadas().length }} vinculadas actualmente</p>
+        </div>
+        <button type="button" class="btn-secundario" (click)="cargarDatos()" [disabled]="cargando()">
+          <i class="fa-solid fa-rotate"></i>
+          Actualizar
+        </button>
+      </div>
+
+      @if (cargando()) {
+        <div class="estado-vacio">
+          <i class="fa-solid fa-spinner fa-spin"></i>
+          <h2>Cargando configuración</h2>
+          <p>Estamos consultando las problemáticas de tu institución.</p>
+        </div>
+      } @else if (problematicasAsociadas().length === 0) {
+        <div class="estado-vacio">
+          <i class="fa-solid fa-list-check"></i>
+          <h2>Sin problemáticas asociadas</h2>
+          <p>Selecciona una problemática del catálogo para comenzar a recibir reportes relacionados.</p>
+        </div>
+      } @else {
+        <div class="lista-problematicas">
+          @for (problematica of problematicasAsociadas(); track problematica.id) {
+            <article class="item-problematica">
+              <div class="icono-problematica">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+              </div>
+              <div class="contenido-problematica">
+                <h3>{{ problematica.problema }}</h3>
+                <span>Disponible para reportes ciudadanos</span>
+              </div>
+              <button
+                type="button"
+                class="btn-peligro"
+                (click)="quitarProblematica(problematica)"
+                [disabled]="guardando()"
+                title="Quitar asociación"
+              >
+                <i class="fa-solid fa-link-slash"></i>
+                Quitar
+              </button>
+            </article>
+          }
+        </div>
+      }
+    </div>
+  }
+</section>

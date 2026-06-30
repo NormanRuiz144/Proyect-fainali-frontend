@@ -250,6 +250,50 @@
   font-family: inherit;
 }
 
+.form-input:disabled {
+  background-color: #f8fafc;
+  color: #94a3b8;
+  cursor: not-allowed;
+}
+
+.panel-filtros-asignacion {
+  background-color: #f8fafc;
+  border: 1px solid var(--color-borde);
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 20px;
+}
+
+.titulo-filtros {
+  margin: 0 0 12px;
+  color: var(--color-texto);
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.panel-filtros-asignacion .form-grupo {
+  gap: 6px;
+}
+
+.panel-filtros-asignacion label {
+  color: var(--color-texto-mutado);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.fila-asignacion {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.select-asignacion {
+  flex: 1;
+  min-width: 0;
+}
+
 .form-input:focus {
   border-color: var(--color-primario);
   box-shadow: 0 0 0 3px rgba(11, 46, 89, 0.1);
@@ -339,4 +383,12 @@
   :host { padding: 16px; }
   .cabecera-vista { flex-direction: column; align-items: flex-start; gap: 16px; }
   .modal-contenedor { margin: 16px; width: auto; }
+  .fila-asignacion {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .fila-asignacion .btn-primario {
+    justify-content: center;
+    width: 100%;
+  }
 }

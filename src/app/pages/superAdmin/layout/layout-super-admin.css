@@ -22,6 +22,7 @@
   display: flex;
   flex-direction: column;
   height: 100%;
+  min-height: 0;
   box-sizing: border-box;
 
   position: fixed;
@@ -40,6 +41,7 @@
   width: 100%;
   text-align: center;
   color: #ffff;
+  flex-shrink: 0;
 }
 
 .boton-cerrar-sidebar {
@@ -76,10 +78,19 @@
 
 .sidebar-navegacion {
   flex: 1;
+  min-height: 0;
   padding: 10px 20px;
   display: flex;
   flex-direction: column;
   gap: 8px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.sidebar-navegacion::-webkit-scrollbar {
+  display: none;
 }
 
 .enlace-menu {
@@ -118,6 +129,7 @@
 .sidebar-footer {
   padding: 25px;
   border-top: 1px solid #f1f5f9;
+  flex-shrink: 0;
 }
 
 .boton-salir-admin {

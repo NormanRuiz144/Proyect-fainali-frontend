@@ -5,7 +5,7 @@ export interface IReporte {
   nvlPrioridad: number;
   fechaGen: string;
   ubicacion: string;
-  formato: string | null;
+  formato: string | string[] | { url?: string; secure_url?: string }[] | null;
   problematica?: {
     problema: string;
   };

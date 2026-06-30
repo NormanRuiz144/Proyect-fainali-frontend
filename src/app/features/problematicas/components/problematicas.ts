@@ -7,6 +7,7 @@ import { Institucion } from '../../instituciones/interface/instituciones';
 import { InstitucionesService } from '../../instituciones/service/instituciones.service';
 import { Departamento, Municipio } from '../../ubicacion/interface/ubicacion.interface';
 import { UbicacionService } from '../../ubicacion/service/ubicacion.service';
+import { InteractionService } from '../../../shared/service/interaction.service';
 
 @Component({
   selector: 'app-problematicas',
@@ -19,6 +20,7 @@ export class ProblematicasComponent implements OnInit {
   private problematicaService = inject(ProblematicaService);
   private institucionService = inject(InstitucionesService);
   private ubicacionService = inject(UbicacionService);
+  private interactionService = inject(InteractionService);
 
   problematicas = signal<Problematica[]>([]);
   institucionesAsociadas = signal<Institucion[]>([]);
@@ -149,10 +151,11 @@ export class ProblematicasComponent implements OnInit {
           next: () => {
             this.cargarProblematicas(this.paginaActual());
             this.cerrarModal();
+            this.interactionService.showToast('Problemática eliminada correctamente', 'success');
           },
           error: (err) => {
             console.error(err);
-            alert('Error al eliminar la problemática');
+            this.interactionService.mostrarError(err);
             this.cargando.set(false);
           },
         });
@@ -161,10 +164,11 @@ export class ProblematicasComponent implements OnInit {
           next: () => {
             this.cargarProblematicas(this.paginaActual());
             this.cerrarModal();
+            this.interactionService.showToast('Problemática restaurada correctamente', 'success');
           },
           error: (err) => {
             console.error(err);
-            alert('Error al restaurar la problemática');
+            this.interactionService.mostrarError(err);
             this.cargando.set(false);
           },
         });
@@ -173,7 +177,7 @@ export class ProblematicasComponent implements OnInit {
     }
 
     if (!this.problematicaActual().problema?.trim()) {
-      alert('El nombre del problema es requerido');
+      this.interactionService.showToast('El nombre del problema es requerido', 'warning');
       return;
     }
 
@@ -185,10 +189,11 @@ export class ProblematicasComponent implements OnInit {
         next: () => {
           this.cargarProblematicas(this.paginaActual());
           this.cerrarModal();
+          this.interactionService.showToast('Problemática creada correctamente', 'success');
         },
         error: (err) => {
           console.error(err);
-          alert('Error al crear la problemática');
+          this.interactionService.mostrarError(err);
           this.cargando.set(false);
         },
       });
@@ -198,10 +203,11 @@ export class ProblematicasComponent implements OnInit {
           next: () => {
             this.cargarProblematicas(this.paginaActual());
             this.cerrarModal();
+            this.interactionService.showToast('Problemática actualizada correctamente', 'success');
           },
           error: (err) => {
             console.error(err);
-            alert('Error al actualizar la problemática');
+            this.interactionService.mostrarError(err);
             this.cargando.set(false);
           },
         });
@@ -275,7 +281,7 @@ export class ProblematicasComponent implements OnInit {
     const idInst = Number(this.institucionSeleccionada());
 
     if (!idProb || !idInst || isNaN(idInst)) {
-      alert('Seleccione una institución válida');
+      this.interactionService.showToast('Seleccione una institución válida', 'warning');
       return;
     }
 
@@ -284,29 +290,35 @@ export class ProblematicasComponent implements OnInit {
       next: () => {
         this.cargarInstitucionesAsociadas(idProb);
         this.institucionSeleccionada.set(undefined);
+        this.interactionService.showToast('Institución asignada correctamente', 'success');
       },
       error: (err) => {
         console.error(err);
-        alert('Error al asignar institución. Puede que ya esté asignada.');
+        this.interactionService.mostrarError(err);
         this.cargandoAsignacion.set(false);
       },
     });
   }
 
-  desasignarInstitucion(idInst: number) {
+  async desasignarInstitucion(idInst: number) {
     const idProb = this.problematicaActiva()?.id;
     if (!idProb) return;
 
-    if (!confirm('¿Está seguro de que desea desvincular esta institución?')) return;
+    const confirmado = await this.interactionService.confirmar(
+      'Desvincular Institución',
+      '¿Está seguro de que desea desvincular esta institución?',
+    );
+    if (!confirmado) return;
 
     this.cargandoAsignacion.set(true);
     this.problematicaService.desasignarProblematicaDeInstitucion(idProb, idInst).subscribe({
       next: () => {
         this.cargarInstitucionesAsociadas(idProb);
+        this.interactionService.showToast('Institución desvinculada correctamente', 'success');
       },
       error: (err) => {
         console.error(err);
-        alert('Error al desasignar institución');
+        this.interactionService.mostrarError(err);
         this.cargandoAsignacion.set(false);
       },
     });

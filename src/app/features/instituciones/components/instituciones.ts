@@ -6,6 +6,7 @@ import { CommonModule } from '@angular/common';
 import { Departamento, Municipio } from '../../ubicacion/interface/ubicacion.interface';
 import { UbicacionService } from '../../ubicacion/service/ubicacion.service';
 import { PaginationMeta } from '../../problematicas/interface/problematica';
+import { InteractionService } from '../../../shared/service/interaction.service';
 
 @Component({
   selector: 'app-instituciones',
@@ -16,6 +17,7 @@ import { PaginationMeta } from '../../problematicas/interface/problematica';
 export class InstitucionesComponent implements OnInit {
   private instituticionService = inject(InstitucionesService);
   private ubicacionService = inject(UbicacionService);
+  private interactionService = inject(InteractionService);
 
   instituciones = signal<Institucion[]>([]);
   cargando = signal(false);
@@ -163,10 +165,11 @@ export class InstitucionesComponent implements OnInit {
           next: () => {
             this.cargarInstituciones(this.paginaActual());
             this.cerrarModal();
+            this.interactionService.showToast('Institución eliminada correctamente', 'success');
           },
           error: (err) => {
             console.error(err);
-            alert('Error al eliminar la Institucion');
+            this.interactionService.mostrarError(err);
             this.cargando.set(false);
           },
         });
@@ -175,10 +178,11 @@ export class InstitucionesComponent implements OnInit {
           next: () => {
             this.cargarInstituciones(this.paginaActual());
             this.cerrarModal();
+            this.interactionService.showToast('Institución restaurada correctamente', 'success');
           },
           error: (err) => {
             console.error(err);
-            alert('Error al restaurar la Institucion');
+            this.interactionService.mostrarError(err);
             this.cargando.set(false);
           },
         });
@@ -187,7 +191,7 @@ export class InstitucionesComponent implements OnInit {
     }
 
     if (!this.fromInstitucion().nombreInstitucion?.trim()) {
-      alert('El nombre de la institución es requerido');
+      this.interactionService.showToast('El nombre de la institución es requerido', 'warning');
       return;
     }
 
@@ -200,10 +204,11 @@ export class InstitucionesComponent implements OnInit {
         next: () => {
           this.cargarInstituciones(this.paginaActual());
           this.cerrarModal();
+          this.interactionService.showToast('Institución creada correctamente', 'success');
         },
         error: (err) => {
           console.error(err);
-          alert('Error al crear la Institucion');
+          this.interactionService.mostrarError(err);
           this.cargando.set(false);
         },
       });
@@ -213,10 +218,11 @@ export class InstitucionesComponent implements OnInit {
           next: () => {
             this.cargarInstituciones(this.paginaActual());
             this.cerrarModal();
+            this.interactionService.showToast('Institución actualizada correctamente', 'success');
           },
           error: (err) => {
             console.error(err);
-            alert('Error al actualizar la institución');
+            this.interactionService.mostrarError(err);
             this.cargando.set(false);
           },
         });

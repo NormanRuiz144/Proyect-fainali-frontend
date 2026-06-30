@@ -22,12 +22,16 @@ export const routes: Routes = [
   // Portal Ciudadano
   {
     path: 'reportes',
+    canActivate: [AuthGuard],
+    data: { rol: 'default' },
     loadComponent: () =>
       import('./pages/usuario/nuevo-reporte/nuevo-reporte').then((c) => c.NuevoReporte),
   },
   // Area Administrativa
   {
     path: 'admin',
+    canActivate: [AuthGuard],
+    data: { rol: 'Admin' },
     loadComponent: () =>
       import('./pages/admin/layout/layout-admin/layout-admin').then((c) => c.LayoutAdmin),
     children: [
@@ -44,6 +48,16 @@ export const routes: Routes = [
         loadComponent: () => import('./pages/admin/historial/historial').then((c) => c.Historial),
       },
       {
+        path: 'baneados',
+        loadComponent: () =>
+          import('./features/ban/components/usuarios-baneados').then((c) => c.UsuariosBaneadosComponent),
+      },
+      {
+        path: 'configuracion',
+        loadComponent: () =>
+          import('./pages/admin/configuracion/configuracion').then((c) => c.ConfiguracionAdmin),
+      },
+      {
         path: '',
         redirectTo: 'dashboard',
         pathMatch: 'full',
@@ -53,13 +67,22 @@ export const routes: Routes = [
   // Area Super Admin
   {
     path: 'superAdmin',
+    canActivate: [AuthGuard],
+    data: { rol: 'Super-Admin' },
     loadComponent: () =>
       import('./pages/superAdmin/layout/layout-super-admin').then((c) => c.LayoutSuperAdmin),
-    // canActivate: [AuthGuard],
     children: [
       {
         path: 'dashboard',
-        loadComponent: () => import('./pages/admin/dashboard/dashboard').then((c) => c.Dashboard),
+        loadComponent: () =>
+          import('./pages/superAdmin/dashboard/super-admin-dashboard').then(
+            (c) => c.SuperAdminDashboard,
+          ),
+      },
+      {
+        path: 'mapa-reportes',
+        loadComponent: () =>
+          import('./pages/superAdmin/mapa-reportes/mapa-reportes').then((c) => c.MapaReportes),
       },
       {
         path: 'problematicas',
@@ -86,8 +109,13 @@ export const routes: Routes = [
           import('./features/usuario/components/usuarios').then((c) => c.UsuariosComponent),
       },
       {
+        path: 'baneados',
+        loadComponent: () =>
+          import('./features/ban/components/usuarios-baneados').then((c) => c.UsuariosBaneadosComponent),
+      },
+      {
         path: '',
-        redirectTo: 'problematicas',
+        redirectTo: 'dashboard',
         pathMatch: 'full',
       },
     ],

@@ -65,6 +65,9 @@
                   <!-- <button class="btn-icono baja" (click)="abrirModalBaja(usr)" title="Dar de baja">
                     <i class="fa-solid fa-user-minus"></i>
                   </button> -->
+                  <button class="btn-icono ban" (click)="abrirModalBan(usr)" title="Banear usuario">
+                    <i class="fa-solid fa-ban"></i>
+                  </button>
                 </div>
               </td>
             </tr>
@@ -304,6 +307,66 @@
             <i class="fa-solid fa-spinner fa-spin mr-2"></i> Guardando...
           } @else {
             Reasignar
+          }
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- Modal Ban -->
+@if (mostrarModalBan()) {
+  <div class="modal-backdrop">
+    <div class="modal-contenedor">
+      <div class="modal-cabecera">
+        <h2 class="modal-titulo">Banear Usuario</h2>
+        <button class="btn-cerrar" (click)="cerrarModalBan()">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+      <div class="modal-cuerpo">
+        <div class="form-grupo mb-4">
+          <label for="banMotivo">Motivo del Ban</label>
+          <textarea
+            id="banMotivo"
+            class="form-input"
+            rows="4"
+            [(ngModel)]="banForm().motivo"
+            placeholder="Describa el motivo del ban..."
+          ></textarea>
+        </div>
+        <div class="form-grupo mb-4">
+          <label for="banTipo">Tipo de Ban</label>
+          <select
+            id="banTipo"
+            class="form-input"
+            [(ngModel)]="banForm().tipo"
+          >
+            <option value="permanente">Permanente</option>
+            <option value="temporal">Temporal</option>
+          </select>
+        </div>
+        @if (banForm().tipo === 'temporal') {
+          <div class="form-grupo mb-4">
+            <label for="banFechaFin">Fecha de Fin del Ban</label>
+            <input
+              type="date"
+              id="banFechaFin"
+              class="form-input"
+              [(ngModel)]="banForm().fechaFin"
+            />
+          </div>
+        }
+      </div>
+      <div class="modal-pie">
+        <button class="btn-secundario" (click)="cerrarModalBan()" [disabled]="cargando()">
+          Cancelar
+        </button>
+        <button class="btn-peligro" (click)="confirmarBan()" [disabled]="cargando()">
+          @if (cargando()) {
+            <i class="fa-solid fa-spinner fa-spin mr-2"></i> Procesando...
+          } @else {
+            <i class="fa-solid fa-ban"></i> Banear
           }
         </button>
       </div>

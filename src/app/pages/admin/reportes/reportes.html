@@ -204,6 +204,23 @@
             </div>
             <div style="grid-column: 1 / -1;">
               <small style="color: #94a3b8; font-weight: bold; text-transform: uppercase"
+                >Evidencia Fotográfica</small
+              >
+              @let imagenes = obtenerImagenesReporte(reporteSeleccionado());
+              @if (imagenes.length > 0) {
+                <div class="grid-evidencias">
+                  @for (url of imagenes; track url) {
+                    <a [href]="url" target="_blank" rel="noopener noreferrer" class="evidencia-link">
+                      <img [src]="url" alt="Evidencia del reporte" loading="lazy" />
+                    </a>
+                  }
+                </div>
+              } @else {
+                <p class="texto-sin-evidencia">Este reporte no tiene imágenes adjuntas.</p>
+              }
+            </div>
+            <div style="grid-column: 1 / -1;">
+              <small style="color: #94a3b8; font-weight: bold; text-transform: uppercase"
                 >Ubicación Geográfica</small
               >
               <p style="margin: 5px 0 10px 0; font-size: 0.9em; color: #64748b;">

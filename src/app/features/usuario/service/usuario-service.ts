@@ -21,7 +21,7 @@ export class UsuarioService {
   private apiUrl = `${environment.API_URL}/usuarios`;
 
   registrarUsuario(usuario: IRegistro): Observable<AuthResponse> {
-    return this.http.post<AuthResponse>(`${this.baseUrl}/auth/registro`, usuario);
+    return this.http.post<AuthResponse>(`${this.baseUrl}/public/registro`, usuario);
   }
 
   obtenerRoles(): Observable<{ lista_Rol: { id: number; rol: string }[] }> {
