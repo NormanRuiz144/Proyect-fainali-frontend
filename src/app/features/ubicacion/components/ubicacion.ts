@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { UbicacionService } from '../service/ubicacion.service';
 import { Departamento, Municipio, Sector } from '../interface/ubicacion.interface';
 import { PaginationMeta } from '../../problematicas/interface/problematica';
+import { InteractionService } from '../../../shared/service/interaction.service';
 
 type Tab = 'departamentos' | 'municipios' | 'sectores';
 type ModalMode = 'crear' | 'editar' | 'eliminar' | 'restaurar';
@@ -17,6 +18,7 @@ type ModalMode = 'crear' | 'editar' | 'eliminar' | 'restaurar';
 })
 export class UbicacionComponent implements OnInit {
   private ubicacionService = inject(UbicacionService);
+  private interactionService = inject(InteractionService);
 
   activeTab = signal<Tab>('departamentos');
 
@@ -98,6 +100,7 @@ export class UbicacionComponent implements OnInit {
     this.filtroDepartamento.set(undefined);
     this.filtroMunicipio.set(undefined);
     this.filtroDepartamentoSector.set(undefined);
+    this.mostrarInhabilitados.set(false);
     this.cargarDatos();
   }
 
@@ -222,7 +225,6 @@ export class UbicacionComponent implements OnInit {
     this.ubicacionService.obtenerDepartamentos().subscribe({
       next: (res) => {
         this.departamentos.set(res.lista_Departamentos || []);
-        console.log('departa', res);
       },
     });
     // }
@@ -325,9 +327,10 @@ export class UbicacionComponent implements OnInit {
             next: () => {
               this.cargarDatos();
               this.cerrarModal();
+              this.interactionService.showToast('Departamento eliminado correctamente', 'success');
             },
             error: (err) => {
-              alert(err.error?.mensaje || 'Error al eliminar');
+              this.interactionService.mostrarError(err);
               this.cargando.set(false);
             },
           });
@@ -336,9 +339,10 @@ export class UbicacionComponent implements OnInit {
             next: () => {
               this.cargarDatos();
               this.cerrarModal();
+              this.interactionService.showToast('Municipio eliminado correctamente', 'success');
             },
             error: (err) => {
-              alert(err.error?.mensaje || 'Error al eliminar');
+              this.interactionService.mostrarError(err);
               this.cargando.set(false);
             },
           });
@@ -347,9 +351,10 @@ export class UbicacionComponent implements OnInit {
             next: () => {
               this.cargarDatos();
               this.cerrarModal();
+              this.interactionService.showToast('Sector eliminado correctamente', 'success');
             },
             error: (err) => {
-              alert(err.error?.mensaje || 'Error al eliminar');
+              this.interactionService.mostrarError(err);
               this.cargando.set(false);
             },
           });
@@ -360,9 +365,10 @@ export class UbicacionComponent implements OnInit {
             next: () => {
               this.cargarDatos();
               this.cerrarModal();
+              this.interactionService.showToast('Departamento restaurado correctamente', 'success');
             },
             error: (err) => {
-              alert(err.error?.mensaje || 'Error al restaurar');
+              this.interactionService.mostrarError(err);
               this.cargando.set(false);
             },
           });
@@ -371,9 +377,10 @@ export class UbicacionComponent implements OnInit {
             next: () => {
               this.cargarDatos();
               this.cerrarModal();
+              this.interactionService.showToast('Municipio restaurado correctamente', 'success');
             },
             error: (err) => {
-              alert(err.error?.mensaje || 'Error al restaurar');
+              this.interactionService.mostrarError(err);
               this.cargando.set(false);
             },
           });
@@ -382,9 +389,10 @@ export class UbicacionComponent implements OnInit {
             next: () => {
               this.cargarDatos();
               this.cerrarModal();
+              this.interactionService.showToast('Sector restaurado correctamente', 'success');
             },
             error: (err) => {
-              alert(err.error?.mensaje || 'Error al restaurar');
+              this.interactionService.mostrarError(err);
               this.cargando.set(false);
             },
           });
@@ -396,7 +404,7 @@ export class UbicacionComponent implements OnInit {
     if (tab === 'departamentos') {
       const data = this.formDepartamento();
       if (!data.nomDepartamento) {
-        alert('Nombre es requerido');
+        this.interactionService.showToast('Nombre es requerido', 'warning');
         this.cargando.set(false);
         return;
       }
@@ -406,9 +414,10 @@ export class UbicacionComponent implements OnInit {
           next: () => {
             this.cargarDatos();
             this.cerrarModal();
+            this.interactionService.showToast('Departamento creado correctamente', 'success');
           },
           error: (err) => {
-            alert(err.error?.mensaje || 'Error al crear');
+            this.interactionService.mostrarError(err);
             this.cargando.set(false);
           },
         });
@@ -417,9 +426,10 @@ export class UbicacionComponent implements OnInit {
           next: () => {
             this.cargarDatos();
             this.cerrarModal();
+            this.interactionService.showToast('Departamento actualizado correctamente', 'success');
           },
           error: (err) => {
-            alert(err.error?.mensaje || 'Error al actualizar');
+            this.interactionService.mostrarError(err);
             this.cargando.set(false);
           },
         });
@@ -427,7 +437,7 @@ export class UbicacionComponent implements OnInit {
     } else if (tab === 'municipios') {
       const data = this.formMunicipio();
       if (!data.nomMunicipio || !data.idDepartamento) {
-        alert('Nombre y Departamento son requeridos');
+        this.interactionService.showToast('Nombre y departamento son requeridos', 'warning');
         this.cargando.set(false);
         return;
       }
@@ -439,9 +449,10 @@ export class UbicacionComponent implements OnInit {
           next: () => {
             this.cargarDatos();
             this.cerrarModal();
+            this.interactionService.showToast('Municipio creado correctamente', 'success');
           },
           error: (err) => {
-            alert(err.error?.mensaje || 'Error al crear');
+            this.interactionService.mostrarError(err);
             this.cargando.set(false);
           },
         });
@@ -450,9 +461,10 @@ export class UbicacionComponent implements OnInit {
           next: () => {
             this.cargarDatos();
             this.cerrarModal();
+            this.interactionService.showToast('Municipio actualizado correctamente', 'success');
           },
           error: (err) => {
-            alert(err.error?.mensaje || 'Error al actualizar');
+            this.interactionService.mostrarError(err);
             this.cargando.set(false);
           },
         });
@@ -460,7 +472,7 @@ export class UbicacionComponent implements OnInit {
     } else if (tab === 'sectores') {
       const data = this.formSector();
       if (!data.nomSector || !data.idMunicipio) {
-        alert('Nombre y Municipio son requeridos');
+        this.interactionService.showToast('Nombre y municipio son requeridos', 'warning');
         this.cargando.set(false);
         return;
       }
@@ -472,9 +484,10 @@ export class UbicacionComponent implements OnInit {
           next: () => {
             this.cargarDatos();
             this.cerrarModal();
+            this.interactionService.showToast('Sector creado correctamente', 'success');
           },
           error: (err) => {
-            alert(err.error?.mensaje || 'Error al crear');
+            this.interactionService.mostrarError(err);
             this.cargando.set(false);
           },
         });
@@ -483,9 +496,10 @@ export class UbicacionComponent implements OnInit {
           next: () => {
             this.cargarDatos();
             this.cerrarModal();
+            this.interactionService.showToast('Sector actualizado correctamente', 'success');
           },
           error: (err) => {
-            alert(err.error?.mensaje || 'Error al actualizar');
+            this.interactionService.mostrarError(err);
             this.cargando.set(false);
           },
         });

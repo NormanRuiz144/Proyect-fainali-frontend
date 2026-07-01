@@ -76,7 +76,13 @@
 
             <div class="grupo-campo">
               <label for="municipio"><i class="fa-solid fa-city"></i> ¿En qué municipio te encuentras?</label>
-              <select id="municipio" class="input-portal" required (change)="onMunicipioChange($event)">
+              <select
+                id="municipio"
+                class="input-portal"
+                required
+                [value]="municipioReporteId()"
+                (change)="onMunicipioChange($event)"
+              >
                 <option value="" disabled selected>Selecciona tu municipio...</option>
                 <option *ngFor="let mun of municipios()" [value]="mun.id">{{ mun.nomMunicipio }}</option>
               </select>
@@ -84,7 +90,14 @@
 
             <div class="grupo-campo">
               <label for="sector"><i class="fa-solid fa-map"></i> ¿En qué sector/barrio ocurrió?</label>
-              <select id="sector" class="input-portal" required [disabled]="!municipioSeleccionado()">
+              <select
+                id="sector"
+                class="input-portal"
+                required
+                [disabled]="!municipioSeleccionado()"
+                [value]="sectorReporteId()"
+                (change)="onSectorChange($event)"
+              >
                 <option value="" disabled selected>Selecciona tu barrio o sector...</option>
                 <option *ngFor="let sec of sectores()" [value]="sec.id">{{ sec.nombreSector }}</option>
               </select>
@@ -218,17 +231,54 @@
           </div>
 
           <form class="formulario-reporte" (submit)="guardarPerfil(); $event.preventDefault()">
-            
+            <div class="perfil-grid">
+              <div class="grupo-campo">
+                <label for="perfilNombres"><i class="fa-solid fa-user"></i> Nombres</label>
+                <input id="perfilNombres" type="text" class="input-portal" [value]="perfilForm().nombres" readonly />
+              </div>
+
+              <div class="grupo-campo">
+                <label for="perfilApellidos"><i class="fa-solid fa-id-card"></i> Apellidos</label>
+                <input id="perfilApellidos" type="text" class="input-portal" [value]="perfilForm().apellidos" readonly />
+              </div>
+
+              <div class="grupo-campo">
+                <label for="perfilCedula"><i class="fa-solid fa-address-card"></i> Número de Cédula</label>
+                <input id="perfilCedula" type="text" class="input-portal" [value]="perfilForm().numeroCedula" readonly />
+              </div>
+
+              <div class="grupo-campo">
+                <label for="perfilSexo"><i class="fa-solid fa-venus-mars"></i> Sexo</label>
+                <input id="perfilSexo" type="text" class="input-portal" [value]="perfilForm().sexo" readonly />
+              </div>
+
+              <div class="grupo-campo">
+                <label for="perfilRol"><i class="fa-solid fa-user-shield"></i> Rol</label>
+                <input id="perfilRol" type="text" class="input-portal" [value]="perfilForm().rol" readonly />
+              </div>
+
+              <div class="grupo-campo">
+                <label for="perfilInstitucion"><i class="fa-solid fa-building"></i> Institución</label>
+                <input id="perfilInstitucion" type="text" class="input-portal" [value]="perfilForm().institucion" readonly />
+              </div>
+            </div>
+
+            <div class="perfil-subtitulo">
+              <h3>Datos editables</h3>
+              <p>Desde aquí puedes actualizar tu correo y tu ubicación registrada.</p>
+            </div>
             <div class="grupo-campo">
               <label for="correoPerfil"><i class="fa-solid fa-envelope"></i> Correo Electrónico</label>
-              <input type="email" id="correoPerfil" class="input-portal" required 
+              <input type="email" id="correoPerfil" class="input-portal" required maxlength="254" autocomplete="email"
+                     [class.input-error]="perfilErrores().correo"
                      [value]="perfilForm().correo" 
-                     (input)="perfilForm.update(f => ({...f, correo: $any($event.target).value}))">
+                     (input)="onPerfilCorreoChange($event)">
+              <p class="mensaje-error-campo" *ngIf="perfilErrores().correo">{{ perfilErrores().correo }}</p>
             </div>
 
             <div class="grupo-campo">
               <label for="perfilDepto"><i class="fa-solid fa-map"></i> Departamento</label>
-              <select id="perfilDepto" class="input-portal" [value]="perfilForm().idDepartamento" (change)="onPerfilDepartamentoChange($event)">
+              <select id="perfilDepto" class="input-portal" required [class.input-error]="perfilErrores().ubicacion" [value]="perfilForm().idDepartamento" (change)="onPerfilDepartamentoChange($event)">
                 <option value="">Selecciona tu departamento...</option>
                 <option *ngFor="let dept of perfilDepartamentos()" [value]="dept.id">{{ dept.nomDepartamento }}</option>
               </select>
@@ -236,7 +286,7 @@
 
             <div class="grupo-campo" *ngIf="perfilMunicipios().length > 0">
               <label for="perfilMuni"><i class="fa-solid fa-city"></i> Municipio</label>
-              <select id="perfilMuni" class="input-portal" [value]="perfilForm().idMunicipio" (change)="onPerfilMunicipioChange($event)">
+              <select id="perfilMuni" class="input-portal" required [class.input-error]="perfilErrores().ubicacion" [value]="perfilForm().idMunicipio" (change)="onPerfilMunicipioChange($event)">
                 <option value="">Selecciona tu municipio...</option>
                 <option *ngFor="let mun of perfilMunicipios()" [value]="mun.id">{{ mun.nomMunicipio }}</option>
               </select>
@@ -244,14 +294,20 @@
 
             <div class="grupo-campo" *ngIf="perfilSectores().length > 0">
               <label for="perfilSector"><i class="fa-solid fa-location-dot"></i> Barrio o Sector (Dirección)</label>
-              <select id="perfilSector" class="input-portal" [value]="perfilForm().idSector" (change)="onPerfilSectorChange($event)">
+              <select id="perfilSector" class="input-portal" required [class.input-error]="perfilErrores().ubicacion" [value]="perfilForm().idSector" (change)="onPerfilSectorChange($event)">
                 <option value="">Selecciona tu barrio o sector...</option>
                 <option *ngFor="let sec of perfilSectores()" [value]="sec.id">{{ sec.nombreSector }}</option>
               </select>
             </div>
+            <p class="mensaje-error-campo" *ngIf="perfilErrores().ubicacion">{{ perfilErrores().ubicacion }}</p>
+
+            <div class="aviso-perfil" *ngIf="perfilCargando()">
+              <i class="fa-solid fa-spinner fa-spin"></i>
+              Cargando información actual del perfil...
+            </div>
 
             <div class="acciones-formulario">
-              <button type="submit" class="btn-portal-primario">
+              <button type="submit" class="btn-portal-primario" [disabled]="perfilCargando()">
                 <i class="fa-solid fa-floppy-disk"></i> Guardar Cambios
               </button>
             </div>

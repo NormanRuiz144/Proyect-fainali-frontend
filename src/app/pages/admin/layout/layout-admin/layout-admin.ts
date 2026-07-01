@@ -5,6 +5,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { DashboardService } from '../../dashboard/service/dashboard';
 import { EstadoAdminService } from '../../../../shared/service/estado-admin.service';
+import { InteractionService } from '../../../../shared/service/interaction.service';
 
 @Component({
   selector: 'app-layout-admin',
@@ -17,6 +18,7 @@ export class LayoutAdmin {
   public authService = inject(AuthService);
   private router = inject(Router);
   private dashboardService = inject(DashboardService);
+  private interactionService = inject(InteractionService);
   public estadoAdminService = inject(EstadoAdminService);
 
   menuAbierto = signal(false);
@@ -56,6 +58,8 @@ export class LayoutAdmin {
       icono: 'fa-solid fa-users-viewfinder',
       url: '/admin/historial',
     },
+    { texto: 'Baneados', icono: 'fa-solid fa-hand', url: '/admin/baneados' },
+    { texto: 'Configuración', icono: 'fa-solid fa-gear', url: '/admin/configuracion' },
   ];
 
   ngOnInit(): void {
@@ -85,7 +89,13 @@ export class LayoutAdmin {
     this.menuAbierto.set(!this.menuAbierto());
   }
 
-  cerrarSesion() {
+  async cerrarSesion() {
+    const confirm = await this.interactionService.confirmar(
+      'Cerrar Sesión',
+      '¿Seguro que deseas salir?',
+    );
+    if (!confirm) return;
+
     this.authService.logout();
     this.estadoAdminService.cerrarSesion();
     this.router.navigate(['/inicio']);

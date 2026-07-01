@@ -204,7 +204,6 @@ export class Layout {
     this.authService.iniciarSesion(email, password).subscribe({
       next: async (res) => {
         await this.interactionService.hideLoading();
-        console.log('RESPUESTA COMPLETA DEL LOGIN:', JSON.stringify(res, null, 2));
 
         // Error 1: La propiedad 'cerrarModal' no existe
         this.cerrarModal();
@@ -216,7 +215,6 @@ export class Layout {
         } else {
           this.router.navigate(['/reportes']);
         }
-        console.log('Info del usuario:', res.data);
         await this.interactionService.showToast(`Bienvenido a Comunica!`);
       },
       error: async (err) => {
@@ -254,12 +252,9 @@ export class Layout {
       usuario.idSector = Number(val.idSector);
     }
 
-    console.log('Datos enviados al backend:', JSON.stringify(usuario, null, 2));
-
     this.usuarioService.registrarUsuario(usuario).subscribe({
       next: async (res) => {
         await this.interactionService.hideLoading();
-        console.log('Registro response:', JSON.stringify(res, null, 2));
         this.authService.establecerSesion(res);
         this.cerrarModal();
         await this.interactionService.showToast('Cuenta creada correctamente', 'success');

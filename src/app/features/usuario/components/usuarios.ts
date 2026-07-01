@@ -10,6 +10,8 @@ import { Departamento, Municipio, Sector } from '../../ubicacion/interface/ubica
 import { IRoles } from '../../roles/interface/roles';
 import { RolesService } from '../../roles/service/roles.service';
 import { PaginationMeta } from '../../problematicas/interface/problematica';
+import { BanService } from '../../ban/service/ban-service';
+import { InteractionService } from '../../../shared/service/interaction.service';
 
 @Component({
   selector: 'app-usuarios',
@@ -23,6 +25,8 @@ export class UsuariosComponent implements OnInit {
   private rolService = inject(RolesService);
   private institucionesService = inject(InstitucionesService);
   private ubicacionService = inject(UbicacionService);
+  private banService = inject(BanService);
+  private interactionService = inject(InteractionService);
 
   usuarios = signal<IUsuarioListaItem[]>([]);
   cargando = signal(false);
@@ -78,6 +82,14 @@ export class UsuariosComponent implements OnInit {
 
   mostrarModalBaja = signal(false);
   usuarioBajaId = signal<number | null>(null);
+
+  mostrarModalBan = signal(false);
+  usuarioBanId = signal<number | null>(null);
+  banForm = signal<{ motivo: string; tipo: 'permanente' | 'temporal'; fechaFin: string }>({
+    motivo: '',
+    tipo: 'permanente',
+    fechaFin: '',
+  });
 
   usuarioActual = signal<Partial<IUsuario> & { contrasena?: string }>({
     numeroCedula: '',
@@ -226,17 +238,23 @@ export class UsuariosComponent implements OnInit {
     const usuario = this.usuarioActual();
 
     if (!usuario.nombres?.trim() || !usuario.apellidos?.trim() || !usuario.correo?.trim()) {
-      alert('Los campos nombres, apellidos y correo son requeridos.');
+      this.interactionService.showToast(
+        'Los campos nombres, apellidos y correo son requeridos.',
+        'warning',
+      );
       return;
     }
 
     if (this.modalModo() === 'crear') {
       if (!usuario.numeroCedula?.trim() || !usuario.contrasena?.trim()) {
-        alert('Cédula y contraseña son requeridos para crear un usuario.');
+        this.interactionService.showToast(
+          'Cédula y contraseña son requeridos para crear un usuario.',
+          'warning',
+        );
         return;
       }
       if (!usuario.idSector || !usuario.idRol) {
-        alert('Debe seleccionar un sector y un rol.');
+        this.interactionService.showToast('Debe seleccionar un sector y un rol.', 'warning');
         return;
       }
 
@@ -257,16 +275,17 @@ export class UsuariosComponent implements OnInit {
           next: () => {
             this.cargarUsuarios(this.paginaActual());
             this.cerrarModal();
+            this.interactionService.showToast('Usuario creado correctamente', 'success');
           },
           error: (err) => {
             console.error(err);
-            alert('Error al crear el usuario');
+            this.interactionService.mostrarError(err);
             this.cargando.set(false);
           },
         });
     } else {
       if (!usuario.id) {
-        alert('Error: No se puede identificar el usuario a editar.');
+        this.interactionService.showToast('No se puede identificar el usuario a editar.', 'error');
         return;
       }
       this.cargando.set(true);
@@ -282,10 +301,11 @@ export class UsuariosComponent implements OnInit {
           next: () => {
             this.cargarUsuarios(this.paginaActual());
             this.cerrarModal();
+            this.interactionService.showToast('Usuario actualizado correctamente', 'success');
           },
           error: (err) => {
             console.error(err);
-            alert('Error al actualizar el usuario');
+            this.interactionService.mostrarError(err);
             this.cargando.set(false);
           },
         });
@@ -312,7 +332,7 @@ export class UsuariosComponent implements OnInit {
 
     const data = this.reasignarForm();
     if (!data.idRol) {
-      alert('Debe seleccionar un rol.');
+      this.interactionService.showToast('Debe seleccionar un rol.', 'warning');
       return;
     }
 
@@ -321,10 +341,11 @@ export class UsuariosComponent implements OnInit {
       next: () => {
         this.cargarUsuarios(this.paginaActual());
         this.cerrarModalReasignar();
+        this.interactionService.showToast('Usuario reasignado correctamente', 'success');
       },
       error: (err) => {
         console.error(err);
-        alert('Error al reasignar el usuario');
+        this.interactionService.mostrarError(err);
         this.cargando.set(false);
       },
     });
@@ -349,12 +370,63 @@ export class UsuariosComponent implements OnInit {
       next: () => {
         this.cargarUsuarios(this.paginaActual());
         this.cerrarModalBaja();
+        this.interactionService.showToast('Usuario dado de baja correctamente', 'success');
       },
       error: (err) => {
         console.error(err);
-        alert('Error al dar de baja al usuario');
+        this.interactionService.mostrarError(err);
         this.cargando.set(false);
       },
     });
+  }
+
+  abrirModalBan(usuario: IUsuarioListaItem) {
+    this.usuarioBanId.set(usuario.id);
+    this.banForm.set({ motivo: '', tipo: 'permanente', fechaFin: '' });
+    this.mostrarModalBan.set(true);
+  }
+
+  cerrarModalBan() {
+    this.mostrarModalBan.set(false);
+    this.usuarioBanId.set(null);
+  }
+
+  confirmarBan() {
+    const userId = this.usuarioBanId();
+    if (!userId) return;
+
+    const form = this.banForm();
+    if (!form.motivo?.trim()) {
+      this.interactionService.showToast('Debe ingresar un motivo para el ban.', 'warning');
+      return;
+    }
+    if (form.tipo === 'temporal' && !form.fechaFin) {
+      this.interactionService.showToast(
+        'Debe seleccionar una fecha de fin para el ban temporal.',
+        'warning',
+      );
+      return;
+    }
+
+    this.cargando.set(true);
+    this.banService
+      .banearUsuario({
+        userId: userId,
+        motivo: form.motivo,
+        tipo: form.tipo,
+        fechaFin: form.tipo === 'temporal' ? form.fechaFin : undefined,
+      })
+      .subscribe({
+        next: () => {
+          this.cargarUsuarios(this.paginaActual());
+          this.cerrarModalBan();
+          this.interactionService.showToast('Usuario baneado exitosamente', 'success');
+        },
+        error: (err) => {
+          console.error(err);
+          this.interactionService.mostrarError(err);
+          this.cargando.set(false);
+        },
+      });
   }
 }

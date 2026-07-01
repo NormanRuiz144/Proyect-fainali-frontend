@@ -1,0 +1,175 @@
+:host {
+  display: block;
+  padding: 24px;
+  --color-fondo: #f8fafc;
+  --color-texto: #1e293b;
+  --color-texto-mutado: #64748b;
+  --color-borde: #e2e8f0;
+  --color-primario: #0b2e59;
+  --color-primario-hover: #124a8c;
+}
+
+.contenedor-vista {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.cabecera-vista {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.titulo-vista {
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--color-texto);
+  margin: 0 0 4px 0;
+}
+
+.subtitulo-vista {
+  color: var(--color-texto-mutado);
+  font-size: 14px;
+  margin: 0;
+}
+
+.tarjeta-tabla {
+  background: white;
+  border-radius: 12px;
+  border: 1px solid var(--color-borde);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+}
+
+.tabla-moderna {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.tabla-moderna th {
+  background-color: #f8fafc;
+  color: var(--color-texto-mutado);
+  font-weight: 600;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 12px 24px;
+  text-align: left;
+  border-bottom: 1px solid var(--color-borde);
+}
+
+.tabla-moderna td {
+  padding: 16px 24px;
+  border-bottom: 1px solid var(--color-borde);
+  color: var(--color-texto);
+  font-size: 14px;
+}
+
+.tabla-moderna tr:last-child td {
+  border-bottom: none;
+}
+
+.tabla-moderna tr:hover td {
+  background-color: #f8fafc;
+}
+
+.usuario-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.font-medium {
+  font-weight: 500;
+}
+
+.text-gray-500 {
+  color: #64748b;
+}
+
+.text-muted {
+  color: #94a3b8;
+}
+
+.texto-centro {
+  text-align: center;
+}
+
+.py-4 {
+  padding-top: 24px;
+  padding-bottom: 24px;
+}
+
+.spinner {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border: 3px solid rgba(11, 46, 89, 0.1);
+  border-radius: 50%;
+  border-top-color: var(--color-primario);
+  animation: spin 1s ease-in-out infinite;
+  vertical-align: middle;
+  margin-right: 8px;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.badge-permanente {
+  display: inline-block;
+  background-color: #fef2f2;
+  color: #dc2626;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.badge-temporal {
+  display: inline-block;
+  background-color: #fefce8;
+  color: #ca8a04;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.btn-icono {
+  background: none;
+  border: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  color: var(--color-texto-mutado);
+}
+
+.btn-icono.unban:hover {
+  background-color: #f0fdf4;
+  color: #16a34a;
+}
+
+.btn-icono:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+@media (max-width: 640px) {
+  :host {
+    padding: 16px;
+  }
+  .cabecera-vista {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+}

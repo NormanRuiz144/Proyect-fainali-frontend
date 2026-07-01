@@ -113,7 +113,14 @@
                 </div>
               </div>
 
-              <div style="margin-top: 20px; text-align: right">
+              <div style="margin-top: 20px; display: flex; justify-content: flex-end; gap: 8px">
+                <span
+                  class="btn-resort btn-resort-peligro"
+                  style="font-size: 12px; padding: 6px 12px; cursor: pointer"
+                  (click)="abrirModalBan(usr, $event)"
+                >
+                  <i class="fa-solid fa-ban"></i> Banear
+                </span>
                 <span
                   class="btn-resort btn-resort-outline"
                   style="font-size: 12px; padding: 6px 12px"
@@ -389,9 +396,8 @@
     @if (reporteSeleccionado()) {
       <div class="modal-fondo" (click)="cerrarModalDetalle()">
         <div
-          class="modal-caja"
+          class="modal-caja modal-detalle-reporte"
           (click)="$event.stopPropagation()"
-          style="max-width: 600px; padding: 35px"
         >
           <button class="boton-cerrar" (click)="cerrarModalDetalle()">
             <i class="fa-solid fa-xmark"></i>
@@ -521,6 +527,62 @@
                 {{ reporteSeleccionado()?.descripcion || 'Sin descripción' }}
               </p>
             </div>
+
+            <div style="grid-column: 1 / -1; border-top: 1px solid #f1f5f9; padding-top: 15px">
+              <small
+                style="
+                  color: #94a3b8;
+                  font-weight: bold;
+                  text-transform: uppercase;
+                  font-size: 11px;
+                "
+                >Dirección / Ubicación</small
+              >
+              <div
+                id="mapa-historial-reporte"
+                class="mapa-historial-reporte"
+                [class.mapa-oculto]="!mapaDisponible()"
+              ></div>
+              <p
+                *ngIf="!mapaDisponible()"
+                style="
+                  margin: 8px 0 0 0;
+                  line-height: 1.6;
+                  color: #334155;
+                  font-size: 14px;
+                  background: #f8fafc;
+                  padding: 15px;
+                  border-radius: 12px;
+                  border: 1px solid #f1f5f9;
+                "
+              >
+                {{ reporteSeleccionado()?.ubicacion || 'Sin ubicación registrada' }}
+              </p>
+            </div>
+
+            <div style="grid-column: 1 / -1; border-top: 1px solid #f1f5f9; padding-top: 15px">
+              <small
+                style="
+                  color: #94a3b8;
+                  font-weight: bold;
+                  text-transform: uppercase;
+                  font-size: 11px;
+                "
+                >Evidencia Fotográfica</small
+              >
+              @let imagenes = obtenerImagenesReporte(reporteSeleccionado());
+              @if (imagenes.length > 0) {
+                <div class="grid-evidencias">
+                  @for (url of imagenes; track url) {
+                    <a [href]="url" target="_blank" rel="noopener noreferrer" class="evidencia-link">
+                      <img [src]="url" alt="Evidencia del reporte" loading="lazy" />
+                    </a>
+                  }
+                </div>
+              } @else {
+                <p class="texto-sin-evidencia">Este reporte no tiene imágenes adjuntas.</p>
+              }
+            </div>
           </div>
 
           <div
@@ -533,6 +595,84 @@
           >
             <button class="btn-resort btn-resort-primario" (click)="cerrarModalDetalle()">
               Entendido
+            </button>
+          </div>
+        </div>
+      </div>
+    }
+    <!-- Modal Ban Temporal (solo admin de institución) -->
+    @if (mostrarModalBan()) {
+      <div class="modal-fondo" (click)="cerrarModalBan()">
+        <div
+          class="modal-caja"
+          (click)="$event.stopPropagation()"
+          style="max-width: 480px; padding: 30px"
+        >
+          <button class="boton-cerrar" (click)="cerrarModalBan()">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+
+          <h3 style="color: var(--primario); margin-top: 0; font-weight: 800; font-size: 20px">
+            Banear Usuario
+          </h3>
+
+          @if (usuarioParaBan(); as usr) {
+            <p style="color: #64748b; font-size: 14px; margin-bottom: 20px">
+              Vas a banear temporalmente a <strong>{{ usr.nombres }} {{ usr.apellidos }}</strong
+              >.
+            </p>
+          }
+
+          <div style="display: flex; flex-direction: column; gap: 16px">
+            <div class="form-grupo">
+              <label for="histBanMotivo">Motivo del Ban</label>
+              <textarea
+                id="histBanMotivo"
+                class="form-input"
+                rows="4"
+                [(ngModel)]="banForm().motivo"
+                placeholder="Describa el motivo del ban..."
+              ></textarea>
+            </div>
+            <div class="form-grupo">
+              <label for="histBanFechaFin">Fecha de Fin del Ban</label>
+              <input
+                type="date"
+                id="histBanFechaFin"
+                class="form-input"
+                [(ngModel)]="banForm().fechaFin"
+              />
+            </div>
+          </div>
+
+          <div
+            style="
+              border-top: 1px solid #f1f5f9;
+              padding-top: 20px;
+              margin-top: 24px;
+              display: flex;
+              justify-content: flex-end;
+              gap: 10px;
+            "
+          >
+            <button
+              class="btn-resort btn-resort-outline"
+              (click)="cerrarModalBan()"
+              [disabled]="cargando()"
+            >
+              Cancelar
+            </button>
+            <button
+              class="btn-resort btn-resort-peligro"
+              (click)="confirmarBan()"
+              [disabled]="cargando()"
+            >
+              @if (cargando()) {
+                <i class="fa-solid fa-spinner fa-spin"></i>
+              } @else {
+                <i class="fa-solid fa-ban"></i>
+              }
+              Banear
             </button>
           </div>
         </div>

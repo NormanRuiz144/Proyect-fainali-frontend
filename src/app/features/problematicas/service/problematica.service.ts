@@ -9,6 +9,8 @@ import {
   ListarProblematicasPagResponse,
   ListarProblematicasResponse,
   Problematica,
+  ProblematicasDisponiblesMiInstitucionResponse,
+  ProblematicasMiInstitucionResponse,
 } from '../interface/problematica';
 
 @Injectable({
@@ -78,5 +80,27 @@ export class ProblematicaService {
     return this.http.delete(`${this.apiUrl}/eliminar-asociacion`, {
       body: { idProblematica: problematicaId, idInstitucion: institucionId },
     });
+  }
+
+  listarProblematicasMiInstitucion(): Observable<ProblematicasMiInstitucionResponse> {
+    return this.http.get<ProblematicasMiInstitucionResponse>(
+      `${this.apiUrl}/mi-institucion/listar`,
+    );
+  }
+
+  listarProblematicasDisponiblesMiInstitucion(): Observable<ProblematicasDisponiblesMiInstitucionResponse> {
+    return this.http.get<ProblematicasDisponiblesMiInstitucionResponse>(
+      `${this.apiUrl}/mi-institucion/disponibles`,
+    );
+  }
+
+  asignarProblematicaMiInstitucion(problematicaId: number): Observable<any> {
+    return this.http.post(`${this.apiUrl}/mi-institucion/asignar`, {
+      idProblematica: problematicaId,
+    });
+  }
+
+  eliminarProblematicaMiInstitucion(problematicaId: number): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/mi-institucion/eliminar/${problematicaId}`);
   }
 }

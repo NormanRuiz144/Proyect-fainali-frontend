@@ -11,3 +11,33 @@
 @keyframes girar {
   to { transform: rotate(360deg); }
 }
+
+.grid-evidencias {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.evidencia-link {
+  display: block;
+  aspect-ratio: 4 / 3;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid #e2e8f0;
+  background: #f8fafc;
+}
+
+.evidencia-link img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.texto-sin-evidencia {
+  margin: 6px 0 0;
+  color: #94a3b8;
+  font-style: italic;
+  font-size: 0.9rem;
+}
