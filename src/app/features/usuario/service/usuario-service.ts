@@ -9,7 +9,7 @@ import {
   IUsuario,
 } from '../interface/iusuario';
 import { Observable } from 'rxjs';
-import { environment } from '../../../environment/environment';
+import { environment } from '../../../../environment/environment';
 import { AuthResponse } from '../../../auth/interfaces/auth-response';
 
 @Injectable({

@@ -3,7 +3,7 @@ import { Injectable, inject } from '@angular/core';
 import { Observable, of } from 'rxjs';
 import { delay } from 'rxjs/operators';
 import { IRespuestaReportes } from '../interface/ireporte';
-import { environment } from '../../../../environment/environment';
+import { environment } from '../../../../../environment/environment';
 
 @Injectable({
   providedIn: 'root',

@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { map, Observable } from 'rxjs';
-import { environment } from '../../../environment/environment';
+import { environment } from '../../../../environment/environment';
 import { DepartamentoResponse, IDepartamento } from '../interface/idepartamento';
 import { IMunicipio, MunicipioResponse } from '../interface/imunicipio';
 import { ISector, SectorResponse } from '../interface/isector';
