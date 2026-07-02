@@ -1,6 +1,6 @@
 :host {
   display: block;
-  height: 100vh;
+  min-height: 100vh;
   width: 100%;
   --primario: #1c4d8d; /* Color principal de Comunica */
   --texto: #2d3436;
@@ -174,17 +174,17 @@
   align-items: flex-start;
 }
 
+.vista-ciudadano {
+  width: 100%;
+}
+
+.navegacion-movil {
+  display: none;
+}
+
 /* --- VISTAS DEL CIUDADANO --- */
 
 /* Historial Vista */
-.lista-reportes-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 20px;
-  width: 100%;
-  max-width: 1000px;
-}
-
 .tarjeta-reporte-mini {
   padding: 20px;
   border: 1px solid #e2e8f0;
@@ -193,12 +193,6 @@
   transition: all 0.2s;
   background: white;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-}
-
-.tarjeta-reporte-mini:hover {
-  border-color: #cbd5e1;
-  transform: translateY(-2px);
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
 }
 
 .tarjeta-reporte-mini.activo {
@@ -286,6 +280,88 @@
   margin-bottom: 24px;
 }
 
+.historial-layout {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.historial-cabecera {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+}
+
+.historial-cabecera h2 {
+  color: #0f2854;
+  margin: 0;
+  font-size: 1.6rem;
+}
+
+.historial-filtro {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.historial-filtro label {
+  color: #475569;
+  font-size: 0.9rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.input-filtro {
+  width: 250px;
+  padding: 8px 12px;
+}
+
+.historial-vacio {
+  text-align: center;
+  padding: 40px;
+  background: white;
+  border: 1px dashed #cbd5e1;
+  border-radius: 20px;
+}
+
+.historial-vacio > i {
+  color: #94a3b8;
+  font-size: 40px;
+  margin-bottom: 15px;
+}
+
+.historial-vacio h3 {
+  color: #334155;
+}
+
+.historial-vacio p {
+  color: #64748b;
+}
+
+.btn-vacio {
+  margin: 20px auto 0;
+  width: 200px;
+}
+
+.historial-contenido {
+  display: flex;
+  align-items: flex-start;
+  gap: 24px;
+}
+
+.historial-lista {
+  width: 350px;
+  max-height: calc(100vh - 200px);
+  padding-right: 10px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  overflow-y: auto;
+}
+
 .perfil-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -365,6 +441,8 @@
 
 .input-portal[readonly] {
   color: #475569;
+  background-color: #eef2f7;
+  border-color: #d7dee8;
   cursor: default;
 }
 
@@ -420,26 +498,9 @@
   box-shadow: 0 4px 12px rgba(28, 77, 141, 0.12);
 }
 
-.btn-portal-primario:hover {
-  background-color: #153c6e;
-  transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(28, 77, 141, 0.3);
-}
-
-@media (max-width: 720px) {
-  .perfil-grid {
-    grid-template-columns: 1fr;
-  }
-}
-
 .btn-portal-secundario {
   background-color: #f1f5f9;
   color: #475569;
-}
-
-.btn-portal-secundario:hover {
-  background-color: #e2e8f0;
-  color: #1e293b;
 }
 
 /* Detalles */
@@ -451,6 +512,8 @@
   box-shadow: 0 10px 40px rgba(15, 40, 84, 0.08);
   padding: 32px;
   border: 1px solid #f1f5f9;
+  flex-grow: 1;
+  margin: 0;
 }
 
 .encabezado-detalle {
@@ -525,6 +588,12 @@
   border: 1.5px solid #e2e8f0;
 }
 
+.mapa-ubicacion {
+  height: 300px;
+  width: 100%;
+  z-index: 1;
+}
+
 .estado-gps {
   position: absolute;
   top: 10px;
@@ -552,11 +621,6 @@
   transition: all 0.2s;
 }
 
-.btn-gps:hover {
-  background-color: #f8fafc;
-  color: var(--primario);
-}
-
 .texto-coordenadas {
   background-color: #10b981;
   color: white;
@@ -576,11 +640,6 @@
   background-color: #f8fafc;
   position: relative;
   transition: all 0.3s;
-}
-
-.zona-archivos:hover {
-  border-color: var(--primario);
-  background-color: #f0f9ff;
 }
 
 .input-archivo-oculto {
@@ -629,10 +688,6 @@
   transition: transform 0.3s;
 }
 
-.tarjeta-previsualizacion:hover img {
-  transform: scale(1.05);
-}
-
 .btn-eliminar-foto {
   position: absolute;
   top: 5px;
@@ -649,10 +704,6 @@
   font-size: 12px;
   cursor: pointer;
   transition: background 0.2s;
-}
-
-.btn-eliminar-foto:hover {
-  background-color: rgb(185, 28, 28);
 }
 
 .modal-imagen-overlay {

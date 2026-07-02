@@ -256,3 +256,365 @@ body {
   cursor: pointer;
   color: #94a3b8;
 }
+
+app-nuevo-reporte .boton-salir-cabecera-movil {
+  display: none;
+}
+
+@media (max-width: 840px) {
+  app-nuevo-reporte {
+    min-height: 100dvh;
+  }
+
+  app-nuevo-reporte .contenedor-admin {
+    display: block !important;
+    min-height: 100dvh !important;
+    height: auto !important;
+    overflow: visible !important;
+    padding-bottom: 86px !important;
+  }
+
+  app-nuevo-reporte .sidebar-admin {
+    display: none !important;
+    width: 0 !important;
+  }
+
+  app-nuevo-reporte .contenido-principal {
+    width: 100% !important;
+    min-height: 100dvh !important;
+    height: auto !important;
+    overflow: visible !important;
+  }
+
+  app-nuevo-reporte .cabecera-admin {
+    height: auto;
+    min-height: 58px;
+    padding: 10px 16px;
+    position: sticky;
+    top: 0;
+    z-index: 20;
+  }
+
+  app-nuevo-reporte .perfil-admin,
+  app-nuevo-reporte .info-texto {
+    width: 100%;
+  }
+
+  app-nuevo-reporte .perfil-admin {
+    justify-content: space-between;
+    gap: 10px;
+  }
+
+  app-nuevo-reporte .info-texto {
+    align-items: flex-start;
+    text-align: left;
+    min-width: 0;
+  }
+
+  app-nuevo-reporte .boton-salir-cabecera-movil {
+    width: 38px;
+    height: 38px;
+    border: 1px solid #fecdd3;
+    border-radius: 12px;
+    background: #fff1f2;
+    color: #e11d48;
+    display: grid;
+    flex: 0 0 auto;
+    place-items: center;
+    font-size: 0.95rem;
+  }
+
+  app-nuevo-reporte .nombre-usuario {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  app-nuevo-reporte .cuerpo-admin {
+    display: block;
+    padding: 10px 10px 14px;
+    overflow: visible;
+  }
+
+  app-nuevo-reporte .contenedor-formulario,
+  app-nuevo-reporte .contenedor-detalle {
+    max-width: none;
+    border-radius: 16px;
+    box-shadow: 0 8px 24px rgba(15, 40, 84, 0.06);
+  }
+
+  app-nuevo-reporte .encabezado-portal {
+    padding: 22px 18px;
+  }
+
+  app-nuevo-reporte .icono-portal {
+    width: 44px;
+    height: 44px;
+    margin-bottom: 10px;
+    font-size: 18px;
+  }
+
+  app-nuevo-reporte .encabezado-portal h2 {
+    font-size: 1.35rem;
+  }
+
+  app-nuevo-reporte .encabezado-portal p {
+    font-size: 0.9rem;
+  }
+
+  app-nuevo-reporte .formulario-reporte {
+    padding: 18px;
+  }
+
+  app-nuevo-reporte .grupo-campo {
+    margin-bottom: 18px;
+  }
+
+  app-nuevo-reporte .grupo-campo label {
+    line-height: 1.35;
+  }
+
+  app-nuevo-reporte .input-portal {
+    min-height: 46px;
+    padding: 12px 14px;
+    font-size: 1rem;
+  }
+
+  app-nuevo-reporte .textarea-portal {
+    min-height: 120px;
+  }
+
+  app-nuevo-reporte .mapa-ubicacion {
+    height: 220px;
+  }
+
+  app-nuevo-reporte .estado-gps {
+    left: 10px;
+    right: 10px;
+    align-items: stretch;
+  }
+
+  app-nuevo-reporte .btn-gps,
+  app-nuevo-reporte .texto-coordenadas {
+    justify-content: center;
+    text-align: center;
+  }
+
+  app-nuevo-reporte .zona-archivos {
+    padding: 22px 14px;
+  }
+
+  app-nuevo-reporte .zona-archivos h4 {
+    margin: 8px 0 6px;
+    font-size: 1rem;
+  }
+
+  app-nuevo-reporte .zona-archivos p {
+    margin: 0;
+    font-size: 0.88rem;
+  }
+
+  app-nuevo-reporte .contenedor-previsualizacion {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  app-nuevo-reporte .acciones-formulario {
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 22px;
+  }
+
+  app-nuevo-reporte .acciones-formulario .btn-portal-primario {
+    order: -1;
+  }
+
+  app-nuevo-reporte .btn-portal-primario,
+  app-nuevo-reporte .btn-portal-secundario {
+    width: 100%;
+    min-height: 48px;
+  }
+
+  app-nuevo-reporte .perfil-grid,
+  app-nuevo-reporte .info-detalle-grid {
+    grid-template-columns: 1fr;
+  }
+
+  app-nuevo-reporte .perfil-grid {
+    gap: 0;
+  }
+
+  app-nuevo-reporte .perfil-subtitulo {
+    margin-bottom: 18px;
+    padding-top: 16px;
+  }
+
+  app-nuevo-reporte .historial-cabecera,
+  app-nuevo-reporte .historial-filtro,
+  app-nuevo-reporte .historial-contenido {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  app-nuevo-reporte .historial-cabecera {
+    gap: 8px;
+  }
+
+  app-nuevo-reporte .historial-cabecera h2 {
+    font-size: 1.15rem;
+    line-height: 1.2;
+  }
+
+  app-nuevo-reporte .input-filtro,
+  app-nuevo-reporte .historial-lista {
+    width: min(100%, 300px) !important;
+    margin: 0 auto !important;
+    order: 2 !important;
+  }
+
+  app-nuevo-reporte .historial-lista {
+    max-height: none;
+    padding-right: 0;
+    gap: 4px !important;
+    overflow: visible;
+  }
+
+  app-nuevo-reporte .historial-vacio {
+    padding: 28px 18px;
+    border-radius: 16px;
+  }
+
+  app-nuevo-reporte .btn-vacio {
+    width: 100%;
+  }
+
+  app-nuevo-reporte .tarjeta-reporte-mini {
+    width: 100% !important;
+    box-sizing: border-box !important;
+    padding: 6px 5px !important;
+    border-radius: 8px !important;
+    box-shadow: 0 1px 4px rgba(15, 40, 84, 0.04) !important;
+  }
+
+  app-nuevo-reporte .tarjeta-reporte-mini.activo {
+    border-color: #60a5fa !important;
+    box-shadow: inset 0 0 0 1px rgba(96, 165, 250, 0.45) !important;
+  }
+
+  app-nuevo-reporte .header-tarjeta-mini {
+    margin-bottom: 3px !important;
+  }
+
+  app-nuevo-reporte .fecha-mini,
+  app-nuevo-reporte .institucion-mini {
+    font-size: 0.65rem !important;
+    line-height: 1.1 !important;
+  }
+
+  app-nuevo-reporte .problema-mini {
+    margin-bottom: 2px !important;
+    font-size: 0.78rem !important;
+    line-height: 1.15 !important;
+  }
+
+  app-nuevo-reporte .estado-badge {
+    padding: 1px 5px !important;
+    font-size: 0.58rem !important;
+    line-height: 1.1 !important;
+  }
+
+  app-nuevo-reporte .contenedor-detalle {
+    width: min(100%, 300px) !important;
+    max-width: 300px !important;
+    margin: 0 auto 8px !important;
+    box-sizing: border-box !important;
+    order: 1 !important;
+    padding: 10px !important;
+    border-radius: 10px !important;
+    box-shadow: 0 2px 7px rgba(15, 40, 84, 0.05) !important;
+  }
+
+  app-nuevo-reporte .encabezado-detalle {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 14px;
+    padding-bottom: 12px;
+  }
+
+  app-nuevo-reporte .encabezado-detalle h2 {
+    font-size: 1.1rem;
+    line-height: 1.25;
+  }
+
+  app-nuevo-reporte .info-detalle-grid {
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+
+  app-nuevo-reporte .info-item {
+    gap: 2px;
+  }
+
+  app-nuevo-reporte .info-label {
+    font-size: 0.72rem;
+  }
+
+  app-nuevo-reporte .info-valor {
+    font-size: 0.9rem;
+    line-height: 1.25;
+  }
+
+  app-nuevo-reporte .info-detalle p {
+    margin: 0 0 8px;
+    font-size: 0.9rem;
+  }
+
+  app-nuevo-reporte .descripcion-box {
+    padding: 10px 12px;
+    line-height: 1.45;
+  }
+
+  app-nuevo-reporte .navegacion-movil.navegacion-movil {
+    position: fixed;
+    right: 12px;
+    bottom: 12px;
+    left: 12px;
+    z-index: 1000;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 6px;
+    padding: 8px;
+    background: rgba(255, 255, 255, 0.96);
+    border: 1px solid #dbe4ef;
+    border-radius: 18px;
+    box-shadow: 0 16px 40px rgba(15, 40, 84, 0.18);
+    backdrop-filter: blur(12px);
+  }
+
+  app-nuevo-reporte .navegacion-movil button {
+    min-width: 0;
+    min-height: 52px;
+    border: 0;
+    border-radius: 14px;
+    background: transparent;
+    color: #64748b;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    font-size: 0.75rem;
+    font-weight: 700;
+  }
+
+  app-nuevo-reporte .navegacion-movil button i {
+    font-size: 1.05rem;
+  }
+
+  app-nuevo-reporte .navegacion-movil button.activo {
+    background: var(--primario);
+    color: white;
+  }
+}

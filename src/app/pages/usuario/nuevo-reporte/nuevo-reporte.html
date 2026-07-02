@@ -36,13 +36,16 @@
           <span class="nombre-usuario" *ngIf="usuarioActual()">{{ usuarioActual().nombres }} {{ usuarioActual().apellidos }}</span>
           <span class="rol-usuario">Ciudadano</span>
         </div>
+        <button type="button" class="boton-salir-cabecera-movil" (click)="cerrarSesion()" aria-label="Cerrar sesión">
+          <i class="fa-solid fa-arrow-right-from-bracket"></i>
+        </button>
       </div>
     </header>
 
     <main class="cuerpo-admin">
       
       <!-- VISTA: NUEVO REPORTE -->
-      <div [style.display]="vistaActual() === 'nuevo' ? 'block' : 'none'">
+      <div class="vista-ciudadano" [style.display]="vistaActual() === 'nuevo' ? 'block' : 'none'">
         <div class="contenedor-formulario">
           <div class="encabezado-portal">
             <div class="icono-portal">
@@ -127,7 +130,7 @@
                   </button>
                   <span class="texto-coordenadas" *ngIf="ubicacionObtenida()">¡Ubicación capturada con éxito!</span>
                 </div>
-                <div id="mapa-ubicacion" style="height: 300px; width: 100%; z-index: 1;"></div>
+                <div id="mapa-ubicacion" class="mapa-ubicacion"></div>
               </div>
             </div>
 
@@ -164,13 +167,13 @@
 
       <!-- VISTA: HISTORIAL -->
       <ng-container *ngIf="vistaActual() === 'historial'">
-        <div style="width: 100%; display: flex; flex-direction: column; gap: 20px;">
-          <div style="display: flex; justify-content: space-between; align-items: center;">
-            <h2 style="color: #0f2854; margin-top: 0;">Historial de Reportes</h2>
+        <div class="historial-layout">
+          <div class="historial-cabecera">
+            <h2>Historial de Reportes</h2>
             
-            <div style="display: flex; align-items: center; gap: 10px;" *ngIf="historialReportes().length > 0">
-              <label for="filtroInst" style="font-size: 0.9rem; font-weight: 600; color: #475569;"><i class="fa-solid fa-filter"></i> Filtrar por:</label>
-              <select id="filtroInst" class="input-portal" style="width: 250px; padding: 8px 12px;" 
+            <div class="historial-filtro" *ngIf="historialReportes().length > 0">
+              <label for="filtroInst"><i class="fa-solid fa-filter"></i> Filtrar por:</label>
+              <select id="filtroInst" class="input-portal input-filtro" 
                       [value]="filtroInstitucion()" (change)="filtroInstitucion.set($any($event.target).value)">
                 <option value="todas">Todas las instituciones</option>
                 <option *ngFor="let inst of institucionesHistorial" [value]="inst.id">{{ inst.nombre }}</option>
@@ -178,18 +181,18 @@
             </div>
           </div>
           
-          <div *ngIf="historialReportes().length === 0" style="text-align: center; padding: 40px; background: white; border-radius: 20px; border: 1px dashed #cbd5e1;">
-            <i class="fa-solid fa-clipboard-list" style="font-size: 40px; color: #94a3b8; margin-bottom: 15px;"></i>
-            <h3 style="color: #334155;">No tienes reportes aún</h3>
-            <p style="color: #64748b;">Parece que no has reportado ningún problema en tu comunidad. ¡Anímate a crear uno nuevo!</p>
-            <button class="btn-portal-primario" style="margin: 20px auto 0; width: 200px;" (click)="cambiarVista('nuevo')">
+          <div class="historial-vacio" *ngIf="historialReportes().length === 0">
+            <i class="fa-solid fa-clipboard-list"></i>
+            <h3>No tienes reportes aún</h3>
+            <p>Parece que no has reportado ningún problema en tu comunidad. ¡Anímate a crear uno nuevo!</p>
+            <button class="btn-portal-primario btn-vacio" (click)="cambiarVista('nuevo')">
               Crear Nuevo Reporte
             </button>
           </div>
 
-          <div *ngIf="historialReportes().length > 0" style="display: flex; gap: 24px; align-items: flex-start;">
+          <div class="historial-contenido" *ngIf="historialReportes().length > 0">
             
-            <div style="width: 350px; display: flex; flex-direction: column; gap: 15px; flex-shrink: 0; max-height: calc(100vh - 200px); overflow-y: auto; padding-right: 10px;">
+            <div class="historial-lista">
               <div class="tarjeta-reporte-mini" *ngFor="let rep of reportesFiltrados" 
                   (click)="reporteSeleccionado.set(rep)"
                   [class.activo]="reporteSeleccionado()?.id === rep.id">
@@ -203,7 +206,7 @@
             </div>
 
             <!-- Detalle Reporte Seleccionado -->
-            <div class="contenedor-detalle" *ngIf="reporteSeleccionado()" style="margin: 0; flex-grow: 1;">
+            <div class="contenedor-detalle" *ngIf="reporteSeleccionado()">
               <div class="encabezado-detalle">
                 <h2>Detalle del Reporte</h2>
                 <span class="estado-badge" [ngClass]="reporteSeleccionado().estado?.toLowerCase() || 'pendiente'">
@@ -333,6 +336,21 @@
 
     </main>
   </div>
+
+  <nav class="navegacion-movil" aria-label="Navegación del ciudadano">
+    <button type="button" [class.activo]="vistaActual() === 'nuevo'" (click)="cambiarVista('nuevo')">
+      <i class="fa-solid fa-plus-circle"></i>
+      <span>Nuevo</span>
+    </button>
+    <button type="button" [class.activo]="vistaActual() === 'historial'" (click)="cambiarVista('historial')">
+      <i class="fa-solid fa-list-ul"></i>
+      <span>Historial</span>
+    </button>
+    <button type="button" [class.activo]="vistaActual() === 'perfil'" (click)="cambiarVista('perfil')">
+      <i class="fa-solid fa-user-gear"></i>
+      <span>Perfil</span>
+    </button>
+  </nav>
 
   <!-- Modal para ver la imagen ampliada (Lightbox) -->
   <div class="modal-imagen-overlay" *ngIf="imagenAmpliada()" (click)="cerrarModalImagen()">
