@@ -25,6 +25,7 @@ export class NuevoReporte implements OnInit, AfterViewInit, OnDestroy {
   private router = inject(Router);
   municipioSeleccionado = signal(false);
   ubicacionObtenida = signal(false);
+  reporteEnviando = signal(false);
   
   // Señales para el Dashboard del Ciudadano
   vistaActual = signal<'nuevo' | 'historial' | 'perfil'>('historial');
@@ -621,6 +622,8 @@ export class NuevoReporte implements OnInit, AfterViewInit, OnDestroy {
 
   enviarReporte(event: Event) {
     event.preventDefault();
+    if (this.reporteEnviando()) return;
+
     const lat = this.marker?.getLatLng().lat;
     const lng = this.marker?.getLatLng().lng;
 
@@ -664,9 +667,11 @@ export class NuevoReporte implements OnInit, AfterViewInit, OnDestroy {
     }
 
     // Enviar reporte a través del servicio
+    this.reporteEnviando.set(true);
     this.reporteService.crearReporte(formData).subscribe({
       next: async (respuesta) => {
-        await this.interactionService.showToast('Reporte enviado con éxito', 'success');
+        this.reporteEnviando.set(false);
+        await this.interactionService.showToast('Reporte enviado', 'success');
         (event.target as HTMLFormElement).reset(); // Limpiar el formulario
         this.limpiarImagenes();
         this.restaurarUbicacionReporteDesdePerfil();
@@ -675,6 +680,7 @@ export class NuevoReporte implements OnInit, AfterViewInit, OnDestroy {
         this.vistaActual.set('historial');
       },
       error: async (error) => {
+        this.reporteEnviando.set(false);
         console.error('Error enviando reporte:', error);
         await this.interactionService.mostrarError(error);
       }

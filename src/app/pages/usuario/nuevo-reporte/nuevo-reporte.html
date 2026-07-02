@@ -156,8 +156,12 @@
 
             <div class="acciones-formulario">
               <button type="button" class="btn-portal-secundario" (click)="cambiarVista('historial')">Cancelar</button>
-              <button type="submit" class="btn-portal-primario">
-                <i class="fa-solid fa-paper-plane"></i> Enviar Reporte
+              <button type="submit" class="btn-portal-primario" [disabled]="reporteEnviando()">
+                @if (reporteEnviando()) {
+                  <i class="fa-solid fa-spinner fa-spin"></i> Enviando...
+                } @else {
+                  <i class="fa-solid fa-paper-plane"></i> Enviar Reporte
+                }
               </button>
             </div>
 
