@@ -62,8 +62,10 @@ export class NuevoReporte implements OnInit, AfterViewInit, OnDestroy {
   // Señales para los catálogos
   instituciones = signal<any[]>([]);
   problematicas = signal<any[]>([]);
+  departamentos = signal<any[]>([]);
   sectores = signal<any[]>([]);
   municipios = signal<any[]>([]);
+  departamentoReporteId = signal<string>('');
   municipioReporteId = signal<string>('');
   sectorReporteId = signal<string>('');
 
@@ -174,7 +176,10 @@ export class NuevoReporte implements OnInit, AfterViewInit, OnDestroy {
       correo: usuario.correo || '',
     }));
 
-    this.ubicacionService.obtenerDepartamentos().subscribe((res) => this.perfilDepartamentos.set(res));
+    this.ubicacionService.obtenerDepartamentos().subscribe((res) => {
+      this.perfilDepartamentos.set(res);
+      this.departamentos.set(res);
+    });
 
     if (usuario.sector?.municipio) {
       const idDpto =
@@ -187,13 +192,14 @@ export class NuevoReporte implements OnInit, AfterViewInit, OnDestroy {
         this.perfilForm.update((f) => ({ ...f, idDepartamento: idDpto.toString() }));
         this.ubicacionService.obtenerMunicipiosPorDepartamento(idDpto).subscribe((res) => {
           this.perfilMunicipios.set(res);
+          this.municipios.set(res);
           if (idMuni) {
             this.perfilForm.update((f) => ({ ...f, idMunicipio: idMuni.toString() }));
             this.ubicacionService.obtenerSectoresPorMunicipio(idMuni).subscribe((resSectores) => {
               this.perfilSectores.set(resSectores);
               if (idSect) {
                 this.perfilForm.update((f) => ({ ...f, idSector: idSect.toString() }));
-                this.preseleccionarUbicacionReporte(idMuni, idSect, resSectores);
+                this.preseleccionarUbicacionReporte(idDpto, idMuni, idSect, resSectores);
               }
             });
           }
@@ -206,10 +212,12 @@ export class NuevoReporte implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private preseleccionarUbicacionReporte(
+    idDepartamento: number,
     idMunicipio: number,
     idSector: number,
     sectores: any[]
   ): void {
+    this.departamentoReporteId.set(idDepartamento.toString());
     this.municipioReporteId.set(idMunicipio.toString());
     this.sectorReporteId.set(idSector.toString());
     this.municipioSeleccionado.set(true);
@@ -222,8 +230,27 @@ export class NuevoReporte implements OnInit, AfterViewInit, OnDestroy {
         const idMunicipio = sector.idMunicipios ?? sector.id_municipios ?? sector.idMunicipio;
         if (!idMunicipio) return;
 
+        this.ubicacionService.obtenerDepartamentos().subscribe((departamentos) => {
+          this.departamentos.set(departamentos);
+        });
+
         this.ubicacionService.obtenerSectoresPorMunicipio(Number(idMunicipio)).subscribe({
-          next: (sectores) => this.preseleccionarUbicacionReporte(idMunicipio, idSector, sectores),
+          next: (sectores) => {
+            const idDepartamento =
+              sector.municipio?.idDepartamentos ??
+              sector.municipio?.id_departamentos ??
+              sector.idDepartamento ??
+              sector.id_departamento;
+
+            if (idDepartamento) {
+              this.ubicacionService.obtenerMunicipiosPorDepartamento(Number(idDepartamento)).subscribe({
+                next: (municipios) => this.municipios.set(municipios),
+                error: () => this.municipios.set([]),
+              });
+            }
+
+            this.preseleccionarUbicacionReporte(idDepartamento || 0, idMunicipio, idSector, sectores);
+          },
           error: () => this.sectores.set([]),
         });
       },
@@ -362,10 +389,10 @@ export class NuevoReporte implements OnInit, AfterViewInit, OnDestroy {
         this.interactionService.mostrarError(err);
       },
     });
-    this.reporteService.obtenerMunicipios().subscribe({
-      next: (res) => this.municipios.set(res.lista_Municipios || res),
+    this.ubicacionService.obtenerDepartamentos().subscribe({
+      next: (res) => this.departamentos.set(res),
       error: (err) => {
-        console.error('Error cargando municipios', err);
+        console.error('Error cargando departamentos', err);
         this.interactionService.mostrarError(err);
       },
     });
@@ -386,6 +413,23 @@ export class NuevoReporte implements OnInit, AfterViewInit, OnDestroy {
           console.error('Error cargando problemáticas por institución', err);
           await this.interactionService.mostrarError(err);
         },
+      });
+    }
+  }
+
+  onDepartamentoReporteChange(event: Event) {
+    const id = Number((event.target as HTMLSelectElement).value);
+    this.departamentoReporteId.set(id ? id.toString() : '');
+    this.municipioReporteId.set('');
+    this.sectorReporteId.set('');
+    this.municipioSeleccionado.set(false);
+    this.municipios.set([]);
+    this.sectores.set([]);
+
+    if (id) {
+      this.ubicacionService.obtenerMunicipiosPorDepartamento(id).subscribe({
+        next: (data) => this.municipios.set(data),
+        error: () => this.municipios.set([]),
       });
     }
   }
@@ -625,6 +669,7 @@ export class NuevoReporte implements OnInit, AfterViewInit, OnDestroy {
         await this.interactionService.showToast('Reporte enviado con éxito', 'success');
         (event.target as HTMLFormElement).reset(); // Limpiar el formulario
         this.limpiarImagenes();
+        this.restaurarUbicacionReporteDesdePerfil();
         // Recargar el historial para que aparezca el nuevo reporte
         this.cargarHistorial();
         this.vistaActual.set('historial');
@@ -633,6 +678,36 @@ export class NuevoReporte implements OnInit, AfterViewInit, OnDestroy {
         console.error('Error enviando reporte:', error);
         await this.interactionService.mostrarError(error);
       }
+    });
+  }
+
+  private restaurarUbicacionReporteDesdePerfil(): void {
+    const form = this.perfilForm();
+    const idDepartamento = Number(form.idDepartamento);
+    const idMunicipio = Number(form.idMunicipio);
+    const idSector = Number(form.idSector);
+
+    if (!idDepartamento || !idMunicipio || !idSector) {
+      this.departamentoReporteId.set('');
+      this.municipioReporteId.set('');
+      this.sectorReporteId.set('');
+      this.municipioSeleccionado.set(false);
+      this.municipios.set([]);
+      this.sectores.set([]);
+      return;
+    }
+
+    this.departamentoReporteId.set(idDepartamento.toString());
+    this.ubicacionService.obtenerMunicipiosPorDepartamento(idDepartamento).subscribe({
+      next: (municipios) => {
+        this.municipios.set(municipios);
+        this.ubicacionService.obtenerSectoresPorMunicipio(idMunicipio).subscribe({
+          next: (sectores) =>
+            this.preseleccionarUbicacionReporte(idDepartamento, idMunicipio, idSector, sectores),
+          error: () => this.sectores.set([]),
+        });
+      },
+      error: () => this.municipios.set([]),
     });
   }
 }

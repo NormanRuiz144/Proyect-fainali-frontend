@@ -49,10 +49,11 @@ export class AuthService {
 
   establecerSesion(res: AuthResponse): void {
     if (!res?.data) return;
-    this.usuario.set(res.data.user);
+    const usuarioNormalizado = AuthService.normalizarUsuario(res.data.user);
+    this.usuario.set(usuarioNormalizado);
     this.token.set(res.data.token);
     localStorage.setItem('token', res.data.token);
-    localStorage.setItem('usuario', JSON.stringify(res.data.user));
+    localStorage.setItem('usuario', JSON.stringify(usuarioNormalizado));
   }
 
   sincronizarUsuario(usuario: ILogin): void {

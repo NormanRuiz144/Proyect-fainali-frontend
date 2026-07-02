@@ -1,7 +1,7 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
-import { environment } from '../../../../environment/environment';
+import { environment } from '../../../../../environment/environment';
 import { IReporteMapaFiltros, IReporteMapaResponse } from '../interface/ireporte-mapa';
 
 @Injectable({

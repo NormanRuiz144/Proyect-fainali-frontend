@@ -75,11 +75,26 @@
             </div>
 
             <div class="grupo-campo">
+              <label for="departamento"><i class="fa-solid fa-map-location-dot"></i> ¿En qué departamento te encuentras?</label>
+              <select
+                id="departamento"
+                class="input-portal"
+                required
+                [value]="departamentoReporteId()"
+                (change)="onDepartamentoReporteChange($event)"
+              >
+                <option value="" disabled selected>Selecciona tu departamento...</option>
+                <option *ngFor="let dept of departamentos()" [value]="dept.id">{{ dept.nomDepartamento }}</option>
+              </select>
+            </div>
+
+            <div class="grupo-campo">
               <label for="municipio"><i class="fa-solid fa-city"></i> ¿En qué municipio te encuentras?</label>
               <select
                 id="municipio"
                 class="input-portal"
                 required
+                [disabled]="!departamentoReporteId()"
                 [value]="municipioReporteId()"
                 (change)="onMunicipioChange($event)"
               >
