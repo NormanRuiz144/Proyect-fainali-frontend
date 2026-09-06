@@ -4,7 +4,8 @@ export interface IReporte {
   estado: 'Pendiente' | 'En Proceso' | 'Finalizado';
   nvlPrioridad: number;
   fechaGen: string;
-  formato: string | null;
+  ubicacion: string;
+  formato: string | string[] | { url?: string; secure_url?: string }[] | null;
   problematica?: {
     problema: string;
   };

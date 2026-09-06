@@ -1,20 +1,58 @@
 import { Component, signal, OnInit, AfterViewInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import * as L from 'leaflet';
 import { NuevoReporteService } from './service/nuevo-reporte.service';
 import { AuthService } from '../../../auth/service/auth-service';
+import { UsuarioService } from '../../../features/usuario/service/usuario-service';
+import { UbicacionService } from '../../../features/ubicacion/service/ubicacion-service';
+import { InteractionService } from '../../../shared/service/interaction.service';
 
 @Component({
   selector: 'app-nuevo-reporte',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, FormsModule],
   templateUrl: './nuevo-reporte.html',
   styleUrl: './nuevo-reporte.css'
 })
 export class NuevoReporte implements OnInit, AfterViewInit, OnDestroy {
   private reporteService = inject(NuevoReporteService);
-  private authService = inject(AuthService);
+  public authService = inject(AuthService);
+  private usuarioService = inject(UsuarioService);
+  private ubicacionService = inject(UbicacionService);
+  private interactionService = inject(InteractionService);
+  private router = inject(Router);
+  municipioSeleccionado = signal(false);
   ubicacionObtenida = signal(false);
+  reporteEnviando = signal(false);
+  
+  // Señales para el Dashboard del Ciudadano
+  vistaActual = signal<'nuevo' | 'historial' | 'perfil'>('historial');
+  historialReportes = signal<any[]>([]);
+  filtroInstitucion = signal<string>('todas');
+  sidebarAbierto = signal<boolean>(true);
+  reporteSeleccionado = signal<any>(null);
+  
+  // Datos de Perfil
+  usuarioActual = signal<any>(null);
+  perfilCargando = signal(false);
+  perfilDepartamentos = signal<any[]>([]);
+  perfilMunicipios = signal<any[]>([]);
+  perfilSectores = signal<any[]>([]);
+  perfilErrores = signal<{ correo?: string; ubicacion?: string }>({});
+  perfilForm = signal({
+    numeroCedula: '',
+    nombres: '',
+    apellidos: '',
+    sexo: '',
+    rol: '',
+    institucion: '',
+    correo: '',
+    idDepartamento: '',
+    idMunicipio: '',
+    idSector: ''
+  });
   
   // Señal para almacenar las previsualizaciones de imágenes y sus archivos correspondientes
   imagenesPrevisualizacion = signal<{ url: string, name: string, file: File }[]>([]);
@@ -25,8 +63,12 @@ export class NuevoReporte implements OnInit, AfterViewInit, OnDestroy {
   // Señales para los catálogos
   instituciones = signal<any[]>([]);
   problematicas = signal<any[]>([]);
+  departamentos = signal<any[]>([]);
   sectores = signal<any[]>([]);
   municipios = signal<any[]>([]);
+  departamentoReporteId = signal<string>('');
+  municipioReporteId = signal<string>('');
+  sectorReporteId = signal<string>('');
 
   // Señal para manejar la institución autoseleccionada
   institucionSeleccionada = signal<string>('');
@@ -34,7 +76,7 @@ export class NuevoReporte implements OnInit, AfterViewInit, OnDestroy {
   // Señal para manejar el placeholder dinámico
   placeholderActual = signal<string>('Ej: Describe detalladamente el problema, su ubicación exacta y cómo afecta a la comunidad.');
 
-  // Diccionario con los ejemplos. 
+  // Diccionario con los ejemplos.
   ejemplosProblematicas: Record<string, string> = {
     'Fuga de agua en la calle': 'Ej: Hay una fuga de agua masiva frente a la pulpería de Doña María. El agua está llegando hasta la calle principal.',
     'Incendio': 'Ej: Hay un incendio en un predio baldío cerca del mercado central, las llamas están creciendo rápidamente.',
@@ -42,16 +84,6 @@ export class NuevoReporte implements OnInit, AfterViewInit, OnDestroy {
     'Baches en la calle': 'Ej: Hay un bache muy profundo en la intersección que está dañando las llantas de los vehículos al pasar.',
     'Aguas estancadas': 'Ej: El agua de la lluvia se ha quedado estancada en la cuneta desde hace una semana y hay muchos zancudos.',
     'Cables tendidos': 'Ej: Un camión pasó arrancando los cables de luz y ahora están colgando peligrosamente a media calle.',
-  };
-
-  // Diccionario para vincular cada problema con una palabra clave de su Institución
-  institucionPorProblema: Record<string, string> = {
-    'Fuga de agua en la calle': 'ENACAL',
-    'Incendio': 'Polic',
-    'Alteracion y disturbio': 'Polic',
-    'Baches en la calle': 'Alcald',
-    'Aguas estancadas': 'MINSA',
-    'Cables tendidos': 'ENATREL', 
   };
 
   private map: L.Map | undefined;
@@ -63,13 +95,362 @@ export class NuevoReporte implements OnInit, AfterViewInit, OnDestroy {
 
   ngOnInit(): void {
     this.cargarCatalogos();
+    this.cargarHistorial();
+    this.cargarDatosPerfil();
+  }
+
+  private cargarHistorial(): void {
+    this.reporteService.obtenerHistorialUsuario().subscribe({
+      next: (res) => {
+        const reportes = res.lista_Reportes || res.data || [];
+        this.historialReportes.set(reportes);
+        
+        // Si no hay historial, mostramos el formulario
+        if (reportes.length === 0) {
+          this.vistaActual.set('nuevo');
+        } else {
+          this.vistaActual.set('historial');
+          this.reporteSeleccionado.set(reportes[0]); // Seleccionar el primer reporte
+        }
+      },
+      error: (err) => {
+        console.error('Error cargando historial', err);
+        this.vistaActual.set('nuevo');
+      }
+    });
+  }
+
+  // Obtener la lista de instituciones únicas a partir del historial del usuario
+  get institucionesHistorial() {
+    const reportes = this.historialReportes();
+    const insts = new Map();
+    reportes.forEach(r => {
+      if (r.institucion) {
+        insts.set(r.institucion.id, r.institucion.nombreInstitucion);
+      }
+    });
+    return Array.from(insts.entries()).map(([id, nombre]) => ({ id, nombre }));
+  }
+
+  // Retornar los reportes filtrados por institución
+  get reportesFiltrados() {
+    const filtro = this.filtroInstitucion();
+    if (filtro === 'todas') {
+      return this.historialReportes();
+    }
+    return this.historialReportes().filter(r => r.institucion?.id?.toString() === filtro);
+  }
+
+  private cargarDatosPerfil(): void {
+    this.perfilCargando.set(true);
+    this.authService.obtenerPerfilActual().subscribe({
+      next: (usuario) => {
+        this.aplicarDatosPerfil(usuario);
+        this.perfilCargando.set(false);
+      },
+      error: async () => {
+        const usuarioLocal = this.authService.usuarioActual();
+        if (usuarioLocal) {
+          this.aplicarDatosPerfil(usuarioLocal);
+        }
+        this.perfilCargando.set(false);
+        await this.interactionService.showToast(
+          'No se pudo refrescar el perfil desde el servidor. Se muestran los datos locales.',
+          'warning',
+        );
+      },
+    });
+  }
+
+  private aplicarDatosPerfil(usuario: any): void {
+    if (!usuario) return;
+
+    this.usuarioActual.set(usuario);
+    this.perfilForm.update((f) => ({
+      ...f,
+      numeroCedula: usuario.numeroCedula || '',
+      nombres: usuario.nombres || '',
+      apellidos: usuario.apellidos || '',
+      sexo: usuario.sexo || '',
+      rol: this.nombreRolVisible(usuario.rol?.rol || ''),
+      institucion: usuario.institucion?.nombreInstitucion || 'Ciudadano',
+      correo: usuario.correo || '',
+    }));
+
+    this.ubicacionService.obtenerDepartamentos().subscribe((res) => {
+      this.perfilDepartamentos.set(res);
+      this.departamentos.set(res);
+    });
+
+    if (usuario.sector?.municipio) {
+      const idDpto =
+        usuario.sector.municipio.idDepartamentos ||
+        (usuario.sector.municipio as any)['id_departamentos'];
+      const idMuni = usuario.sector.idMunicipios || (usuario.sector as any)['id_municipios'];
+      const idSect = usuario.sector.id;
+
+      if (idDpto) {
+        this.perfilForm.update((f) => ({ ...f, idDepartamento: idDpto.toString() }));
+        this.ubicacionService.obtenerMunicipiosPorDepartamento(idDpto).subscribe((res) => {
+          this.perfilMunicipios.set(res);
+          this.municipios.set(res);
+          if (idMuni) {
+            this.perfilForm.update((f) => ({ ...f, idMunicipio: idMuni.toString() }));
+            this.ubicacionService.obtenerSectoresPorMunicipio(idMuni).subscribe((resSectores) => {
+              this.perfilSectores.set(resSectores);
+              if (idSect) {
+                this.perfilForm.update((f) => ({ ...f, idSector: idSect.toString() }));
+                this.preseleccionarUbicacionReporte(idDpto, idMuni, idSect, resSectores);
+              }
+            });
+          }
+        });
+      }
+    } else if (usuario.idSector) {
+      this.perfilForm.update((f) => ({ ...f, idSector: usuario.idSector.toString() }));
+      this.preseleccionarUbicacionReportePorSector(usuario.idSector);
+    }
+  }
+
+  private preseleccionarUbicacionReporte(
+    idDepartamento: number,
+    idMunicipio: number,
+    idSector: number,
+    sectores: any[]
+  ): void {
+    this.departamentoReporteId.set(idDepartamento.toString());
+    this.municipioReporteId.set(idMunicipio.toString());
+    this.sectorReporteId.set(idSector.toString());
+    this.municipioSeleccionado.set(true);
+    this.sectores.set(sectores);
+  }
+
+  private preseleccionarUbicacionReportePorSector(idSector: number): void {
+    this.ubicacionService.obtenerSectorPorId(idSector).subscribe({
+      next: (sector: any) => {
+        const idMunicipio = sector.idMunicipios ?? sector.id_municipios ?? sector.idMunicipio;
+        if (!idMunicipio) return;
+
+        this.ubicacionService.obtenerDepartamentos().subscribe((departamentos) => {
+          this.departamentos.set(departamentos);
+        });
+
+        this.ubicacionService.obtenerSectoresPorMunicipio(Number(idMunicipio)).subscribe({
+          next: (sectores) => {
+            const idDepartamento =
+              sector.municipio?.idDepartamentos ??
+              sector.municipio?.id_departamentos ??
+              sector.idDepartamento ??
+              sector.id_departamento;
+
+            if (idDepartamento) {
+              this.ubicacionService.obtenerMunicipiosPorDepartamento(Number(idDepartamento)).subscribe({
+                next: (municipios) => this.municipios.set(municipios),
+                error: () => this.municipios.set([]),
+              });
+            }
+
+            this.preseleccionarUbicacionReporte(idDepartamento || 0, idMunicipio, idSector, sectores);
+          },
+          error: () => this.sectores.set([]),
+        });
+      },
+      error: (err) => console.error('Error cargando sector del usuario', err),
+    });
+  }
+
+  cambiarVista(vista: 'nuevo' | 'historial' | 'perfil') {
+    this.vistaActual.set(vista);
+    if (window.innerWidth <= 1024) {
+      this.sidebarAbierto.set(false);
+    }
+    if (vista === 'nuevo') {
+      setTimeout(() => {
+        this.map?.invalidateSize();
+      }, 100);
+    }
+  }
+
+  async cerrarSesion() {
+    const confirm = await this.interactionService.confirmar('Cerrar Sesión', '¿Seguro que deseas salir?');
+    if (confirm) {
+      this.authService.logout();
+      this.router.navigate(['/inicio']);
+    }
+  }
+
+  onPerfilDepartamentoChange(event: Event) {
+    const id = (event.target as HTMLSelectElement).value;
+    this.perfilForm.update(f => ({ ...f, idDepartamento: id, idMunicipio: '', idSector: '' }));
+    this.perfilErrores.update((errores) => ({ ...errores, ubicacion: undefined }));
+    this.perfilMunicipios.set([]);
+    this.perfilSectores.set([]);
+    if (id) {
+      this.ubicacionService.obtenerMunicipiosPorDepartamento(Number(id)).subscribe(res => this.perfilMunicipios.set(res));
+    }
+  }
+
+  onPerfilMunicipioChange(event: Event) {
+    const id = (event.target as HTMLSelectElement).value;
+    this.perfilForm.update(f => ({ ...f, idMunicipio: id, idSector: '' }));
+    this.perfilErrores.update((errores) => ({ ...errores, ubicacion: undefined }));
+    this.perfilSectores.set([]);
+    if (id) {
+      this.ubicacionService.obtenerSectoresPorMunicipio(Number(id)).subscribe(res => this.perfilSectores.set(res));
+    }
+  }
+
+  onPerfilSectorChange(event: Event) {
+    const id = (event.target as HTMLSelectElement).value;
+    this.perfilForm.update(f => ({ ...f, idSector: id }));
+    this.perfilErrores.update((errores) => ({ ...errores, ubicacion: undefined }));
+  }
+
+  onPerfilCorreoChange(event: Event) {
+    const correo = (event.target as HTMLInputElement).value.trim();
+    this.perfilForm.update((f) => ({ ...f, correo }));
+    this.perfilErrores.update((errores) => ({ ...errores, correo: undefined }));
+  }
+
+  private validarPerfil(): boolean {
+    const form = this.perfilForm();
+    const errores: { correo?: string; ubicacion?: string } = {};
+    const correo = form.correo.trim();
+    const correoValido = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(correo);
+
+    if (!correo) {
+      errores.correo = 'El correo electrónico es obligatorio.';
+    } else if (!correoValido || correo.length > 254) {
+      errores.correo = 'Ingrese un correo electrónico válido.';
+    }
+
+    const departamentoExiste = this.perfilDepartamentos().some((item) => item.id.toString() === form.idDepartamento);
+    const municipioExiste = this.perfilMunicipios().some((item) => item.id.toString() === form.idMunicipio);
+    const sectorExiste = this.perfilSectores().some((item) => item.id.toString() === form.idSector);
+
+    if (!form.idDepartamento || !form.idMunicipio || !form.idSector) {
+      errores.ubicacion = 'Debe seleccionar departamento, municipio y sector.';
+    } else if (!departamentoExiste || !municipioExiste || !sectorExiste) {
+      errores.ubicacion = 'La ubicación seleccionada no es válida.';
+    }
+
+    this.perfilErrores.set(errores);
+    return Object.keys(errores).length === 0;
+  }
+
+  async guardarPerfil() {
+    const usuario = this.usuarioActual();
+    if (!usuario) return;
+    if (!this.validarPerfil()) {
+      await this.interactionService.showToast('Revise los datos del perfil antes de guardar.', 'warning');
+      return;
+    }
+
+    await this.interactionService.showLoading();
+    const datosActualizados: any = {};
+    datosActualizados.correo = this.perfilForm().correo.trim();
+    datosActualizados.idSector = Number(this.perfilForm().idSector);
+
+    this.usuarioService.actualizarUsuario(usuario.id, datosActualizados).subscribe({
+      next: () => {
+        this.authService.obtenerPerfilActual().subscribe({
+          next: async (perfil) => {
+            this.aplicarDatosPerfil(perfil);
+            await this.interactionService.hideLoading();
+            await this.interactionService.showToast('Perfil actualizado correctamente', 'success');
+          },
+          error: async () => {
+            await this.interactionService.hideLoading();
+            await this.interactionService.showToast(
+              'Perfil actualizado, pero no se pudo refrescar la información.',
+              'warning',
+            );
+          },
+        });
+      },
+      error: async (err) => {
+        await this.interactionService.hideLoading();
+        await this.interactionService.mostrarError(err);
+      }
+    });
+  }
+
+  nombreRolVisible(rol: string): string {
+    if (rol === 'Super-Admin') return 'Administrador de la plataforma';
+    if (rol === 'Admin') return 'Administrador de Institución';
+    if (rol === 'default' || rol === 'dafault') return 'Ciudadano';
+    return rol || 'Sin rol asignado';
   }
 
   private cargarCatalogos(): void {
-    this.reporteService.obtenerInstituciones().subscribe(res => this.instituciones.set(res.lista_Instituciones || res));
-    this.reporteService.obtenerProblematicas().subscribe(res => this.problematicas.set(res.lista_Problematicas || res));
-    this.reporteService.obtenerSectores().subscribe(res => this.sectores.set(res.lista_Sectores || res));
-    this.reporteService.obtenerMunicipios().subscribe(res => this.municipios.set(res.lista_Municipios || res));
+    this.reporteService.obtenerInstituciones().subscribe({
+      next: (res) => this.instituciones.set(res.lista_Instituciones || res),
+      error: (err) => {
+        console.error('Error cargando instituciones', err);
+        this.interactionService.mostrarError(err);
+      },
+    });
+    this.ubicacionService.obtenerDepartamentos().subscribe({
+      next: (res) => this.departamentos.set(res),
+      error: (err) => {
+        console.error('Error cargando departamentos', err);
+        this.interactionService.mostrarError(err);
+      },
+    });
+  }
+
+  onInstitucionChange(event: Event) {
+    const id = (event.target as HTMLSelectElement).value;
+    this.institucionSeleccionada.set(id);
+    this.problematicas.set([]);
+    this.placeholderActual.set('Ej: Describe detalladamente el problema, su ubicación exacta y cómo afecta a la comunidad.');
+    if (id) {
+      this.reporteService.obtenerProblematicasPorInstitucion(Number(id)).subscribe({
+        next: (res) => {
+          const raw = res.lista_problematicas || [];
+          this.problematicas.set(raw.map((item: any) => item.problematica));
+        },
+        error: async (err) => {
+          console.error('Error cargando problemáticas por institución', err);
+          await this.interactionService.mostrarError(err);
+        },
+      });
+    }
+  }
+
+  onDepartamentoReporteChange(event: Event) {
+    const id = Number((event.target as HTMLSelectElement).value);
+    this.departamentoReporteId.set(id ? id.toString() : '');
+    this.municipioReporteId.set('');
+    this.sectorReporteId.set('');
+    this.municipioSeleccionado.set(false);
+    this.municipios.set([]);
+    this.sectores.set([]);
+
+    if (id) {
+      this.ubicacionService.obtenerMunicipiosPorDepartamento(id).subscribe({
+        next: (data) => this.municipios.set(data),
+        error: () => this.municipios.set([]),
+      });
+    }
+  }
+
+  onMunicipioChange(event: Event) {
+    const id = Number((event.target as HTMLSelectElement).value);
+    this.sectores.set([]);
+    this.sectorReporteId.set('');
+    this.municipioReporteId.set(id ? id.toString() : '');
+    this.municipioSeleccionado.set(!!id);
+    if (id) {
+      this.ubicacionService.obtenerSectoresPorMunicipio(id).subscribe({
+        next: (data) => this.sectores.set(data),
+        error: () => this.sectores.set([]),
+      });
+    }
+  }
+
+  onSectorChange(event: Event) {
+    this.sectorReporteId.set((event.target as HTMLSelectElement).value);
   }
 
   ngAfterViewInit(): void {
@@ -86,9 +467,9 @@ export class NuevoReporte implements OnInit, AfterViewInit, OnDestroy {
 
   private initMap(): void {
     // Configuración para arreglar el problema de las imágenes de Leaflet en Angular
-    const iconRetinaUrl = 'assets/marker-icon-2x.png';
-    const iconUrl = 'assets/marker-icon.png';
-    const shadowUrl = 'assets/marker-shadow.png';
+    const iconRetinaUrl = 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png';
+    const iconUrl = 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png';
+    const shadowUrl = 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png';
     const iconDefault = L.icon({
       iconRetinaUrl,
       iconUrl,
@@ -119,7 +500,7 @@ export class NuevoReporte implements OnInit, AfterViewInit, OnDestroy {
     this.marker.on('dragend', () => {
       const position = this.marker?.getLatLng();
       if (position) {
-        console.log(`Pin movido a: Lat ${position.lat}, Lng ${position.lng}`);
+        this.ubicacionObtenida.set(true);
       }
     });
 
@@ -132,40 +513,16 @@ export class NuevoReporte implements OnInit, AfterViewInit, OnDestroy {
   // Método para cambiar el placeholder dinámicamente
   cambiarPlaceholder(event: Event) {
     const idSeleccionado = (event.target as HTMLSelectElement).value;
-    console.log('🔍 [cambiarPlaceholder] ID de problemática seleccionado:', idSeleccionado);
-    console.log('📚 [cambiarPlaceholder] Problemáticas cargadas en el frontend:', this.problematicas());
 
     // Buscamos la problemática seleccionada en el arreglo
     const problema = this.problematicas().find(p => p.id.toString() === idSeleccionado);
-    console.log('🎯 [cambiarPlaceholder] Objeto problemática encontrado en la lista:', problema);
     
     // Si encontramos la problemática y tenemos un ejemplo para ella en el diccionario:
     if (problema && this.ejemplosProblematicas[problema.problema]) {
       const nuevoPlaceholder = this.ejemplosProblematicas[problema.problema];
-      console.log('💡 [cambiarPlaceholder] Seteando nuevo placeholder:', nuevoPlaceholder);
       this.placeholderActual.set(nuevoPlaceholder);
 
-      // LÓGICA DE AUTO-SELECCIÓN DE INSTITUCIÓN
-      const palabraClaveInst = this.institucionPorProblema[problema.problema];
-      console.log('🏢 [cambiarPlaceholder] Palabra clave de la institución vinculada:', palabraClaveInst);
-      if (palabraClaveInst) {
-        console.log('🏛️ [cambiarPlaceholder] Lista de instituciones disponibles en frontend:', this.instituciones());
-        // Buscamos la institución en la lista que contenga la palabra clave (ignorando mayúsculas)
-        const instEncontrada = this.instituciones().find(i => 
-          i.nombreInstitucion.toLowerCase().includes(palabraClaveInst.toLowerCase())
-        );
-
-        if (instEncontrada) {
-          console.log('✅ [cambiarPlaceholder] Institución encontrada automáticamente:', instEncontrada.nombreInstitucion, 'ID:', instEncontrada.id);
-          // Actualizamos la señal, lo que cambiará el select en el HTML (tipo string)
-          this.institucionSeleccionada.set(instEncontrada.id.toString());
-        } else {
-          console.warn('❌ [cambiarPlaceholder] No se encontró ninguna institución en la base de datos que contenga:', palabraClaveInst);
-        }
-      }
-
     } else {
-      console.warn('⚠️ [cambiarPlaceholder] No hay coincidencia exacta para la problemática "' + (problema ? problema.problema : 'desconocida') + '" en tus diccionarios.');
       // Mensaje por defecto si la problemática no está en el diccionario o es nula
       this.placeholderActual.set('Ej: Describe detalladamente el problema, su ubicación exacta y cómo afecta a la comunidad.');
     }
@@ -173,7 +530,7 @@ export class NuevoReporte implements OnInit, AfterViewInit, OnDestroy {
 
   obtenerUbicacion() {
     if (!navigator.geolocation) {
-      alert('Tu navegador no soporta geolocalización.');
+      this.interactionService.showToast('Tu navegador no soporta geolocalización.', 'warning');
       return;
     }
 
@@ -182,7 +539,7 @@ export class NuevoReporte implements OnInit, AfterViewInit, OnDestroy {
       (position) => {
         const lat = position.coords.latitude;
         const lng = position.coords.longitude;
-        
+
         this.ubicacionObtenida.set(true);
 
         if (this.map && this.marker) {
@@ -198,7 +555,10 @@ export class NuevoReporte implements OnInit, AfterViewInit, OnDestroy {
       },
       (error) => {
         console.error('Error obteniendo ubicación', error);
-        alert('No pudimos obtener tu ubicación. Por favor, mueve el pin rojo al lugar del problema manualmente.');
+        this.interactionService.showToast(
+          'No pudimos obtener tu ubicación. Mueve el pin rojo manualmente.',
+          'warning',
+        );
       },
       { enableHighAccuracy: true }
     );
@@ -212,7 +572,7 @@ export class NuevoReporte implements OnInit, AfterViewInit, OnDestroy {
       
       // Limitar a un máximo de 6 imágenes en total
       if (imagenesActuales.length + nuevosArchivos.length > 6) {
-        alert('Solo puedes subir hasta 6 imágenes en total.');
+        this.interactionService.showToast('Solo puedes subir hasta 6 imágenes en total.', 'warning');
         return;
       }
 
@@ -262,9 +622,11 @@ export class NuevoReporte implements OnInit, AfterViewInit, OnDestroy {
 
   enviarReporte(event: Event) {
     event.preventDefault();
+    if (this.reporteEnviando()) return;
+
     const lat = this.marker?.getLatLng().lat;
     const lng = this.marker?.getLatLng().lng;
-    
+
     // Obtener valores de los inputs por su ID
     const idProblematica = (document.getElementById('problematica') as HTMLSelectElement).value;
     const idInstitucion = (document.getElementById('institucion') as HTMLSelectElement).value;
@@ -273,13 +635,13 @@ export class NuevoReporte implements OnInit, AfterViewInit, OnDestroy {
     const archivosInput = document.getElementById('archivos-evidencia') as HTMLInputElement;
 
     if (!idProblematica || !idInstitucion || !idSector || !descripcion) {
-      alert('Por favor, completa todos los campos requeridos.');
+      this.interactionService.showToast('Por favor, completa todos los campos requeridos.', 'warning');
       return;
     }
 
     const usuarioLogueado = this.authService.usuarioActual();
     if (!usuarioLogueado) {
-      alert('Debes iniciar sesión para poder enviar un reporte.');
+      this.interactionService.showToast('Debes iniciar sesión para poder enviar un reporte.', 'warning');
       return;
     }
 
@@ -287,8 +649,6 @@ export class NuevoReporte implements OnInit, AfterViewInit, OnDestroy {
     // Valores dinámicos del usuario autenticado
     formData.append('idUsuario', usuarioLogueado.id.toString()); 
     formData.append('nvlPrioridad', '5');
-
-    // Valores del formulario
     formData.append('idProblematica', idProblematica);
     formData.append('idInstitucion', idInstitucion);
     formData.append('idSector', idSector);
@@ -298,7 +658,7 @@ export class NuevoReporte implements OnInit, AfterViewInit, OnDestroy {
     formData.append('ubicacion', ubicacionGPS);
     formData.append('descripcion', descripcion);
 
-    // Adjuntar imágenes si existen en nuestra señal (permite eliminación previa al envío)
+    // Adjuntar imágenes si existen en nuestra señal
     const imagenes = this.imagenesPrevisualizacion();
     if (imagenes.length > 0) {
       for (let i = 0; i < imagenes.length; i++) {
@@ -306,18 +666,54 @@ export class NuevoReporte implements OnInit, AfterViewInit, OnDestroy {
       }
     }
 
+    // Enviar reporte a través del servicio
+    this.reporteEnviando.set(true);
     this.reporteService.crearReporte(formData).subscribe({
-      next: (respuesta) => {
-        alert('¡Reporte enviado con exito man!\n' + respuesta.mensaje);
+      next: async (respuesta) => {
+        this.reporteEnviando.set(false);
+        await this.interactionService.showToast('Reporte enviado', 'success');
         (event.target as HTMLFormElement).reset(); // Limpiar el formulario
         this.limpiarImagenes();
+        this.restaurarUbicacionReporteDesdePerfil();
+        // Recargar el historial para que aparezca el nuevo reporte
+        this.cargarHistorial();
+        this.vistaActual.set('historial');
       },
-      error: (error) => {
+      error: async (error) => {
+        this.reporteEnviando.set(false);
         console.error('Error enviando reporte:', error);
-        // Extraer el mensaje detallado del backend
-        const mensajeDetalle = error?.error?.mensaje || error?.error?.message || error?.message || 'Error desconocido';
-        alert('Hubo un problema enviando el reporte.\nDetalle: ' + mensajeDetalle);
+        await this.interactionService.mostrarError(error);
       }
+    });
+  }
+
+  private restaurarUbicacionReporteDesdePerfil(): void {
+    const form = this.perfilForm();
+    const idDepartamento = Number(form.idDepartamento);
+    const idMunicipio = Number(form.idMunicipio);
+    const idSector = Number(form.idSector);
+
+    if (!idDepartamento || !idMunicipio || !idSector) {
+      this.departamentoReporteId.set('');
+      this.municipioReporteId.set('');
+      this.sectorReporteId.set('');
+      this.municipioSeleccionado.set(false);
+      this.municipios.set([]);
+      this.sectores.set([]);
+      return;
+    }
+
+    this.departamentoReporteId.set(idDepartamento.toString());
+    this.ubicacionService.obtenerMunicipiosPorDepartamento(idDepartamento).subscribe({
+      next: (municipios) => {
+        this.municipios.set(municipios);
+        this.ubicacionService.obtenerSectoresPorMunicipio(idMunicipio).subscribe({
+          next: (sectores) =>
+            this.preseleccionarUbicacionReporte(idDepartamento, idMunicipio, idSector, sectores),
+          error: () => this.sectores.set([]),
+        });
+      },
+      error: () => this.municipios.set([]),
     });
   }
 }

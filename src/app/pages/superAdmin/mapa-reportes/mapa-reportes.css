@@ -1,0 +1,331 @@
+:host {
+  display: block;
+  padding: 24px;
+  --color-texto: #1e293b;
+  --color-texto-mutado: #64748b;
+  --color-borde: #e2e8f0;
+  --color-primario: #0b2e59;
+  --color-primario-hover: #124a8c;
+}
+
+.contenedor-vista {
+  max-width: 1280px;
+  margin: 0 auto;
+}
+
+.cabecera-vista {
+  margin-bottom: 20px;
+}
+
+.titulo-vista {
+  color: var(--color-texto);
+  font-size: 24px;
+  font-weight: 800;
+  margin: 0 0 4px;
+}
+
+.subtitulo-vista {
+  color: var(--color-texto-mutado);
+  font-size: 14px;
+  margin: 0;
+}
+
+.panel-filtros {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(150px, 1fr)) auto;
+  gap: 12px;
+  align-items: end;
+  background: #ffffff;
+  border: 1px solid var(--color-borde);
+  border-radius: 8px;
+  padding: 16px;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
+  margin-bottom: 16px;
+}
+
+.grupo-filtro {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.grupo-filtro label {
+  color: var(--color-texto-mutado);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.form-input {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid var(--color-borde);
+  border-radius: 8px;
+  color: var(--color-texto);
+  font: inherit;
+  font-size: 14px;
+  outline: none;
+  padding: 11px 12px;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
+}
+
+select.form-input {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%2364748b' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+  background-position: right 0.5rem center;
+  background-repeat: no-repeat;
+  background-size: 1.5em 1.5em;
+  padding-right: 2.5rem;
+}
+
+.form-input:focus {
+  border-color: var(--color-primario);
+  box-shadow: 0 0 0 3px rgba(11, 46, 89, 0.1);
+}
+
+.acciones-filtros {
+  display: flex;
+  gap: 10px;
+}
+
+.btn-primario,
+.btn-secundario {
+  align-items: center;
+  border-radius: 8px;
+  cursor: pointer;
+  display: inline-flex;
+  font-size: 14px;
+  font-weight: 700;
+  gap: 8px;
+  justify-content: center;
+  min-height: 42px;
+  padding: 10px 16px;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.btn-primario {
+  background: var(--color-primario);
+  border: 1px solid var(--color-primario);
+  color: #ffffff;
+}
+
+.btn-secundario {
+  background: #ffffff;
+  border: 1px solid var(--color-borde);
+  color: var(--color-texto);
+}
+
+.btn-primario:hover:not(:disabled) {
+  background: var(--color-primario-hover);
+}
+
+.btn-secundario:hover:not(:disabled) {
+  background: #f8fafc;
+}
+
+.btn-primario:disabled,
+.btn-secundario:disabled {
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+
+.resumen-mapa {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.resumen-mapa article {
+  background: #ffffff;
+  border: 1px solid var(--color-borde);
+  border-radius: 8px;
+  padding: 14px 16px;
+}
+
+.resumen-mapa span {
+  color: var(--color-texto-mutado);
+  display: block;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  margin-bottom: 4px;
+  text-transform: uppercase;
+}
+
+.resumen-mapa strong {
+  color: var(--color-texto);
+  font-size: 24px;
+}
+
+.mapa-contenedor {
+  background: #ffffff;
+  border: 1px solid var(--color-borde);
+  border-radius: 8px;
+  min-height: 620px;
+  overflow: hidden;
+  position: relative;
+}
+
+#mapa-general-reportes {
+  height: 620px;
+  width: 100%;
+  z-index: 1;
+}
+
+.estado-mapa {
+  align-items: center;
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid var(--color-borde);
+  border-radius: 8px;
+  color: var(--color-texto);
+  display: flex;
+  gap: 10px;
+  left: 50%;
+  padding: 12px 16px;
+  position: absolute;
+  top: 18px;
+  transform: translateX(-50%);
+  z-index: 500;
+}
+
+.estado-vacio {
+  top: 76px;
+}
+
+.spinner {
+  animation: spin 1s linear infinite;
+  border: 3px solid rgba(11, 46, 89, 0.12);
+  border-radius: 50%;
+  border-top-color: var(--color-primario);
+  height: 18px;
+  width: 18px;
+}
+
+.leyenda-mapa {
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid var(--color-borde);
+  border-radius: 8px;
+  bottom: 16px;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.12);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  left: 16px;
+  padding: 10px 12px;
+  position: absolute;
+  z-index: 500;
+}
+
+.leyenda-mapa span {
+  align-items: center;
+  color: var(--color-texto);
+  display: inline-flex;
+  font-size: 12px;
+  font-weight: 700;
+  gap: 6px;
+}
+
+.leyenda-mapa i {
+  border-radius: 999px;
+  display: inline-block;
+  height: 10px;
+  width: 10px;
+}
+
+.estado-pendiente {
+  background: #f59e0b;
+}
+
+.estado-proceso {
+  background: #2563eb;
+}
+
+.estado-finalizado {
+  background: #16a34a;
+}
+
+.estado-prioridad {
+  background: #b91c1c;
+  box-shadow: 0 0 0 3px rgba(185, 28, 28, 0.18);
+}
+
+:host ::ng-deep .popup-contenido {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 220px;
+}
+
+:host ::ng-deep .popup-contenido strong {
+  color: var(--color-texto);
+  font-size: 14px;
+}
+
+:host ::ng-deep .popup-contenido span,
+:host ::ng-deep .popup-contenido p {
+  color: #475569;
+  font-size: 12px;
+  margin: 0;
+}
+
+:host ::ng-deep .popup-contenido p {
+  border-top: 1px solid #e2e8f0;
+  margin-top: 4px;
+  padding-top: 6px;
+}
+
+:host ::ng-deep .popup-alerta {
+  background: #fef2f2;
+  border-radius: 999px;
+  color: #b91c1c !important;
+  display: inline-flex;
+  font-weight: 800;
+  padding: 4px 8px;
+  width: fit-content;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (max-width: 1100px) {
+  .panel-filtros {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 720px) {
+  :host {
+    padding: 16px;
+  }
+
+  .panel-filtros,
+  .resumen-mapa {
+    grid-template-columns: 1fr;
+  }
+
+  .acciones-filtros {
+    flex-direction: column;
+  }
+
+  .mapa-contenedor {
+    min-height: 520px;
+  }
+
+  #mapa-general-reportes {
+    height: 520px;
+  }
+
+  .estado-mapa {
+    left: 12px;
+    right: 12px;
+    transform: none;
+  }
+}

@@ -1,11 +1,13 @@
 import { Component, inject, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import * as L from 'leaflet';
 import { ReportesService } from './service/reportes';
 import { IReporte, IRespuestaReportes } from './interface/ireporte';
 import { EstadoAdminService } from '../../../shared/service/estado-admin.service';
 import { AuthService } from '../../../auth/service/auth-service';
 import { DashboardService } from '../dashboard/service/dashboard';
+import { InteractionService } from '../../../shared/service/interaction.service';
 
 @Component({
   selector: 'app-reportes',
@@ -19,6 +21,7 @@ export class Reportes implements OnInit {
   public estadoAdminService = inject(EstadoAdminService); // esto comparte el estado de la institución seleccionada
   private authService = inject(AuthService);
   private dashboardService = inject(DashboardService);
+  private interactionService = inject(InteractionService);
 
   reportes = signal<IReporte[]>([]);
   instituciones = signal<any[]>([]);
@@ -59,6 +62,10 @@ export class Reportes implements OnInit {
   // Estado para el modal
   reporteSeleccionado = signal<IReporte | null>(null);
   nuevoEstadoSeleccionado = signal('Pendiente');
+  
+  // Mapa
+  private map: L.Map | undefined;
+  private marker: L.Marker | undefined;
 
   ngOnInit(): void {
     this.cargarReportes();
@@ -74,6 +81,7 @@ export class Reportes implements OnInit {
       },
       error: (err) => {
         console.error(err);
+        this.interactionService.mostrarError(err);
         this.cargando.set(false);
       }
     });
@@ -102,10 +110,65 @@ export class Reportes implements OnInit {
   abrirModal(reporte: IReporte) {
     this.reporteSeleccionado.set(reporte);
     this.nuevoEstadoSeleccionado.set(reporte.estado);
+    
+    // Parse coordinates and load map
+    setTimeout(() => {
+      this.initMap(reporte.ubicacion);
+    }, 100);
   }
 
   cerrarModal() {
     this.reporteSeleccionado.set(null);
+    if (this.map) {
+      this.map.remove();
+      this.map = undefined;
+    }
+  }
+
+  private initMap(ubicacionStr: string) {
+    if (this.map) {
+      this.map.remove();
+    }
+
+    // Configuración para arreglar el problema de las imágenes de Leaflet en Angular
+    const iconRetinaUrl = 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png';
+    const iconUrl = 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png';
+    const shadowUrl = 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png';
+    const iconDefault = L.icon({
+      iconRetinaUrl,
+      iconUrl,
+      shadowUrl,
+      iconSize: [25, 41],
+      iconAnchor: [12, 41],
+      popupAnchor: [1, -34],
+      tooltipAnchor: [16, -28],
+      shadowSize: [41, 41]
+    });
+    L.Marker.prototype.options.icon = iconDefault;
+
+    let lat = 14.1; // Default Honduras lat
+    let lng = -87.2; // Default Honduras lng
+
+    // Intentar extraer lat y lng de "Lat: X, Lng: Y"
+    if (ubicacionStr) {
+      const match = ubicacionStr.match(/Lat:\s*([-0-9.]+),\s*Lng:\s*([-0-9.]+)/i);
+      if (match && match.length === 3) {
+        lat = parseFloat(match[1]);
+        lng = parseFloat(match[2]);
+      }
+    }
+
+    this.map = L.map('mapa-admin', {
+      center: [lat, lng],
+      zoom: 15
+    });
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap contributors'
+    }).addTo(this.map);
+
+    this.marker = L.marker([lat, lng]).addTo(this.map);
+    this.map.invalidateSize();
   }
 
   actualizarEstado() {
@@ -113,15 +176,51 @@ export class Reportes implements OnInit {
     if (!rep) return;
     this.reportesService.actualizarEstadoReporte(rep.id, this.nuevoEstadoSeleccionado()).subscribe({
       next: (res) => {
-        alert(res.mensaje || 'Estado actualizado con éxito');
+        this.interactionService.showToast(res.mensaje || 'Estado actualizado con éxito', 'success');
         this.cargarReportes();
         this.cerrarModal();
       },
       error: (err) => {
         console.error('Error al actualizar estado:', err);
-        alert('Hubo un error al actualizar el estado: ' + (err?.error?.mensaje || err.message));
+        this.interactionService.mostrarError(err);
       }
     });
+  }
+
+  obtenerImagenesReporte(reporte: IReporte | null): string[] {
+    if (!reporte?.formato) return [];
+
+    const formato = reporte.formato;
+    if (Array.isArray(formato)) {
+      return formato
+        .map((item) => {
+          if (typeof item === 'string') return item;
+          return item.secure_url || item.url || '';
+        })
+        .filter((url) => !!url);
+    }
+
+    if (typeof formato === 'string') {
+      const limpio = formato.trim();
+      if (!limpio) return [];
+
+      try {
+        const parsed = JSON.parse(limpio);
+        if (Array.isArray(parsed)) {
+          return parsed
+            .map((item) => {
+              if (typeof item === 'string') return item;
+              return item?.secure_url || item?.url || '';
+            })
+            .filter((url) => !!url);
+        }
+        if (typeof parsed === 'string') return [parsed];
+      } catch {
+        return [limpio];
+      }
+    }
+
+    return [];
   }
 
   formatDate(dateString: string | null): string {
@@ -143,7 +242,10 @@ export class Reportes implements OnInit {
     // Abrir ventana para impresión
     const printWindow = window.open('', '_blank');
     if (!printWindow) {
-      alert('Por favor, permite las ventanas emergentes en este sitio para poder exportar el PDF.');
+      this.interactionService.showToast(
+        'Permite las ventanas emergentes en este sitio para exportar el PDF.',
+        'warning',
+      );
       return;
     }
 

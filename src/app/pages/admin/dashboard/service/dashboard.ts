@@ -3,10 +3,10 @@ import { Injectable, inject } from '@angular/core';
 import { Observable, of } from 'rxjs';
 import { delay } from 'rxjs/operators';
 import { IDashboard } from '../interface/idashboard';
-import { environment } from '../../../../environment/environment';
+import { environment } from '../../../../../environment/environment';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class DashboardService {
   private http = inject(HttpClient);
@@ -23,6 +23,6 @@ export class DashboardService {
   }
 
   obtenerInstituciones(): Observable<any> {
-    return this.http.get<any>(environment.API_URL + '/instituciones/listar');
+    return this.http.get<any>(environment.API_URL + '/instituciones/listar/pagina');
   }
 }

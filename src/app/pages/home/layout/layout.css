@@ -7,53 +7,6 @@
   --white: #ffffff;
 }
 
-.navbar-contenido {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0.75rem 2rem;
-  background: linear-gradient(135deg, var(--primario, #3d39af) 0%, #2a2786 100%);
-  color: white;
-}
-
-.menu-escritorio {
-  display: flex;
-  gap: 1.5rem;
-}
-
-.enlace-nav {
-  color: white;
-  text-decoration: none;
-  font-weight: 500;
-  transition: opacity 0.2s;
-}
-
-.enlace-nav:hover {
-  opacity: 0.8;
-}
-
-.logged-in-msg {
-  margin: 0;
-  font-weight: 600;
-  font-size: 0.95rem;
-}
-
-.btn-logout {
-  padding: 0.5rem 1.25rem;
-  border: none;
-  border-radius: 8px;
-  font-weight: 600;
-  font-size: 0.9rem;
-  cursor: pointer;
-  transition: transform 0.2s, box-shadow 0.2s;
-  background: rgba(255, 255, 255, 0.15);
-  color: white;
-  border: 1px solid rgba(255, 255, 255, 0.3);
-}
-
-.btn-logout:hover {
-  background: rgba(255, 255, 255, 0.25);
-}
 
 
 
@@ -112,6 +65,7 @@
   text-align: left;
 }
 
+.brand-content h2,
 .brand-content h3 {
   font-size: 2.2rem;
   font-weight: 800;
@@ -509,61 +463,233 @@
 
 /* Responsividad */
 @media (max-width: 768px) {
+  .modal-overlay {
+    align-items: flex-end;
+    padding: 0;
+  }
+
   .modal-content.split-layout {
     flex-direction: column;
-    max-height: 95vh;
+    width: 100%;
+    max-width: none;
+    max-height: 100dvh;
+    height: 100dvh;
+    border-radius: 18px 18px 0 0;
+    animation: slideUp 0.28s ease-out forwards;
   }
+
   .modal-brand {
     width: 100%;
-    padding: 2rem;
-    min-height: 150px;
+    min-height: auto;
+    padding: 14px 56px 12px 18px;
+    align-items: center;
+    justify-content: flex-start;
+    flex-shrink: 0;
   }
+
+  .brand-overlay {
+    display: none;
+  }
+
+  .brand-content {
+    display: grid;
+    grid-template-columns: 46px minmax(0, 1fr);
+    align-items: center;
+    gap: 12px;
+    text-align: left;
+  }
+
+  .brand-content img {
+    width: 46px;
+    height: 46px;
+    margin: 0;
+    border-radius: 12px;
+    box-shadow: none;
+  }
+
+  .brand-content img:hover {
+    transform: none;
+  }
+
+  .brand-content h2,
+  .brand-content h3 {
+    margin: 0;
+    font-size: 0.95rem;
+    line-height: 1.25;
+  }
+
+  .brand-content p {
+    display: none;
+  }
+
   .modal-form-container {
     width: 100%;
-    padding: 2rem;
+    flex: 1;
+    justify-content: flex-start;
+    padding: 22px 18px 18px;
+    overflow-y: auto;
+    min-height: 0;
+    box-sizing: border-box;
   }
+
+  .form-header {
+    margin-bottom: 18px;
+  }
+
+  .form-header h2 {
+    font-size: 1.45rem;
+  }
+
+  .form-header .subtitle {
+    font-size: 0.92rem;
+  }
+
+  .form-floating {
+    margin-bottom: 16px;
+  }
+
+  .form-floating input,
+  .form-floating .custom-select {
+    height: 52px;
+    font-size: 1rem;
+  }
+
   .form-step {
     grid-template-columns: 1fr;
+    gap: 0;
   }
+
   .close-btn {
-    top: 10px;
-    right: 10px;
-    background: rgba(0,0,0,0.2);
+    top: 13px;
+    right: 13px;
+    width: 42px;
+    height: 42px;
+    background: rgba(255, 255, 255, 0.16);
+    color: white;
+    font-size: 1.6rem;
+  }
+
+  .close-btn:hover {
+    background: rgba(255, 255, 255, 0.24);
     color: white;
   }
-  .close-btn:hover {
-    background: rgba(0,0,0,0.4);
-    color: white;
+
+  .stepper-container {
+    margin-bottom: 18px;
+    padding: 0;
+  }
+
+  .step {
+    width: 28px;
+    height: 28px;
+    font-size: 0.8rem;
+  }
+
+  .step-line {
+    margin: 0 7px;
+  }
+
+  .nav-botones-flex {
+    gap: 10px;
+  }
+
+  .btn-submit,
+  .btn-atras {
+    min-height: 48px;
+    padding: 0.85rem;
+    font-size: 1rem;
+  }
+
+  .auth-switch-text {
+    margin: 18px 0 0;
+    padding-bottom: 8px;
   }
 }
 
+@media (max-width: 420px) {
+  .modal-content.split-layout {
+    border-radius: 0;
+  }
+
+  .modal-brand {
+    padding-left: 14px;
+  }
+
+  .modal-form-container {
+    padding: 18px 14px 16px;
+  }
+
+  .nav-botones-flex {
+    flex-direction: column;
+  }
+
+  .btn-siguiente {
+    flex: 1;
+  }
+}
+
+
+.pie-de-pagina {
+    padding: 140px 20px 60px;
+    text-align: center;
+    background: linear-gradient(135deg, var(--primario) 0%, #2a6bbd 100%);
+    color: white;
+    position: relative;
+}
+
+.pie-de-pagina::before {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: 0;
+    width: 100%;
+    height: 120px;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 120'%3E%3Cpath fill='%23ffffff' d='M0,70 C360,10 1080,110 1440,60 L1440,0 L0,0 Z'/%3E%3C/svg%3E") no-repeat top;
+    background-size: cover;
+    pointer-events: none;
+    z-index: 1;
+}
 
 /* Este es el contenedor que envuelve las imágenes */
 .contenedor-imagenes {
-    display: flex;            /* Los pone uno al lado del otro */
-    justify-content: center;  /* Los centra horizontalmente */
-    align-items: center;      /* Los alinea verticalmente por si tienen distintos tamaños */
-    gap: 40px;                /* Espacio uniforme entre cada logo */
-    padding: 30px;            /* Espacio arriba y abajo */
-    flex-wrap: wrap;          /* Si hay poco espacio (celulares), se acomodan solos */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 40px;
+    padding: 30px;
+    flex-wrap: wrap;
 }
 
 /* Este ajusta las imágenes para que no se vean gigantes */
+/* Este ajusta las imágenes para que no se vean gigantes */
 .contenedor-imagenes img {
-    height: 50px;             /* Ajusta esta altura a tu gusto */
-    width: auto;              /* Mantiene la proporción original */
-    /*filter: grayscale(100%);   Opcional: los hace blanco y negro */
-    transition: 0.3s;         /* Suaviza el efecto al pasar el mouse */
-    opacity: 0.7;             /* Los hace un poco transparentes */
+    height: 90px;
+    width: 90px;
+    object-fit: contain;
+    border-radius: 12px;
+    background: white;
+    padding: 10px;
+    transition: all 0.3s ease;
+    opacity: 0.95;
 }
 
-
+.contenedor-imagenes img:hover {
+    opacity: 1;
+}
 
 /* Estilo para el texto de copyright */
 .pie-de-pagina p {
     text-align: center;
     font-size: 14px;
-    color: #666;
-    margin-top: 10px;
+    color: rgba(255, 255, 255, 0.85);
+    margin: 10px 0;
+    font-weight: 500;
+}
+
+.pie-de-pagina p:first-child {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: white;
+    margin-bottom: 20px;
 }
 

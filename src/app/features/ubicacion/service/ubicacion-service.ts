@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { map, Observable } from 'rxjs';
-import { environment } from '../../../environment/environment';
+import { environment } from '../../../../environment/environment';
 import { DepartamentoResponse, IDepartamento } from '../interface/idepartamento';
 import { IMunicipio, MunicipioResponse } from '../interface/imunicipio';
 import { ISector, SectorResponse } from '../interface/isector';
@@ -15,19 +15,25 @@ export class UbicacionService {
 
   obtenerDepartamentos(): Observable<IDepartamento[]> {
     return this.http
-      .get<DepartamentoResponse>(`${this.baseUrl}/departamento/listar`)
+      .get<DepartamentoResponse>(`${this.baseUrl}/public/departamentos`)
       .pipe(map((res) => res.lista_Departamentos));
   }
 
   obtenerMunicipiosPorDepartamento(idDepartamento: number): Observable<IMunicipio[]> {
     return this.http
-      .get<MunicipioResponse>(`${this.baseUrl}/departamento/${idDepartamento}/municipios`)
+      .get<MunicipioResponse>(`${this.baseUrl}/public/departamentos/${idDepartamento}/municipios`)
       .pipe(map((res) => res.lista_Municipios));
   }
 
   obtenerSectoresPorMunicipio(idMunicipio: number): Observable<ISector[]> {
     return this.http
-      .get<SectorResponse>(`${this.baseUrl}/municipios/${idMunicipio}/sectores`)
+      .get<SectorResponse>(`${this.baseUrl}/public/municipios/${idMunicipio}/sectores`)
       .pipe(map((res) => res.lista_Sectores));
+  }
+
+  obtenerSectorPorId(idSector: number): Observable<ISector> {
+    return this.http
+      .get<{ sector: ISector }>(`${environment.API_URL}/sectores/obtener/${idSector}`)
+      .pipe(map((res) => res.sector));
   }
 }

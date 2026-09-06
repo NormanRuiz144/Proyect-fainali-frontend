@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, AfterViewInit, inject } from '@angular/core';
 import { InteractionService } from '../../../shared/service/interaction.service';
 import { AuthService } from '../../../auth/service/auth-service';
 import { Router } from '@angular/router';
@@ -9,12 +9,25 @@ import { Router } from '@angular/router';
   templateUrl: './landing-page.html',
   styleUrl: './landing-page.css',
 })
-export class LandingPage {
+export class LandingPage implements AfterViewInit {
   private interactionService = inject(InteractionService);
   public authService = inject(AuthService);
   private router = inject(Router);
 
-  private rolUsuario = this.authService.rolUsuario();
+  ngAfterViewInit(): void {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('visible');
+          }
+        });
+      },
+      { threshold: 0.1, rootMargin: '0px 0px -40px 0px' },
+    );
+
+    document.querySelectorAll('.reveal').forEach((el) => observer.observe(el));
+  }
 
   abrirLogin() {
     this.interactionService.abrirModalAuth('login');
@@ -26,17 +39,30 @@ export class LandingPage {
 
   abrirApp() {
     if (this.authService.estaAutenticado()) {
+      const rolUsuario = this.authService.rolUsuario();
+
       // Redirigir a la página principal de la aplicación
-      console.log('Navegando');
-      if (this.rolUsuario == 'default') {
-        this.router.navigate(['/nuevo-reporte']);
-      } else if (this.rolUsuario == 'admin') {
-        this.router.navigate(['/admin']);
-      } else if (this.rolUsuario == 'Super-Admin') {
-        this.router.navigate(['/superAdmin']);
-      } else {
-        this.router.navigate(['/inicio']);
+      if (rolUsuario) {
+        this.redirigirPorRol(rolUsuario);
+        return;
       }
+
+      this.authService.obtenerPerfilActual().subscribe({
+        next: (usuario) => this.redirigirPorRol(usuario.rol?.rol || null),
+        error: (err) => this.interactionService.mostrarError(err),
+      });
+    }
+  }
+
+  private redirigirPorRol(rolUsuario: string | null) {
+    if (rolUsuario == 'default') {
+      this.router.navigate(['/reportes']);
+    } else if (rolUsuario == 'Admin') {
+      this.router.navigate(['/admin']);
+    } else if (rolUsuario == 'Super-Admin') {
+      this.router.navigate(['/superAdmin']);
+    } else {
+      this.router.navigate(['/inicio']);
     }
   }
 

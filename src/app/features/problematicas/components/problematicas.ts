@@ -2,11 +2,12 @@ import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ProblematicaService } from '../service/problematica.service';
-import { Problematica } from '../interface/problematica';
+import { PaginationMeta, Problematica } from '../interface/problematica';
 import { Institucion } from '../../instituciones/interface/instituciones';
 import { InstitucionesService } from '../../instituciones/service/instituciones.service';
 import { Departamento, Municipio } from '../../ubicacion/interface/ubicacion.interface';
 import { UbicacionService } from '../../ubicacion/service/ubicacion.service';
+import { InteractionService } from '../../../shared/service/interaction.service';
 
 @Component({
   selector: 'app-problematicas',
@@ -19,6 +20,7 @@ export class ProblematicasComponent implements OnInit {
   private problematicaService = inject(ProblematicaService);
   private institucionService = inject(InstitucionesService);
   private ubicacionService = inject(UbicacionService);
+  private interactionService = inject(InteractionService);
 
   problematicas = signal<Problematica[]>([]);
   institucionesAsociadas = signal<Institucion[]>([]);
@@ -48,6 +50,22 @@ export class ProblematicasComponent implements OnInit {
   filtroMunicipio = signal<number | undefined>(undefined);
   institucionSeleccionada = signal<number | undefined>(undefined);
 
+  // Signals para interactuar con las paginas
+  paginaActual = signal<number>(1);
+  paginacion = signal<PaginationMeta | null>(null);
+  paginas = computed(() => {
+    const meta = this.paginacion();
+    if (!meta) return [];
+    const paginas: number[] = [];
+    const rango = 2;
+    const inicio = Math.max(meta.firstPage, meta.currentPage - rango);
+    const fin = Math.min(meta.lastPage, meta.currentPage + rango);
+    for (let i = inicio; i <= fin; i++) {
+      paginas.push(i);
+    }
+    return paginas;
+  });
+
   municipiosFiltrados = computed(() => {
     const depId = Number(this.filtroDepartamento());
     if (!depId || isNaN(depId)) return [];
@@ -63,17 +81,19 @@ export class ProblematicasComponent implements OnInit {
   });
 
   ngOnInit() {
-    this.cargarProblematicas();
+    this.cargarProblematicas(this.paginaActual());
   }
 
-  cargarProblematicas() {
+  cargarProblematicas(pag: number) {
     this.cargando.set(true);
-    this.problematicaService.obtenerProblematicas().subscribe({
+    this.problematicaService.obtenerProblematicasPag(String(pag)).subscribe({
       next: (res) => {
         if (res.lista_Problematicas) {
           this.problematicas.set(
-            res.lista_Problematicas.filter((p) => p.isDeleted == this.mostrarInhabilitados()),
+            res.lista_Problematicas.data.filter((p) => p.isDeleted == this.mostrarInhabilitados()),
           );
+          this.paginacion.set(res.lista_Problematicas.meta);
+          this.paginaActual.set(res.lista_Problematicas.meta.currentPage);
         }
 
         this.cargando.set(false);
@@ -84,6 +104,11 @@ export class ProblematicasComponent implements OnInit {
         this.cargando.set(false);
       },
     });
+  }
+
+  irPagina(pag: number) {
+    if (pag < 1 || pag > (this.paginacion()?.lastPage ?? 1) || pag === this.paginaActual()) return;
+    this.cargarProblematicas(pag);
   }
 
   abrirModalCrear() {
@@ -124,24 +149,26 @@ export class ProblematicasComponent implements OnInit {
       if (this.modalModo() === 'eliminar') {
         this.problematicaService.eliminarProblematica(id).subscribe({
           next: () => {
-            this.cargarProblematicas();
+            this.cargarProblematicas(this.paginaActual());
             this.cerrarModal();
+            this.interactionService.showToast('Problemática eliminada correctamente', 'success');
           },
           error: (err) => {
             console.error(err);
-            alert('Error al eliminar la problemática');
+            this.interactionService.mostrarError(err);
             this.cargando.set(false);
           },
         });
       } else {
         this.problematicaService.restaurarProblematica(id).subscribe({
           next: () => {
-            this.cargarProblematicas();
+            this.cargarProblematicas(this.paginaActual());
             this.cerrarModal();
+            this.interactionService.showToast('Problemática restaurada correctamente', 'success');
           },
           error: (err) => {
             console.error(err);
-            alert('Error al restaurar la problemática');
+            this.interactionService.mostrarError(err);
             this.cargando.set(false);
           },
         });
@@ -150,7 +177,7 @@ export class ProblematicasComponent implements OnInit {
     }
 
     if (!this.problematicaActual().problema?.trim()) {
-      alert('El nombre del problema es requerido');
+      this.interactionService.showToast('El nombre del problema es requerido', 'warning');
       return;
     }
 
@@ -160,12 +187,13 @@ export class ProblematicasComponent implements OnInit {
     if (this.modalModo() === 'crear') {
       this.problematicaService.crearProblematica(problematica).subscribe({
         next: () => {
-          this.cargarProblematicas();
+          this.cargarProblematicas(this.paginaActual());
           this.cerrarModal();
+          this.interactionService.showToast('Problemática creada correctamente', 'success');
         },
         error: (err) => {
           console.error(err);
-          alert('Error al crear la problemática');
+          this.interactionService.mostrarError(err);
           this.cargando.set(false);
         },
       });
@@ -173,12 +201,13 @@ export class ProblematicasComponent implements OnInit {
       if (problematica.id) {
         this.problematicaService.actualizarProblematica(problematica.id, problematica).subscribe({
           next: () => {
-            this.cargarProblematicas();
+            this.cargarProblematicas(this.paginaActual());
             this.cerrarModal();
+            this.interactionService.showToast('Problemática actualizada correctamente', 'success');
           },
           error: (err) => {
             console.error(err);
-            alert('Error al actualizar la problemática');
+            this.interactionService.mostrarError(err);
             this.cargando.set(false);
           },
         });
@@ -252,7 +281,7 @@ export class ProblematicasComponent implements OnInit {
     const idInst = Number(this.institucionSeleccionada());
 
     if (!idProb || !idInst || isNaN(idInst)) {
-      alert('Seleccione una institución válida');
+      this.interactionService.showToast('Seleccione una institución válida', 'warning');
       return;
     }
 
@@ -261,29 +290,35 @@ export class ProblematicasComponent implements OnInit {
       next: () => {
         this.cargarInstitucionesAsociadas(idProb);
         this.institucionSeleccionada.set(undefined);
+        this.interactionService.showToast('Institución asignada correctamente', 'success');
       },
       error: (err) => {
         console.error(err);
-        alert('Error al asignar institución. Puede que ya esté asignada.');
+        this.interactionService.mostrarError(err);
         this.cargandoAsignacion.set(false);
       },
     });
   }
 
-  desasignarInstitucion(idInst: number) {
+  async desasignarInstitucion(idInst: number) {
     const idProb = this.problematicaActiva()?.id;
     if (!idProb) return;
 
-    if (!confirm('¿Está seguro de que desea desvincular esta institución?')) return;
+    const confirmado = await this.interactionService.confirmar(
+      'Desvincular Institución',
+      '¿Está seguro de que desea desvincular esta institución?',
+    );
+    if (!confirmado) return;
 
     this.cargandoAsignacion.set(true);
     this.problematicaService.desasignarProblematicaDeInstitucion(idProb, idInst).subscribe({
       next: () => {
         this.cargarInstitucionesAsociadas(idProb);
+        this.interactionService.showToast('Institución desvinculada correctamente', 'success');
       },
       error: (err) => {
         console.error(err);
-        alert('Error al desasignar institución');
+        this.interactionService.mostrarError(err);
         this.cargandoAsignacion.set(false);
       },
     });
@@ -302,6 +337,6 @@ export class ProblematicasComponent implements OnInit {
 
   cambiarFiltroInhabilitados() {
     this.mostrarInhabilitados.set(!this.mostrarInhabilitados());
-    this.cargarProblematicas();
+    this.cargarProblematicas(this.paginaActual());
   }
 }

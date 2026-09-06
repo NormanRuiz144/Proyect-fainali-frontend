@@ -3,12 +3,13 @@ import { inject, Injectable } from '@angular/core';
 import { IRegistro } from '../interface/ireguistro';
 import {
   IBajaUsuarioResponse,
+  IListarUsuariosPagResponse,
   IListarUsuariosResponse,
   IOperacionUsuarioResponse,
   IUsuario,
 } from '../interface/iusuario';
 import { Observable } from 'rxjs';
-import { environment } from '../../../environment/environment';
+import { environment } from '../../../../environment/environment';
 import { AuthResponse } from '../../../auth/interfaces/auth-response';
 
 @Injectable({
@@ -20,18 +21,22 @@ export class UsuarioService {
   private apiUrl = `${environment.API_URL}/usuarios`;
 
   registrarUsuario(usuario: IRegistro): Observable<AuthResponse> {
-    return this.http.post<AuthResponse>(`${this.baseUrl}/auth/registro`, usuario);
+    return this.http.post<AuthResponse>(`${this.baseUrl}/public/registro`, usuario);
   }
 
   obtenerRoles(): Observable<{ lista_Rol: { id: number; rol: string }[] }> {
-    return this.http.get<{ lista_Rol: { id: number; rol: string }[] }>(`${environment.API_URL}/roles/listar`);
+    return this.http.get<{ lista_Rol: { id: number; rol: string }[] }>(
+      `${environment.API_URL}/roles/listar`,
+    );
   }
 
-  obtenerUsuarios(): Observable<IListarUsuariosResponse> {
-    return this.http.get<IListarUsuariosResponse>(`${this.apiUrl}/listar`);
+  obtenerUsuarios(pag: string): Observable<IListarUsuariosPagResponse> {
+    return this.http.get<IListarUsuariosPagResponse>(`${this.apiUrl}/listar/pagina/?page=${pag}`);
   }
 
-  crearUsuario(usuario: Partial<IUsuario> & { contrasena?: string }): Observable<IOperacionUsuarioResponse> {
+  crearUsuario(
+    usuario: Partial<IUsuario> & { contrasena?: string },
+  ): Observable<IOperacionUsuarioResponse> {
     return this.http.post<IOperacionUsuarioResponse>(`${this.apiUrl}/crear`, usuario);
   }
 
@@ -43,7 +48,10 @@ export class UsuarioService {
     return this.http.put<IOperacionUsuarioResponse>(`${this.apiUrl}/actualizar/${id}`, usuario);
   }
 
-  reasignarUsuario(id: number, data: { idRol: number; idInstitucion: number }): Observable<IOperacionUsuarioResponse> {
+  reasignarUsuario(
+    id: number,
+    data: { idRol: number; idInstitucion: number },
+  ): Observable<IOperacionUsuarioResponse> {
     return this.http.put<IOperacionUsuarioResponse>(`${this.apiUrl}/reasignar/${id}`, data);
   }
 

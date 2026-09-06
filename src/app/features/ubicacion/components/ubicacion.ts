@@ -3,6 +3,8 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { UbicacionService } from '../service/ubicacion.service';
 import { Departamento, Municipio, Sector } from '../interface/ubicacion.interface';
+import { PaginationMeta } from '../../problematicas/interface/problematica';
+import { InteractionService } from '../../../shared/service/interaction.service';
 
 type Tab = 'departamentos' | 'municipios' | 'sectores';
 type ModalMode = 'crear' | 'editar' | 'eliminar' | 'restaurar';
@@ -16,6 +18,7 @@ type ModalMode = 'crear' | 'editar' | 'eliminar' | 'restaurar';
 })
 export class UbicacionComponent implements OnInit {
   private ubicacionService = inject(UbicacionService);
+  private interactionService = inject(InteractionService);
 
   activeTab = signal<Tab>('departamentos');
 
@@ -43,6 +46,22 @@ export class UbicacionComponent implements OnInit {
   filtroDepartamentoSector = signal<number | undefined>(undefined);
   formSectorDepartamento = signal<number | undefined>(undefined);
   mostrarInhabilitados = signal(false);
+
+  // Signals para interactuar con las paginas
+  paginaActual = signal<number>(1);
+  paginacion = signal<PaginationMeta | null>(null);
+  paginas = computed(() => {
+    const meta = this.paginacion();
+    if (!meta) return [];
+    const paginas: number[] = [];
+    const rango = 2;
+    const inicio = Math.max(meta.firstPage, meta.currentPage - rango);
+    const fin = Math.min(meta.lastPage, meta.currentPage + rango);
+    for (let i = inicio; i <= fin; i++) {
+      paginas.push(i);
+    }
+    return paginas;
+  });
 
   municipiosParaFiltroSector = computed(() => {
     const depId = Number(this.filtroDepartamentoSector());
@@ -81,6 +100,7 @@ export class UbicacionComponent implements OnInit {
     this.filtroDepartamento.set(undefined);
     this.filtroMunicipio.set(undefined);
     this.filtroDepartamentoSector.set(undefined);
+    this.mostrarInhabilitados.set(false);
     this.cargarDatos();
   }
 
@@ -90,11 +110,16 @@ export class UbicacionComponent implements OnInit {
 
     const tab = this.activeTab();
     if (tab === 'departamentos') {
-      this.ubicacionService.obtenerDepartamentos().subscribe({
+      this.ubicacionService.obtenerDepartamentosPag(this.paginaActual().toString()).subscribe({
         next: (res) => {
           this.departamentos.set(
-            res.lista_Departamentos.filter((d) => d.isDeleted == this.mostrarInhabilitados()) || [],
+            res.lista_Departamentos.data.filter(
+              (d) => d.isDeleted == this.mostrarInhabilitados(),
+            ) || [],
           );
+          this.paginacion.set(res.lista_Departamentos.meta);
+          this.paginaActual.set(res.lista_Departamentos.meta.currentPage);
+
           this.cargando.set(false);
         },
         error: (err) => {
@@ -105,11 +130,14 @@ export class UbicacionComponent implements OnInit {
       });
     } else if (tab === 'municipios') {
       this.cargarDepartamentosSilencioso();
-      this.ubicacionService.obtenerMunicipios().subscribe({
+      this.ubicacionService.obtenerMunicipiosPag(this.paginaActual().toString()).subscribe({
         next: (res) => {
           this.municipios.set(
-            res.lista_Municipios.filter((d) => d.isDeleted == this.mostrarInhabilitados()) || [],
+            res.lista_Municipios.data.filter((d) => d.isDeleted == this.mostrarInhabilitados()) ||
+              [],
           );
+          this.paginacion.set(res.lista_Municipios.meta);
+          this.paginaActual.set(res.lista_Municipios.meta.currentPage);
           this.cargando.set(false);
         },
         error: (err) => {
@@ -121,11 +149,13 @@ export class UbicacionComponent implements OnInit {
     } else if (tab === 'sectores') {
       this.cargarDepartamentosSilencioso();
       this.cargarMunicipiosSilencioso();
-      this.ubicacionService.obtenerSectores().subscribe({
+      this.ubicacionService.obtenerSectoresPag(this.paginaActual().toString()).subscribe({
         next: (res) => {
           this.sectores.set(
-            res.lista_Sectores.filter((d) => d.isDeleted == this.mostrarInhabilitados()) || [],
+            res.lista_Sectores.data.filter((d) => d.isDeleted == this.mostrarInhabilitados()) || [],
           );
+          this.paginacion.set(res.lista_Sectores.meta);
+          this.paginaActual.set(res.lista_Sectores.meta.currentPage);
           this.cargando.set(false);
         },
         error: (err) => {
@@ -137,14 +167,22 @@ export class UbicacionComponent implements OnInit {
     }
   }
 
+  irPagina(pag: number) {
+    if (pag < 1 || pag > (this.paginacion()?.lastPage ?? 1) || pag === this.paginaActual()) return;
+    this.paginaActual.set(pag);
+    this.cargarDatos();
+  }
+
   buscarFiltro() {
     this.cargando.set(true);
     this.error.set(null);
+    this.paginacion.set(null);
     const tab = this.activeTab();
 
     if (tab === 'municipios') {
       const depId = this.filtroDepartamento();
       if (!depId || depId === undefined || String(depId) === 'undefined') {
+        this.paginaActual.set(1);
         this.cargarDatos();
         return;
       }
@@ -163,6 +201,7 @@ export class UbicacionComponent implements OnInit {
     } else if (tab === 'sectores') {
       const muniId = this.filtroMunicipio();
       if (!muniId || muniId === undefined || String(muniId) === 'undefined') {
+        this.paginaActual.set(1);
         this.cargarDatos();
         return;
       }
@@ -182,19 +221,21 @@ export class UbicacionComponent implements OnInit {
   }
 
   cargarDepartamentosSilencioso() {
-    if (this.departamentos().length === 0) {
-      this.ubicacionService.obtenerDepartamentos().subscribe({
-        next: (res) => this.departamentos.set(res.lista_Departamentos || []),
-      });
-    }
+    // if (this.departamentos().length === 0) {
+    this.ubicacionService.obtenerDepartamentos().subscribe({
+      next: (res) => {
+        this.departamentos.set(res.lista_Departamentos || []);
+      },
+    });
+    // }
   }
 
   cargarMunicipiosSilencioso() {
-    if (this.municipios().length === 0) {
-      this.ubicacionService.obtenerMunicipios().subscribe({
-        next: (res) => this.municipios.set(res.lista_Municipios || []),
-      });
-    }
+    // if (this.municipios().length === 0) {
+    this.ubicacionService.obtenerMunicipios().subscribe({
+      next: (res) => this.municipios.set(res.lista_Municipios || []),
+    });
+    // }
   }
 
   // --- Helpers for Display ---
@@ -286,9 +327,10 @@ export class UbicacionComponent implements OnInit {
             next: () => {
               this.cargarDatos();
               this.cerrarModal();
+              this.interactionService.showToast('Departamento eliminado correctamente', 'success');
             },
             error: (err) => {
-              alert(err.error?.mensaje || 'Error al eliminar');
+              this.interactionService.mostrarError(err);
               this.cargando.set(false);
             },
           });
@@ -297,9 +339,10 @@ export class UbicacionComponent implements OnInit {
             next: () => {
               this.cargarDatos();
               this.cerrarModal();
+              this.interactionService.showToast('Municipio eliminado correctamente', 'success');
             },
             error: (err) => {
-              alert(err.error?.mensaje || 'Error al eliminar');
+              this.interactionService.mostrarError(err);
               this.cargando.set(false);
             },
           });
@@ -308,9 +351,10 @@ export class UbicacionComponent implements OnInit {
             next: () => {
               this.cargarDatos();
               this.cerrarModal();
+              this.interactionService.showToast('Sector eliminado correctamente', 'success');
             },
             error: (err) => {
-              alert(err.error?.mensaje || 'Error al eliminar');
+              this.interactionService.mostrarError(err);
               this.cargando.set(false);
             },
           });
@@ -321,9 +365,10 @@ export class UbicacionComponent implements OnInit {
             next: () => {
               this.cargarDatos();
               this.cerrarModal();
+              this.interactionService.showToast('Departamento restaurado correctamente', 'success');
             },
             error: (err) => {
-              alert(err.error?.mensaje || 'Error al restaurar');
+              this.interactionService.mostrarError(err);
               this.cargando.set(false);
             },
           });
@@ -332,9 +377,10 @@ export class UbicacionComponent implements OnInit {
             next: () => {
               this.cargarDatos();
               this.cerrarModal();
+              this.interactionService.showToast('Municipio restaurado correctamente', 'success');
             },
             error: (err) => {
-              alert(err.error?.mensaje || 'Error al restaurar');
+              this.interactionService.mostrarError(err);
               this.cargando.set(false);
             },
           });
@@ -343,9 +389,10 @@ export class UbicacionComponent implements OnInit {
             next: () => {
               this.cargarDatos();
               this.cerrarModal();
+              this.interactionService.showToast('Sector restaurado correctamente', 'success');
             },
             error: (err) => {
-              alert(err.error?.mensaje || 'Error al restaurar');
+              this.interactionService.mostrarError(err);
               this.cargando.set(false);
             },
           });
@@ -357,7 +404,7 @@ export class UbicacionComponent implements OnInit {
     if (tab === 'departamentos') {
       const data = this.formDepartamento();
       if (!data.nomDepartamento) {
-        alert('Nombre es requerido');
+        this.interactionService.showToast('Nombre es requerido', 'warning');
         this.cargando.set(false);
         return;
       }
@@ -367,9 +414,10 @@ export class UbicacionComponent implements OnInit {
           next: () => {
             this.cargarDatos();
             this.cerrarModal();
+            this.interactionService.showToast('Departamento creado correctamente', 'success');
           },
           error: (err) => {
-            alert(err.error?.mensaje || 'Error al crear');
+            this.interactionService.mostrarError(err);
             this.cargando.set(false);
           },
         });
@@ -378,9 +426,10 @@ export class UbicacionComponent implements OnInit {
           next: () => {
             this.cargarDatos();
             this.cerrarModal();
+            this.interactionService.showToast('Departamento actualizado correctamente', 'success');
           },
           error: (err) => {
-            alert(err.error?.mensaje || 'Error al actualizar');
+            this.interactionService.mostrarError(err);
             this.cargando.set(false);
           },
         });
@@ -388,7 +437,7 @@ export class UbicacionComponent implements OnInit {
     } else if (tab === 'municipios') {
       const data = this.formMunicipio();
       if (!data.nomMunicipio || !data.idDepartamento) {
-        alert('Nombre y Departamento son requeridos');
+        this.interactionService.showToast('Nombre y departamento son requeridos', 'warning');
         this.cargando.set(false);
         return;
       }
@@ -400,9 +449,10 @@ export class UbicacionComponent implements OnInit {
           next: () => {
             this.cargarDatos();
             this.cerrarModal();
+            this.interactionService.showToast('Municipio creado correctamente', 'success');
           },
           error: (err) => {
-            alert(err.error?.mensaje || 'Error al crear');
+            this.interactionService.mostrarError(err);
             this.cargando.set(false);
           },
         });
@@ -411,9 +461,10 @@ export class UbicacionComponent implements OnInit {
           next: () => {
             this.cargarDatos();
             this.cerrarModal();
+            this.interactionService.showToast('Municipio actualizado correctamente', 'success');
           },
           error: (err) => {
-            alert(err.error?.mensaje || 'Error al actualizar');
+            this.interactionService.mostrarError(err);
             this.cargando.set(false);
           },
         });
@@ -421,7 +472,7 @@ export class UbicacionComponent implements OnInit {
     } else if (tab === 'sectores') {
       const data = this.formSector();
       if (!data.nomSector || !data.idMunicipio) {
-        alert('Nombre y Municipio son requeridos');
+        this.interactionService.showToast('Nombre y municipio son requeridos', 'warning');
         this.cargando.set(false);
         return;
       }
@@ -433,9 +484,10 @@ export class UbicacionComponent implements OnInit {
           next: () => {
             this.cargarDatos();
             this.cerrarModal();
+            this.interactionService.showToast('Sector creado correctamente', 'success');
           },
           error: (err) => {
-            alert(err.error?.mensaje || 'Error al crear');
+            this.interactionService.mostrarError(err);
             this.cargando.set(false);
           },
         });
@@ -444,9 +496,10 @@ export class UbicacionComponent implements OnInit {
           next: () => {
             this.cargarDatos();
             this.cerrarModal();
+            this.interactionService.showToast('Sector actualizado correctamente', 'success');
           },
           error: (err) => {
-            alert(err.error?.mensaje || 'Error al actualizar');
+            this.interactionService.mostrarError(err);
             this.cargando.set(false);
           },
         });

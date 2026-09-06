@@ -1,8 +1,11 @@
 import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { environment } from '../../../environment/environment';
+import { environment } from '../../../../environment/environment';
 import { Observable } from 'rxjs';
 import { Departamento, Municipio, Sector } from '../interface/ubicacion.interface';
+import { ListarDepartamentoPagResponse } from '../interface/idepartamento';
+import { ListarSectorPagResponse } from '../interface/isector';
+import { ListarMunicipioPagResponse } from '../interface/imunicipio';
 
 @Injectable({
   providedIn: 'root',
@@ -12,9 +15,12 @@ export class UbicacionService {
   private apiUrl = environment.API_URL;
 
   // --- Departamentos ---
-  obtenerDepartamentos(): Observable<{ lista_Departamentos: Departamento[] }> {
-    return this.http.get<{ lista_Departamentos: Departamento[] }>(
-      `${this.apiUrl}/departamento/listar`,
+  obtenerDepartamentos(): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/departamento/listar/pagina/`);
+  }
+  obtenerDepartamentosPag(pag: string): Observable<ListarDepartamentoPagResponse> {
+    return this.http.get<ListarDepartamentoPagResponse>(
+      `${this.apiUrl}/departamento/listar/pagina/?page=${pag}`,
     );
   }
 
@@ -36,7 +42,14 @@ export class UbicacionService {
 
   // --- Municipios ---
   obtenerMunicipios(): Observable<{ lista_Municipios: Municipio[] }> {
-    return this.http.get<{ lista_Municipios: Municipio[] }>(`${this.apiUrl}/municipios/listar`);
+    return this.http.get<{ lista_Municipios: Municipio[] }>(
+      `${this.apiUrl}/municipios/listar/pagina`,
+    );
+  }
+  obtenerMunicipiosPag(pag: string): Observable<ListarMunicipioPagResponse> {
+    return this.http.get<ListarMunicipioPagResponse>(
+      `${this.apiUrl}/municipios/listar/pagina/?page=${pag}`,
+    );
   }
 
   municipiosPorDepartamento(idDepart: number): Observable<{ lista_Municipios: Municipio[] }> {
@@ -63,7 +76,12 @@ export class UbicacionService {
 
   // --- Sectores ---
   obtenerSectores(): Observable<{ lista_Sectores: Sector[] }> {
-    return this.http.get<{ lista_Sectores: Sector[] }>(`${this.apiUrl}/sectores/listar`);
+    return this.http.get<{ lista_Sectores: Sector[] }>(`${this.apiUrl}/sectores/listar/pagina`);
+  }
+  obtenerSectoresPag(pag: string): Observable<ListarSectorPagResponse> {
+    return this.http.get<ListarSectorPagResponse>(
+      `${this.apiUrl}/sectores/listar/pagina/?page=${pag}`,
+    );
   }
 
   sectoresPorMunicipio(idMuni: number): Observable<{ lista_Sectores: Sector[] }> {
