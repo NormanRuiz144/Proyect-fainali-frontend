@@ -16,93 +16,93 @@ export class UbicacionService {
 
   // --- Departamentos ---
   obtenerDepartamentos(): Observable<any> {
-    return this.http.get<any>(`${this.apiUrl}/departamento/listar/pagina/`);
+    return this.http.get<any>(`${this.apiUrl}/departamentos`);
   }
   obtenerDepartamentosPag(pag: string): Observable<ListarDepartamentoPagResponse> {
     return this.http.get<ListarDepartamentoPagResponse>(
-      `${this.apiUrl}/departamento/listar/pagina/?page=${pag}`,
+      `${this.apiUrl}/departamentos?page=${pag}`,
     );
   }
 
   crearDepartamento(data: Partial<Departamento>): Observable<any> {
-    return this.http.post(`${this.apiUrl}/departamento/agregar`, data);
+    return this.http.post(`${this.apiUrl}/departamentos`, data);
   }
 
   actualizarDepartamento(id: number, data: Partial<Departamento>): Observable<any> {
-    return this.http.put(`${this.apiUrl}/departamento/actu/${id}`, data);
+    return this.http.put(`${this.apiUrl}/departamentos/${id}`, data);
   }
 
   eliminarDepartamento(id: number): Observable<any> {
-    return this.http.delete(`${this.apiUrl}/departamento/eliminar/${id}`);
+    return this.http.delete(`${this.apiUrl}/departamentos/${id}`);
   }
 
   restaurarDepartamento(id: number): Observable<any> {
-    return this.http.patch(`${this.apiUrl}/departamento/restaurar/${id}`, {});
+    return this.http.patch(`${this.apiUrl}/departamentos/${id}/restaurar`, {});
   }
 
   // --- Municipios ---
   obtenerMunicipios(): Observable<{ lista_Municipios: Municipio[] }> {
     return this.http.get<{ lista_Municipios: Municipio[] }>(
-      `${this.apiUrl}/municipios/listar/pagina`,
+      `${this.apiUrl}/municipios`,
     );
   }
   obtenerMunicipiosPag(pag: string): Observable<ListarMunicipioPagResponse> {
     return this.http.get<ListarMunicipioPagResponse>(
-      `${this.apiUrl}/municipios/listar/pagina/?page=${pag}`,
+      `${this.apiUrl}/municipios?page=${pag}`,
     );
   }
 
   municipiosPorDepartamento(idDepart: number): Observable<{ lista_Municipios: Municipio[] }> {
     return this.http.get<{ lista_Municipios: Municipio[] }>(
-      `${this.apiUrl}/departamento/${idDepart}/municipios`,
+      `${this.apiUrl}/departamentos/${idDepart}/municipios`,
     );
   }
 
   crearMunicipio(data: Partial<Municipio>): Observable<any> {
-    return this.http.post(`${this.apiUrl}/municipios/agregar`, data);
+    return this.http.post(`${this.apiUrl}/municipios`, data);
   }
 
   actualizarMunicipio(id: number, data: Partial<Municipio>): Observable<any> {
-    return this.http.put(`${this.apiUrl}/municipios/actu/${id}`, data);
+    return this.http.put(`${this.apiUrl}/municipios/${id}`, data);
   }
 
   eliminarMunicipio(id: number): Observable<any> {
-    return this.http.delete(`${this.apiUrl}/municipios/eliminar/${id}`);
+    return this.http.delete(`${this.apiUrl}/municipios/${id}`);
   }
 
   restaurarMunicipio(id: number): Observable<any> {
-    return this.http.patch(`${this.apiUrl}/municipios/restaurar/${id}`, {});
+    return this.http.patch(`${this.apiUrl}/municipios/${id}/restaurar`, {});
   }
 
   // --- Sectores ---
   obtenerSectores(): Observable<{ lista_Sectores: Sector[] }> {
-    return this.http.get<{ lista_Sectores: Sector[] }>(`${this.apiUrl}/sectores/listar/pagina`);
+    return this.http.get<{ lista_Sectores: Sector[] }>(`${this.apiUrl}/sectores`);
   }
   obtenerSectoresPag(pag: string): Observable<ListarSectorPagResponse> {
     return this.http.get<ListarSectorPagResponse>(
-      `${this.apiUrl}/sectores/listar/pagina/?page=${pag}`,
+      `${this.apiUrl}/sectores?page=${pag}`,
     );
   }
 
   sectoresPorMunicipio(idMuni: number): Observable<{ lista_Sectores: Sector[] }> {
     return this.http.get<{ lista_Sectores: Sector[] }>(
-      `${this.apiUrl}/municipios/${idMuni}/sectores`,
+      `${this.apiUrl}/sectores`,
     );
   }
 
   crearSector(data: Partial<Sector>): Observable<any> {
-    return this.http.post(`${this.apiUrl}/sectores/agregar`, data);
+    return this.http.post(`${this.apiUrl}/sectores`, data);
   }
 
   actualizarSector(id: number, data: Partial<Sector>): Observable<any> {
-    return this.http.put(`${this.apiUrl}/sectores/actu/${id}`, data);
+    return this.http.put(`${this.apiUrl}/sectores/${id}`, data);
   }
 
   eliminarSector(id: number): Observable<any> {
-    return this.http.delete(`${this.apiUrl}/sectores/eliminar/${id}`);
+    return this.http.delete(`${this.apiUrl}/sectores/${id}`);
   }
 
   restaurarSector(id: number): Observable<any> {
-    return this.http.patch(`${this.apiUrl}/sectores/restaurar/${id}`, {});
+    return this.http.patch(`${this.apiUrl}/sectores/${id}/restaurar`, {});
   }
 }

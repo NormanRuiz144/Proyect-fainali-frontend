@@ -7,11 +7,7 @@
         <!-- indicador de institución activa -->
         <span style="color: #64748b; font-size: 14px; font-weight: 500; margin-top: 5px; display: inline-block;">
           <i class="fa-solid fa-building" style="margin-right: 5px;"></i>
-          @if (estadoAdminService.institucionSeleccionadaId() === null) {
-            Todas las Instituciones (Consolidado)
-          } @else { 
-            {{ datos()?.institucion?.nombre || 'Cargando institución...' }}
-          }
+          Visión general de incidencias
         </span>
       </div>
 

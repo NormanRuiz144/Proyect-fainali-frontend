@@ -2,7 +2,11 @@ import { inject } from '@angular/core';
 import { CanActivateFn, Router } from '@angular/router';
 import { AuthService } from '../auth/service/auth-service';
 
-export const AuthGuard: CanActivateFn = (route, state) => {
+/**
+ * Protege rutas autenticadas y, cuando la ruta lo indique, exige que el usuario
+ * tenga un registro de operador. Los permisos específicos se validan en la API.
+ */
+export const AuthGuard: CanActivateFn = (route) => {
   const authService = inject(AuthService);
   const router = inject(Router);
 
@@ -11,10 +15,7 @@ export const AuthGuard: CanActivateFn = (route, state) => {
     return false;
   }
 
-  const rolEsperado = route.data['rol'];
-  const rolUsuario = authService.rolUsuario();
-
-  if (rolEsperado && rolUsuario !== rolEsperado) {
+  if (route.data['requiereOperador'] === true && !authService.esOperador()) {
     router.navigate(['/inicio']);
     return false;
   }

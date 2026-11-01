@@ -31,21 +31,21 @@ export class UsuarioService {
   }
 
   obtenerUsuarios(pag: string): Observable<IListarUsuariosPagResponse> {
-    return this.http.get<IListarUsuariosPagResponse>(`${this.apiUrl}/listar/pagina/?page=${pag}`);
+    return this.http.get<IListarUsuariosPagResponse>(`${this.apiUrl}?page=${pag}`);
   }
 
   crearUsuario(
-    usuario: Partial<IUsuario> & { contrasena?: string },
+    usuario: Partial<IUsuario> & { password?: string; confirmationPassword?: string },
   ): Observable<IOperacionUsuarioResponse> {
-    return this.http.post<IOperacionUsuarioResponse>(`${this.apiUrl}/crear`, usuario);
+    return this.http.post<IOperacionUsuarioResponse>(this.apiUrl, usuario);
   }
 
   obtenerUsuario(id: number): Observable<IOperacionUsuarioResponse> {
-    return this.http.get<IOperacionUsuarioResponse>(`${this.apiUrl}/obtener/${id}`);
+    return this.http.get<IOperacionUsuarioResponse>(`${this.apiUrl}/${id}`);
   }
 
   actualizarUsuario(id: number, usuario: Partial<IUsuario>): Observable<IOperacionUsuarioResponse> {
-    return this.http.put<IOperacionUsuarioResponse>(`${this.apiUrl}/actualizar/${id}`, usuario);
+    return this.http.put<IOperacionUsuarioResponse>(`${this.apiUrl}/${id}`, usuario);
   }
 
   reasignarUsuario(

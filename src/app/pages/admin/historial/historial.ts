@@ -1,10 +1,10 @@
 import { Component, inject, OnDestroy, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import * as L from 'leaflet';
 import { ReportesService } from '../reportes/service/reportes';
 import { IReporte } from '../reportes/interface/ireporte';
-import { EstadoAdminService } from '../../../shared/service/estado-admin.service';
 import { PaginationMeta } from '../../../features/problematicas/interface/problematica';
 import { BanService } from '../../../features/ban/service/ban-service';
 import { InteractionService } from '../../../shared/service/interaction.service';
@@ -20,7 +20,7 @@ export class Historial implements OnInit, OnDestroy {
   private reportesService = inject(ReportesService);
   private banService = inject(BanService);
   private interactionService = inject(InteractionService);
-  public estadoAdminService = inject(EstadoAdminService); // esto comparte el estado de la institución seleccionada
+  private router = inject(Router);
 
   cargando = signal(true);
 
@@ -173,18 +173,10 @@ export class Historial implements OnInit, OnDestroy {
   usuariosConReportes = computed(() => {
     const reportes = this.reportesComunidad();
     const busqueda = this.terminoBusquedaUsuario().toLowerCase().trim();
-    const idFiltro = this.estadoAdminService.institucionSeleccionadaId();
-
-    // extraemos usuarios únicos que tienen reportes asociados a la institución filtrada
+    // Extraemos usuarios únicos de las incidencias disponibles.
     const mapaUsuarios = new Map<any, any>();
     reportes.forEach((rep) => {
       if (rep.usuario) {
-        // si hay una institución seleccionada globalmente, omitimos reportes de otras instituciones
-        if (idFiltro !== null) {
-          if (!rep.institucion || rep.institucion.id !== idFiltro) {
-            return;
-          }
-        }
         const userId =
           rep.usuario.id ||
           rep.usuario.numeroCedula ||
@@ -195,7 +187,7 @@ export class Historial implements OnInit, OnDestroy {
 
     const listaUsuarios = Array.from(mapaUsuarios.values());
 
-    // si no hay búsqueda activa, devolvemos la lista filtrada por institución
+    // Si no hay búsqueda activa, devolvemos la lista completa.
     if (!busqueda) {
       return listaUsuarios;
     }
@@ -222,8 +214,6 @@ export class Historial implements OnInit, OnDestroy {
     if (!usuario) return [];
 
     const reportes = this.reportesComunidad();
-    const idFiltro = this.estadoAdminService.institucionSeleccionadaId();
-
     return reportes.filter((rep) => {
       if (!rep.usuario) return false;
 
@@ -234,12 +224,7 @@ export class Historial implements OnInit, OnDestroy {
 
       if (!usuarioMatch) return false;
 
-      // 2. Si hay filtro de institución, verificamos que pertenezca a esa institución
-      if (idFiltro !== null) {
-        return rep.institucion && rep.institucion.id === idFiltro;
-      }
-
-      return true; // si es "Todas", incluimos todos sus reportes
+      return true;
     });
   });
 
@@ -257,8 +242,7 @@ export class Historial implements OnInit, OnDestroy {
 
   // esto abre el modal para visualizar los detalles de un reporte
   abrirModalDetalle(reporte: IReporte) {
-    this.reporteSeleccionado.set(reporte);
-    setTimeout(() => this.initMapDetalle(reporte.ubicacion), 100);
+    this.router.navigate(['/operadores/incidencias'], { queryParams: { incidencia: reporte.id } });
   }
 
   // esto cierra el modal de detalles del reporte

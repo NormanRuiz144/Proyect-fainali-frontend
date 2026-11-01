@@ -1,89 +1,39 @@
 import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../../../auth/service/auth-service';
-import { Component, signal, inject, OnInit, computed } from '@angular/core';
+import { Component, signal, inject, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
-import { DashboardService } from '../../dashboard/service/dashboard';
-import { EstadoAdminService } from '../../../../shared/service/estado-admin.service';
 import { InteractionService } from '../../../../shared/service/interaction.service';
 
 @Component({
   selector: 'app-layout-admin',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule],
+  imports: [CommonModule, RouterModule],
   templateUrl: './layout-admin.html',
   styleUrl: './layout-admin.css',
 })
 export class LayoutAdmin {
   public authService = inject(AuthService);
   private router = inject(Router);
-  private dashboardService = inject(DashboardService);
   private interactionService = inject(InteractionService);
-  public estadoAdminService = inject(EstadoAdminService);
 
   menuAbierto = signal(false);
-  instituciones = signal<any[]>([]);
 
   nombreCompletoUsuario = computed(() => {
-    const user = this.estadoAdminService.usuarioLogueado();
+    const user = this.authService.usuarioActual();
     return user ? `${user.nombres} ${user.apellidos}` : 'Administrador';
   });
 
-  nombreInstitucionUsuario = computed(() => {
-    const user = this.estadoAdminService.usuarioLogueado();
-    if (!user) return 'Comunica';
-    
-    // Si es Super-Admin, mostramos "Super Administrador" o la institución seleccionada actualmente
-    if (user.rol?.rol === 'Super-Admin') {
-      const selectedId = this.estadoAdminService.institucionSeleccionadaId();
-      if (selectedId === null) {
-        return 'Todas las Instituciones';
-      }
-      const inst = this.instituciones().find(i => i.id === selectedId);
-      return inst ? inst.nombreInstitucion : 'Super-Admin';
-    }
-
-    // Si es admin normal, mostramos la institución a la que pertenece
-    const userInstId = user.idInstitucion;
-    const inst = this.instituciones().find(i => i.id === userInstId);
-    return inst ? inst.nombreInstitucion : 'Administración';
-  });
-
   menuAdmin = [
-    { texto: 'Panel de Control', icono: 'fa-solid fa-chart-line', url: '/admin/dashboard' },
-    { texto: 'Reportes', icono: 'fa-solid fa-file-signature', url: '/admin/reportes' },
-    // { texto: 'Instituciones', icono: 'fa-solid fa-building', url: '/admin/instituciones' },
-    {
-      texto: 'Historial por Usuario',
-      icono: 'fa-solid fa-users-viewfinder',
-      url: '/admin/historial',
-    },
-    { texto: 'Baneados', icono: 'fa-solid fa-hand', url: '/admin/baneados' },
-    { texto: 'Configuración', icono: 'fa-solid fa-gear', url: '/admin/configuracion' },
+    { texto: 'Panel de control', icono: 'fa-solid fa-chart-line', url: '/operadores/dashboard', permisos: ['operadores.ver'] },
+    { texto: 'Incidencias', icono: 'fa-solid fa-file-signature', url: '/operadores/incidencias', permisos: ['incidencias.ver'] },
+    { texto: 'Historial', icono: 'fa-solid fa-clock-rotate-left', url: '/operadores/historial', permisos: ['incidencias.ver'] },
+    { texto: 'Mapa', icono: 'fa-solid fa-map-location-dot', url: '/operadores/mapa', permisos: ['incidencias.ver'] },
+    { texto: 'Problemáticas', icono: 'fa-solid fa-triangle-exclamation', url: '/operadores/problematicas', permisos: ['problematicas.ver'] },
+    { texto: 'Ubicaciones', icono: 'fa-solid fa-map-marker-alt', url: '/operadores/ubicaciones', permisos: ['departamentos.ver', 'municipios.ver', 'sectores.ver'], requiereAlguno: true },
+    { texto: 'Usuarios', icono: 'fa-solid fa-users', url: '/operadores/usuarios', permisos: ['usuarios.ver'] },
+    { texto: 'Baneados', icono: 'fa-solid fa-ban', url: '/operadores/baneados', permisos: ['banned_users.ver'] },
+    { texto: 'Operadores y permisos', icono: 'fa-solid fa-user-gear', url: '/operadores/accesos', permisos: ['operadores.ver', 'permisos.ver', 'permisos.administrar'], requiereAlguno: true },
   ];
-
-  ngOnInit(): void {
-    this.cargarInstituciones();
-  }
-
-  // esto carga la lista de instituciones para mostrarlas en el selector del header global
-  cargarInstituciones() {
-    this.dashboardService.obtenerInstituciones().subscribe({
-      next: (res) => {
-        this.instituciones.set(res.lista_Instituciones || []);
-      },
-      error: (err) => {
-        console.error('Error al cargar instituciones en layout:', err);
-      },
-    });
-  }
-
-  // esto maneja el cambio de institución desde el header global y actualiza el estado compartido
-  onInstitucionChange(event: any) {
-    const val = event.target.value;
-    const id = val === 'null' || val === '0' || val === '' ? null : Number(val);
-    this.estadoAdminService.establecerInstitucion(id);
-  }
 
   alternarMenu() {
     this.menuAbierto.set(!this.menuAbierto());
@@ -97,7 +47,6 @@ export class LayoutAdmin {
     if (!confirm) return;
 
     this.authService.logout();
-    this.estadoAdminService.cerrarSesion();
     this.router.navigate(['/inicio']);
   }
 }

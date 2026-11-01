@@ -1,0 +1,15 @@
+<section class="accesos">
+  <header><h1>Operadores y permisos</h1><p>Administra los accesos activos de la plataforma.</p></header>
+  @if (cargando()) { <p>Cargando…</p> } @else {
+    @if (auth.tienePermiso('permisos.administrar')) {
+      <div class="asignar">
+        <select [(ngModel)]="idOperador"><option [ngValue]="null">Seleccione operador</option>@for (op of operadores(); track op.id) { <option [ngValue]="op.id">{{ op.usuario?.nombres }} {{ op.usuario?.apellidos }}</option> }</select>
+        <select [(ngModel)]="idPermiso"><option [ngValue]="null">Seleccione permiso</option>@for (permiso of permisos(); track permiso.id) { <option [ngValue]="permiso.id">{{ permiso.nombre }}</option> }</select>
+        <button (click)="asignar()">Asignar permiso</button>
+      </div>
+    }
+    @if (auth.tienePermiso('operadores.ver')) { <h2>Operadores</h2><ul>@for (op of operadores(); track op.id) { <li>{{ op.usuario?.nombres }} {{ op.usuario?.apellidos }} · {{ op.usuario?.correo }}</li> }</ul> }
+    @if (auth.tienePermiso('permisos.ver')) { <h2>Catálogo de permisos</h2><ul>@for (permiso of permisos(); track permiso.id) { <li><strong>{{ permiso.codigo }}</strong> — {{ permiso.nombre }}</li> }</ul> }
+    @if (auth.tienePermiso('permisos.administrar')) { <h2>Asignaciones</h2><ul>@for (asignacion of asignaciones(); track asignacion.id) { <li>{{ asignacion.operador?.usuario?.nombres }} · {{ asignacion.permiso?.codigo }} <button (click)="cambiarEstado(asignacion)">{{ asignacion.activo ? 'Revocar' : 'Activar' }}</button></li> }</ul> }
+  }
+</section>

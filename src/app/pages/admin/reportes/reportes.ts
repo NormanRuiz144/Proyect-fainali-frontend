@@ -1,12 +1,12 @@
 import { Component, inject, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { ActivatedRoute } from '@angular/router';
 import * as L from 'leaflet';
 import { ReportesService } from './service/reportes';
 import { IReporte, IRespuestaReportes } from './interface/ireporte';
-import { EstadoAdminService } from '../../../shared/service/estado-admin.service';
-import { AuthService } from '../../../auth/service/auth-service';
 import { DashboardService } from '../dashboard/service/dashboard';
+import { AuthService } from '../../../auth/service/auth-service';
 import { InteractionService } from '../../../shared/service/interaction.service';
 
 @Component({
@@ -18,10 +18,10 @@ import { InteractionService } from '../../../shared/service/interaction.service'
 })
 export class Reportes implements OnInit {
   private reportesService = inject(ReportesService);
-  public estadoAdminService = inject(EstadoAdminService); // esto comparte el estado de la institución seleccionada
   private authService = inject(AuthService);
   private dashboardService = inject(DashboardService);
   private interactionService = inject(InteractionService);
+  private route = inject(ActivatedRoute);
 
   reportes = signal<IReporte[]>([]);
   instituciones = signal<any[]>([]);
@@ -40,17 +40,11 @@ export class Reportes implements OnInit {
       filtrados = filtrados.filter(r => r.estado === estado);
     }
 
-    // Filtrar por la institución seleccionada globalmente si existe
-    const idFiltro = this.estadoAdminService.institucionSeleccionadaId();
-    if (idFiltro !== null) {
-      filtrados = filtrados.filter(r => r.institucion && r.institucion.id === idFiltro);
-    }
-    
     const busqueda = this.terminoBusqueda().toLowerCase().trim();
     if (busqueda) {
       filtrados = filtrados.filter(r => 
-        r.descripcion.toLowerCase().includes(busqueda) ||
-        r.problematica?.problema.toLowerCase().includes(busqueda) ||
+        (r.descripcion || '').toLowerCase().includes(busqueda) ||
+        (r.problematica?.problematica || r.problematica?.problema || '').toLowerCase().includes(busqueda) ||
         (r.usuario?.nombres + ' ' + r.usuario?.apellidos).toLowerCase().includes(busqueda) ||
         r.id.toString().includes(busqueda)
       );
@@ -69,7 +63,6 @@ export class Reportes implements OnInit {
 
   ngOnInit(): void {
     this.cargarReportes();
-    this.cargarInstituciones();
   }
 
   cargarReportes() {
@@ -77,6 +70,9 @@ export class Reportes implements OnInit {
     this.reportesService.obtenerReportes().subscribe({
       next: (res: IRespuestaReportes) => {
         this.reportes.set(res.lista_Reportes);
+        const incidenciaId = Number(this.route.snapshot.queryParamMap.get('incidencia'));
+        const incidencia = res.lista_Reportes.find((reporte) => reporte.id === incidenciaId);
+        if (incidencia) this.abrirModal(incidencia);
         this.cargando.set(false);
       },
       error: (err) => {
@@ -99,12 +95,7 @@ export class Reportes implements OnInit {
   }
 
   obtenerNombreOrganizacion(): string {
-    const idFiltro = this.estadoAdminService.institucionSeleccionadaId();
-    if (idFiltro === null) {
-      return 'Consolidado Global (Todas las Instituciones)';
-    }
-    const inst = this.instituciones().find(i => i.id === idFiltro);
-    return inst ? inst.nombreInstitucion : 'Institución Activa';
+    return 'Incidencias registradas en Comunica';
   }
 
   abrirModal(reporte: IReporte) {
@@ -237,7 +228,7 @@ export class Reportes implements OnInit {
       : 'Administrador del Sistema';
     const orgName = this.obtenerNombreOrganizacion();
     const fechaExportacion = new Date().toLocaleString();
-    const isTodasLasInstituciones = this.estadoAdminService.institucionSeleccionadaId() === null;
+    const isTodasLasInstituciones = false;
 
     // Abrir ventana para impresión
     const printWindow = window.open('', '_blank');

@@ -57,18 +57,10 @@
 
           <form class="formulario-reporte" (submit)="enviarReporte($event)">
             <div class="grupo-campo">
-              <label for="institucion"><i class="fa-solid fa-building-flag"></i> ¿A qué institución va dirigido?</label>
-              <select id="institucion" class="input-portal" required (change)="onInstitucionChange($event)">
-                <option value="" disabled selected>Selecciona la institución responsable...</option>
-                <option *ngFor="let inst of instituciones()" [value]="inst.id.toString()">{{ inst.nombreInstitucion }}</option>
-              </select>
-            </div>
-
-            <div class="grupo-campo">
               <label for="problematica"><i class="fa-solid fa-triangle-exclamation"></i> ¿Qué tipo de problema es?</label>
-              <select id="problematica" class="input-portal" required [disabled]="!institucionSeleccionada()" (change)="cambiarPlaceholder($event)">
+              <select id="problematica" class="input-portal" required (change)="cambiarPlaceholder($event)">
                 <option value="" disabled selected>Selecciona una opción...</option>
-                <option *ngFor="let prob of problematicas()" [value]="prob.id">{{ prob.problema }}</option>
+                <option *ngFor="let prob of problematicas()" [value]="prob.id">{{ prob.problematica }}</option>
               </select>
             </div>
 
@@ -78,46 +70,16 @@
             </div>
 
             <div class="grupo-campo">
-              <label for="departamento"><i class="fa-solid fa-map-location-dot"></i> ¿En qué departamento te encuentras?</label>
-              <select
-                id="departamento"
-                class="input-portal"
-                required
-                [value]="departamentoReporteId()"
-                (change)="onDepartamentoReporteChange($event)"
-              >
-                <option value="" disabled selected>Selecciona tu departamento...</option>
-                <option *ngFor="let dept of departamentos()" [value]="dept.id">{{ dept.nomDepartamento }}</option>
-              </select>
-            </div>
-
-            <div class="grupo-campo">
-              <label for="municipio"><i class="fa-solid fa-city"></i> ¿En qué municipio te encuentras?</label>
-              <select
-                id="municipio"
-                class="input-portal"
-                required
-                [disabled]="!departamentoReporteId()"
-                [value]="municipioReporteId()"
-                (change)="onMunicipioChange($event)"
-              >
-                <option value="" disabled selected>Selecciona tu municipio...</option>
-                <option *ngFor="let mun of municipios()" [value]="mun.id">{{ mun.nomMunicipio }}</option>
-              </select>
-            </div>
-
-            <div class="grupo-campo">
               <label for="sector"><i class="fa-solid fa-map"></i> ¿En qué sector/barrio ocurrió?</label>
               <select
                 id="sector"
                 class="input-portal"
                 required
-                [disabled]="!municipioSeleccionado()"
                 [value]="sectorReporteId()"
                 (change)="onSectorChange($event)"
               >
                 <option value="" disabled selected>Selecciona tu barrio o sector...</option>
-                <option *ngFor="let sec of sectores()" [value]="sec.id">{{ sec.nombreSector }}</option>
+                <option *ngFor="let sec of sectores()" [value]="sec.id">{{ sec.nomSector }}</option>
               </select>
             </div>
 
@@ -204,8 +166,7 @@
                   <span class="fecha-mini">{{rep.fechaGen | date:'shortDate'}}</span>
                   <span class="estado-badge" [ngClass]="rep.estado?.toLowerCase() || 'pendiente'">{{rep.estado || 'Pendiente'}}</span>
                 </div>
-                <p class="problema-mini">{{rep.problematica?.problema || 'Reporte'}}</p>
-                <p class="institucion-mini"><i class="fa-solid fa-building"></i> {{rep.institucion?.nombreInstitucion}}</p>
+                <p class="problema-mini">{{rep.problematica?.problematica || 'Incidencia'}}</p>
               </div>
             </div>
 
@@ -224,11 +185,11 @@
                 </div>
                 <div class="info-item">
                   <span class="info-label">Problema</span>
-                  <span class="info-valor">{{reporteSeleccionado().problematica?.problema}}</span>
+                  <span class="info-valor">{{reporteSeleccionado().problematica?.problematica}}</span>
                 </div>
                 <div class="info-item">
-                  <span class="info-label">Institución Asignada</span>
-                  <span class="info-valor">{{reporteSeleccionado().institucion?.nombreInstitucion}}</span>
+                  <span class="info-label">Sector de la incidencia</span>
+                  <span class="info-valor">{{reporteSeleccionado().sector?.nomSector || 'No especificado'}}</span>
                 </div>
               </div>
               <div class="info-detalle">
@@ -280,7 +241,7 @@
               </div>
 
               <div class="grupo-campo">
-                <label for="perfilInstitucion"><i class="fa-solid fa-building"></i> Institución</label>
+                <label for="perfilInstitucion"><i class="fa-solid fa-location-dot"></i> Sector registrado</label>
                 <input id="perfilInstitucion" type="text" class="input-portal" [value]="perfilForm().institucion" readonly />
               </div>
             </div>

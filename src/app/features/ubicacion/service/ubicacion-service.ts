@@ -25,9 +25,9 @@ export class UbicacionService {
       .pipe(map((res) => res.lista_Municipios));
   }
 
-  obtenerSectoresPorMunicipio(idMunicipio: number): Observable<ISector[]> {
+  obtenerSectoresPorMunicipio(_idMunicipio: number): Observable<ISector[]> {
     return this.http
-      .get<SectorResponse>(`${this.baseUrl}/public/municipios/${idMunicipio}/sectores`)
+      .get<SectorResponse>(`${this.baseUrl}/public/sectores`)
       .pipe(map((res) => res.lista_Sectores));
   }
 

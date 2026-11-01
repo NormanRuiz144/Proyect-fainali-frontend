@@ -14,7 +14,7 @@ import { ISector } from '../../../features/ubicacion/interface/isector';
 
 const EMAIL_PATTERN = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 const PASSW_PATTERN = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/;
-const CEDULA_NI_PATTERN = /^\d{3}-\d{6}-\d{4}[A-Z]$/;
+const CEDULA_PATTERN = /^\d+$/;
 const SEXO_PATTERN = /^[MF]$/;
 
 @Component({
@@ -84,13 +84,13 @@ export class Layout {
     });
 
     this.registroForm = this.fb.group({
-      numeroCedula: ['', [Validators.required, Validators.pattern(CEDULA_NI_PATTERN)]],
+      numeroCedula: ['', [Validators.required, Validators.pattern(CEDULA_PATTERN)]],
       nombres: ['', [Validators.required]],
       apellidos: ['', [Validators.required]],
       sexo: ['', [Validators.required, Validators.pattern(SEXO_PATTERN)]],
       correo: ['', [Validators.required, Validators.pattern(EMAIL_PATTERN)]],
-      contrasena: ['', [Validators.required, Validators.pattern(PASSW_PATTERN)]],
-      confirmationContra: ['', [Validators.required, Validators.pattern(PASSW_PATTERN)]],
+      password: ['', [Validators.required, Validators.pattern(PASSW_PATTERN)]],
+      confirmationPassword: ['', [Validators.required, Validators.pattern(PASSW_PATTERN)]],
       idDepartamento: [null, [Validators.required]],
       idMunicipio: [null, [Validators.required]],
       idSector: [null, [Validators.required]],
@@ -185,8 +185,8 @@ export class Layout {
       return !!numeroCedula?.valid && !!nombres?.valid && !!apellidos?.valid && !!sexo?.valid;
     }
     if (paso === 2) {
-      const { correo, contrasena, confirmationContra } = this.registroForm.controls;
-      return !!correo?.valid && !!contrasena?.valid && !!confirmationContra?.valid;
+      const { correo, password, confirmationPassword } = this.registroForm.controls;
+      return !!correo?.valid && !!password?.valid && !!confirmationPassword?.valid;
     }
     if (paso === 3) {
       const { idDepartamento, idMunicipio, idSector } = this.registroForm.controls;
@@ -208,10 +208,8 @@ export class Layout {
         // Error 1: La propiedad 'cerrarModal' no existe
         this.cerrarModal();
 
-        if (res.data.user.rol.rol === 'Admin') {
+        if (res.data.user.operador) {
           this.router.navigate(['/admin/dashboard']);
-        } else if (res.data.user.rol.rol == 'Super-Admin') {
-          this.router.navigate(['/superAdmin/problematicas']);
         } else {
           this.router.navigate(['/reportes']);
         }
@@ -240,13 +238,13 @@ export class Layout {
 
     const val = this.registroForm.value;
     const usuario: any = {
-      numeroCedula: val.numeroCedula,
+      numeroCedula: Number(val.numeroCedula),
       nombres: val.nombres,
       apellidos: val.apellidos,
       sexo: val.sexo,
       correo: val.correo,
-      contrasena: val.contrasena,
-      confirmationContra: val.confirmationContra,
+      password: val.password,
+      confirmationPassword: val.confirmationPassword,
     };
     if (val.idSector) {
       usuario.idSector = Number(val.idSector);

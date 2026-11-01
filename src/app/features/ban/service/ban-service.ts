@@ -17,7 +17,7 @@ export class BanService {
   private apiUrl = `${environment.API_URL}/usuarios`;
 
   banearUsuario(data: IBanRequest): Observable<IBanearResponse> {
-    return this.http.post<IBanearResponse>(`${this.apiUrl}/bannear`, {
+    return this.http.post<IBanearResponse>(`${this.apiUrl}/baneos`, {
       userId: data.userId,
       motivo: data.motivo,
       fechaFin: data.fechaFin,
@@ -26,10 +26,10 @@ export class BanService {
   }
 
   obtenerBaneados(): Observable<IBaneadosListResponse> {
-    return this.http.get<IBaneadosListResponse>(`${this.apiUrl}/baneados/listar`);
+    return this.http.get<IBaneadosListResponse>(`${this.apiUrl}/baneos/activos`);
   }
 
   desbanearUsuario(id: number): Observable<IDesbanearResponse> {
-    return this.http.put<IDesbanearResponse>(`${this.apiUrl}/desbanear/${id}`, {});
+    return this.http.patch<IDesbanearResponse>(`${this.apiUrl}/${id}/desbanear`, {});
   }
 }

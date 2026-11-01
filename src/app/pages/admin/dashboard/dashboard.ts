@@ -4,7 +4,6 @@ import { FormsModule } from '@angular/forms'; // esto nos permite usar ngModel e
 import { DashboardService } from './service/dashboard';
 import { InteractionService } from '../../../shared/service/interaction.service';
 import { IDashboard } from './interface/idashboard';
-import { EstadoAdminService } from '../../../shared/service/estado-admin.service';
 
 import {
   ApexAxisChartSeries,
@@ -40,7 +39,6 @@ export type ChartOptions = {
 export class Dashboard implements OnInit, OnDestroy {
   private dashboardService = inject(DashboardService);
   private interactionService = inject(InteractionService);
-  public estadoAdminService = inject(EstadoAdminService); // esto comparte el estado de la institución seleccionada
 
   datos = signal<IDashboard | null>(null);
   cargando = signal(true);
@@ -48,13 +46,7 @@ export class Dashboard implements OnInit, OnDestroy {
   chartOptions: ChartOptions | null = null;
   private intervalId: any;
 
-  constructor() {
-    effect(() => {
-      // esto reacciona al cambio de institución seleccionada en el header global y recarga el dashboard
-      const id = this.estadoAdminService.institucionSeleccionadaId();
-      this.cargarDashboard();
-    }, { allowSignalWrites: true });
-  }
+  constructor() { this.cargarDashboard(); }
 
   ngOnInit(): void {
     // Auto-actualizar el dashboard cada 5 segundos (Polling)
@@ -73,7 +65,7 @@ export class Dashboard implements OnInit, OnDestroy {
   cargarDashboard() {
     this.cargando.set(true);
 
-    this.dashboardService.obtenerResumen(this.estadoAdminService.institucionSeleccionadaId()).subscribe({
+    this.dashboardService.obtenerResumen().subscribe({
       next: (res: IDashboard | null) => {
         this.datos.set(res);
 
@@ -135,7 +127,7 @@ export class Dashboard implements OnInit, OnDestroy {
 
   // Carga los datos sin mostrar el spinner de carga para no interrumpir al usuario
   cargarDashboardSilencioso() {
-    this.dashboardService.obtenerResumen(this.estadoAdminService.institucionSeleccionadaId()).subscribe({
+    this.dashboardService.obtenerResumen().subscribe({
       next: (res: IDashboard | null) => {
         this.datos.set(res);
 

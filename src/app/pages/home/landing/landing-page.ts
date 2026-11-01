@@ -39,31 +39,15 @@ export class LandingPage implements AfterViewInit {
 
   abrirApp() {
     if (this.authService.estaAutenticado()) {
-      const rolUsuario = this.authService.rolUsuario();
-
-      // Redirigir a la página principal de la aplicación
-      if (rolUsuario) {
-        this.redirigirPorRol(rolUsuario);
-        return;
-      }
-
       this.authService.obtenerPerfilActual().subscribe({
-        next: (usuario) => this.redirigirPorRol(usuario.rol?.rol || null),
+        next: (usuario) => this.redirigirSegunPerfil(usuario.operador !== null),
         error: (err) => this.interactionService.mostrarError(err),
       });
     }
   }
 
-  private redirigirPorRol(rolUsuario: string | null) {
-    if (rolUsuario == 'default') {
-      this.router.navigate(['/reportes']);
-    } else if (rolUsuario == 'Admin') {
-      this.router.navigate(['/admin']);
-    } else if (rolUsuario == 'Super-Admin') {
-      this.router.navigate(['/superAdmin']);
-    } else {
-      this.router.navigate(['/inicio']);
-    }
+  private redirigirSegunPerfil(esOperador: boolean) {
+    this.router.navigate([esOperador ? '/admin' : '/reportes']);
   }
 
   cerrarSesion() {

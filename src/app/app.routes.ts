@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { Layout } from './pages/home/layout/layout';
 import { AuthGuard } from './guards/AuthGuard';
+import { PermissionGuard } from './guards/PermissionGuard';
 
 export const routes: Routes = [
   // Bloque 1: experiencia publica
@@ -23,69 +24,58 @@ export const routes: Routes = [
   {
     path: 'reportes',
     canActivate: [AuthGuard],
-    data: { rol: 'default' },
     loadComponent: () =>
       import('./pages/usuario/nuevo-reporte/nuevo-reporte').then((c) => c.NuevoReporte),
   },
-  // Area Administrativa
   {
-    path: 'admin',
+    path: 'operadores',
     canActivate: [AuthGuard],
-    data: { rol: 'Admin' },
+    data: { requiereOperador: true },
     loadComponent: () =>
       import('./pages/admin/layout/layout-admin/layout-admin').then((c) => c.LayoutAdmin),
     children: [
       {
         path: 'dashboard',
+        canActivate: [PermissionGuard],
+        data: { permisos: ['operadores.ver'] },
         loadComponent: () => import('./pages/admin/dashboard/dashboard').then((c) => c.Dashboard),
       },
       {
-        path: 'reportes',
+        path: 'incidencias',
+        canActivate: [PermissionGuard],
+        data: { permisos: ['incidencias.ver'] },
         loadComponent: () => import('./pages/admin/reportes/reportes').then((c) => c.Reportes),
       },
       {
         path: 'historial',
+        canActivate: [PermissionGuard],
+        data: { permisos: ['incidencias.ver'] },
         loadComponent: () => import('./pages/admin/historial/historial').then((c) => c.Historial),
       },
       {
         path: 'baneados',
+        canActivate: [PermissionGuard],
+        data: { permisos: ['banned_users.ver'] },
         loadComponent: () =>
           import('./features/ban/components/usuarios-baneados').then((c) => c.UsuariosBaneadosComponent),
       },
       {
-        path: 'configuracion',
-        loadComponent: () =>
-          import('./pages/admin/configuracion/configuracion').then((c) => c.ConfiguracionAdmin),
+        path: 'usuarios',
+        canActivate: [PermissionGuard],
+        data: { permisos: ['usuarios.ver'] },
+        loadComponent: () => import('./features/usuario/components/usuarios').then((c) => c.UsuariosComponent),
       },
       {
-        path: '',
-        redirectTo: 'dashboard',
-        pathMatch: 'full',
-      },
-    ],
-  },
-  // Area Super Admin
-  {
-    path: 'superAdmin',
-    canActivate: [AuthGuard],
-    data: { rol: 'Super-Admin' },
-    loadComponent: () =>
-      import('./pages/superAdmin/layout/layout-super-admin').then((c) => c.LayoutSuperAdmin),
-    children: [
-      {
-        path: 'dashboard',
-        loadComponent: () =>
-          import('./pages/superAdmin/dashboard/super-admin-dashboard').then(
-            (c) => c.SuperAdminDashboard,
-          ),
-      },
-      {
-        path: 'mapa-reportes',
+        path: 'mapa',
+        canActivate: [PermissionGuard],
+        data: { permisos: ['incidencias.ver'] },
         loadComponent: () =>
           import('./pages/superAdmin/mapa-reportes/mapa-reportes').then((c) => c.MapaReportes),
       },
       {
         path: 'problematicas',
+        canActivate: [PermissionGuard],
+        data: { permisos: ['problematicas.ver'] },
         loadComponent: () =>
           import('./features/problematicas/components/problematicas').then(
             (c) => c.ProblematicasComponent,
@@ -93,25 +83,16 @@ export const routes: Routes = [
       },
       {
         path: 'ubicaciones',
+        canActivate: [PermissionGuard],
+        data: { permisos: ['departamentos.ver', 'municipios.ver', 'sectores.ver'], requiereAlguno: true },
         loadComponent: () =>
           import('./features/ubicacion/components/ubicacion').then((c) => c.UbicacionComponent),
       },
       {
-        path: 'instituciones',
-        loadComponent: () =>
-          import('./features/instituciones/components/instituciones').then(
-            (c) => c.InstitucionesComponent,
-          ),
-      },
-      {
-        path: 'usuarios',
-        loadComponent: () =>
-          import('./features/usuario/components/usuarios').then((c) => c.UsuariosComponent),
-      },
-      {
-        path: 'baneados',
-        loadComponent: () =>
-          import('./features/ban/components/usuarios-baneados').then((c) => c.UsuariosBaneadosComponent),
+        path: 'accesos',
+        canActivate: [PermissionGuard],
+        data: { permisos: ['operadores.ver', 'permisos.ver', 'permisos.administrar'], requiereAlguno: true },
+        loadComponent: () => import('./pages/operadores/accesos/accesos').then((c) => c.AccesosComponent),
       },
       {
         path: '',
@@ -120,6 +101,10 @@ export const routes: Routes = [
       },
     ],
   },
+  { path: 'admin', pathMatch: 'full', redirectTo: 'operadores/dashboard' },
+  { path: 'admin/:path', redirectTo: 'operadores/dashboard' },
+  { path: 'superAdmin', pathMatch: 'full', redirectTo: 'operadores/dashboard' },
+  { path: 'superAdmin/:path', redirectTo: 'operadores/dashboard' },
   //En caso de errores
   {
     path: '**',

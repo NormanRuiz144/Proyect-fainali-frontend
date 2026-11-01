@@ -1,7 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
-import { Observable, of } from 'rxjs';
-import { delay } from 'rxjs/operators';
+import { map, Observable, of } from 'rxjs';
 import { IDashboard } from '../interface/idashboard';
 import { environment } from '../../../../../environment/environment';
 
@@ -10,19 +9,27 @@ import { environment } from '../../../../../environment/environment';
 })
 export class DashboardService {
   private http = inject(HttpClient);
-  private url = environment.API_URL + '/dashboard/load';
+  private url = environment.API_URL + '/dashboard';
 
-  obtenerResumen(institucionId?: number | null): Observable<IDashboard> {
-    let queryUrl = this.url;
-    if (institucionId !== undefined) {
-      // Si institucionId es null o 0, enviamos 0 que el backend interpreta como "Todas"
-      const val = institucionId === null ? 0 : institucionId;
-      queryUrl += `?institucionId=${val}`;
-    }
-    return this.http.get<IDashboard>(queryUrl);
+  obtenerResumen(): Observable<IDashboard> {
+    return this.http.get<any>(this.url).pipe(
+      map((data) => ({
+        kpis: {
+          reportesActivos: data.kpis.incidenciasActivas,
+          indiceResolucion: data.kpis.indiceResolucion,
+          tiempoPromedioDias: data.kpis.tiempoPromedioDias,
+          alertasAltaPrioridad: data.kpis.alertasAltaPrioridad,
+        },
+        porProblema: data.problemasFrecuentes,
+        porSector: data.zonasActivas,
+        institucion: { nombre: 'Comunica', cargaTrabajo: data.kpis.totalIncidencias },
+        seguimiento: data.seguimientosRecientes,
+      })),
+    );
   }
 
-  obtenerInstituciones(): Observable<any> {
-    return this.http.get<any>(environment.API_URL + '/instituciones/listar/pagina');
+  /** @deprecated Instituciones no existen en el modelo actual. */
+  obtenerInstituciones(): Observable<{ lista_Instituciones: never[] }> {
+    return of({ lista_Instituciones: [] });
   }
 }

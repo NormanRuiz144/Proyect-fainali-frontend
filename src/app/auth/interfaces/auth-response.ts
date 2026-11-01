@@ -1,8 +1,8 @@
-import { ILogin } from "./ilogin";
+import { ILogin } from './ilogin';
 
-export interface AuthResponse{
+export interface AuthResponse {
   data: {
-    user: ILogin
-    token: string
-  }
+    user: ILogin;
+    token: string;
+  };
 }

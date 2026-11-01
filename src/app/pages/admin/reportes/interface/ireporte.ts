@@ -7,8 +7,10 @@ export interface IReporte {
   ubicacion: string;
   formato: string | string[] | { url?: string; secure_url?: string }[] | null;
   problematica?: {
-    problema: string;
+    problema?: string;
+    problematica?: string;
   };
+  sector?: { id?: number; nomSector?: string };
   institucion?: {
     id?: number;
     nombreInstitucion: string;

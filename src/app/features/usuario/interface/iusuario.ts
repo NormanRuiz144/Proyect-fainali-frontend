@@ -46,7 +46,8 @@ export interface IUsuarioListaItem {
   apellidos: string;
   correo: string;
   id_sector: number | null;
-  idRol: number;
+  idRol?: number;
+  sector?: { id: number; nomSector: string } | null;
 }
 
 export interface IListarUsuariosResponse {

@@ -77,7 +77,7 @@
                     <span style="color: #64748b">Normal ({{ reporte.nvlPrioridad }})</span>
                   }
                 </td>
-                <td>{{ reporte.problematica?.problema || 'N/A' }}</td>
+                <td>{{ reporte.problematica?.problematica || reporte.problematica?.problema || 'N/A' }}</td>
                 <td>
                   <span
                     class="badge-resort"
@@ -175,7 +175,7 @@
                 >Categoría de Problema</small
               >
               <p style="margin: 5px 0 0 0; font-weight: bold; color: var(--primario);">
-                {{ reporteSeleccionado()?.problematica?.problema || 'N/A' }}
+                {{ reporteSeleccionado()?.problematica?.problematica || reporteSeleccionado()?.problematica?.problema || 'N/A' }}
               </p>
             </div>
             <div>
@@ -188,10 +188,10 @@
             </div>
             <div>
               <small style="color: #94a3b8; font-weight: bold; text-transform: uppercase"
-                >Institución Asignada</small
+                >Sector de la incidencia</small
               >
               <p style="margin: 5px 0 0 0; font-weight: 500;">
-                {{ reporteSeleccionado()?.institucion?.nombreInstitucion || 'No asignada' }}
+                {{ reporteSeleccionado()?.sector?.nomSector || 'No especificado' }}
               </p>
             </div>
             <div style="grid-column: 1 / -1;">

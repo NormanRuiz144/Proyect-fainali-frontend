@@ -24,7 +24,7 @@
           <th>Nombres</th>
           <th>Apellidos</th>
           <th>Correo</th>
-          <th>Rol</th>
+          <th>Sector</th>
           <th>Acciones</th>
         </tr>
       </thead>
@@ -49,18 +49,11 @@
               <td>{{ usr.nombres }}</td>
               <td>{{ usr.apellidos }}</td>
               <td>{{ usr.correo }}</td>
-              <td>{{ obtenerNombreRol(usr.idRol) }}</td>
+              <td>{{ usr.sector?.nomSector || 'No asignado' }}</td>
               <td>
                 <div class="acciones-celda">
                   <button class="btn-icono editar" (click)="abrirModalEditar(usr)" title="Editar">
                     <i class="fa-solid fa-pen"></i>
-                  </button>
-                  <button
-                    class="btn-icono reasignar"
-                    (click)="abrirModalReasignar(usr)"
-                    title="Reasignar Rol/Institución"
-                  >
-                    <i class="fa-solid fa-arrows-rotate"></i>
                   </button>
                   <!-- <button class="btn-icono baja" (click)="abrirModalBaja(usr)" title="Dar de baja">
                     <i class="fa-solid fa-user-minus"></i>

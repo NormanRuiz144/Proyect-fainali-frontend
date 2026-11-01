@@ -12,6 +12,7 @@ import { RolesService } from '../../roles/service/roles.service';
 import { PaginationMeta } from '../../problematicas/interface/problematica';
 import { BanService } from '../../ban/service/ban-service';
 import { InteractionService } from '../../../shared/service/interaction.service';
+import { AuthService } from '../../../auth/service/auth-service';
 
 @Component({
   selector: 'app-usuarios',
@@ -27,6 +28,7 @@ export class UsuariosComponent implements OnInit {
   private ubicacionService = inject(UbicacionService);
   private banService = inject(BanService);
   private interactionService = inject(InteractionService);
+  private authService = inject(AuthService);
 
   usuarios = signal<IUsuarioListaItem[]>([]);
   cargando = signal(false);
@@ -66,11 +68,7 @@ export class UsuariosComponent implements OnInit {
   });
 
   sectoresParaSector = computed(() => {
-    const muniId = Number(this.formSectorMunicipio());
-    if (!muniId || isNaN(muniId)) return [];
-    return this.sectores().filter(
-      (s) => s.idMunicipios === muniId || s.idMunicipio === muniId || s.id_municipios === muniId,
-    );
+    return this.sectores();
   });
 
   // Modal states
@@ -119,7 +117,8 @@ export class UsuariosComponent implements OnInit {
     this.usuarioService.obtenerUsuarios(String(pag)).subscribe({
       next: (res) => {
         if (res.lista) {
-          this.usuarios.set(res.lista.data.filter((u) => u.idRol !== 1));
+          const idAutenticado = this.authService.usuarioActual()?.id;
+          this.usuarios.set(res.lista.data.filter((usuario) => usuario.id !== idAutenticado));
           this.paginacion.set(res.lista.meta);
           this.paginaActual.set(res.lista.meta.currentPage);
         }
@@ -212,7 +211,7 @@ export class UsuariosComponent implements OnInit {
       correo: usuario.correo,
       sexo: '',
       idSector: usuario.id_sector ?? (undefined as unknown as number),
-      idRol: usuario.idRol,
+      idRol: usuario.idRol ?? 0,
       idInstitucion: undefined as unknown as number,
       contrasena: '',
     });
@@ -253,8 +252,8 @@ export class UsuariosComponent implements OnInit {
         );
         return;
       }
-      if (!usuario.idSector || !usuario.idRol) {
-        this.interactionService.showToast('Debe seleccionar un sector y un rol.', 'warning');
+      if (!usuario.idSector) {
+        this.interactionService.showToast('Debe seleccionar un sector.', 'warning');
         return;
       }
 
@@ -266,10 +265,9 @@ export class UsuariosComponent implements OnInit {
           apellidos: usuario.apellidos,
           sexo: usuario.sexo || undefined,
           correo: usuario.correo,
-          contrasena: usuario.contrasena,
+          password: usuario.contrasena,
+          confirmationPassword: usuario.contrasena,
           idSector: usuario.idSector,
-          idRol: 2,
-          idInstitucion: usuario.idInstitucion || undefined,
         })
         .subscribe({
           next: () => {
@@ -315,7 +313,7 @@ export class UsuariosComponent implements OnInit {
   abrirModalReasignar(usuario: IUsuarioListaItem) {
     this.usuarioReasignarId.set(usuario.id);
     this.reasignarForm.set({
-      idRol: usuario.idRol,
+      idRol: usuario.idRol ?? 0,
       idInstitucion: undefined as unknown as number,
     });
     this.mostrarModalReasignar.set(true);

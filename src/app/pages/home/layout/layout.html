@@ -106,14 +106,14 @@
               <div class="form-step slide-in">
                 <div class="form-group form-floating">
                   <input
-                    type="text"
+                    type="number"
                     formControlName="numeroCedula"
                     id="regCedula"
                     placeholder=" "
                   />
                   <label for="regCedula">Cédula</label>
                   @if (isInvalid(registroForm, 'numeroCedula')) {
-                    <small class="error-msg">ejemplo 001-000700-2300A</small>
+                    <small class="error-msg">Ingrese solo números</small>
                   }
                 </div>
                 <div class="form-group form-floating">
@@ -167,12 +167,12 @@
                 <div class="form-group form-floating grid-full">
                   <input
                     type="password"
-                    formControlName="contrasena"
+                    formControlName="password"
                     id="regContrasena"
                     placeholder=" "
                   />
                   <label for="regContrasena">Contraseña</label>
-                  @if (isInvalid(registroForm, 'contrasena')) {
+                  @if (isInvalid(registroForm, 'password')) {
                     <small class="error-msg"
                       >Mín. 8 caracteres, mayúscula, número y especial.</small
                     >
@@ -181,12 +181,12 @@
                 <div class="form-group form-floating grid-full">
                   <input
                     type="password"
-                    formControlName="confirmationContra"
+                    formControlName="confirmationPassword"
                     id="regConfContra"
                     placeholder=" "
                   />
                   <label for="regConfContra">Confirmar Contraseña</label>
-                  @if (isInvalid(registroForm, 'confirmationContra')) {
+                  @if (isInvalid(registroForm, 'confirmationPassword')) {
                     <small class="error-msg">Requerido, debe coincidir.</small>
                   }
                 </div>
@@ -246,7 +246,7 @@
                     <option [value]="null" disabled selected hidden></option>
                     @if (sectores().length > 0) {
                       @for (s of sectores(); track s.id) {
-                        <option [value]="s.id">{{ s.nombreSector }}</option>
+                        <option [value]="s.id">{{ s.nomSector }}</option>
                       }
                     } @else {
                       <option [value]="null" disabled>No hay sectores disponibles</option>
@@ -277,12 +277,5 @@
 }
 
 <footer class="pie-de-pagina">
-  <p>Instituciones Afiliadas</p>
-  <div class="contenedor-imagenes">
-    <img src="recursos/bomberos.jpeg" alt="Descripción 1" />
-    <img src="recursos/disnortedissur.jpeg" alt="Descripción 2" />
-    <img src="recursos/enacal.png" alt="Descripción 3" />
-    <img src="recursos/policia.jpg.jpeg" alt="Descripción 4" />
-  </div>
   <p>&copy; 2026 "Comunica" - Empieza ya</p>
 </footer>

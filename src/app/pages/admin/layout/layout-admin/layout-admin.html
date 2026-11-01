@@ -5,11 +5,12 @@
         <i class="fa-solid fa-xmark"></i>
       </button>
       <img src="/logo/comunica_logo.jpeg" alt="Comunica Logo" class="logo-imagen">
-      <span class="etiqueta-admin">ADMINISTRACIÓN</span>
+      <span class="etiqueta-admin">OPERADORES</span>
     </div>
 
     <nav class="sidebar-navegacion">
       @for (item of menuAdmin; track item.texto) {
+        @if (item.requiereAlguno ? authService.tieneAlgunoDe(item.permisos) : authService.tienePermiso(item.permisos[0])) {
         <a
           [routerLink]="item.url"
           routerLinkActive="activo"
@@ -19,6 +20,7 @@
           <i [class]="item.icono" class="icono-menu"></i>
           <span class="texto-enalce">{{ item.texto }}</span>
         </a>
+        }
       }
     </nav>
 
@@ -33,26 +35,10 @@
         <i class="fa-solid fa-bars"></i>
       </button>
 
-      <!-- selector dinámico de instituciones global en la cabecera del panel de administración -->
-      @if (estadoAdminService.esSuperAdmin()) {
-        <div class="selector-institucion-global">
-          <i class="fa-solid fa-building icono-edificio"></i>
-          <select 
-            (change)="onInstitucionChange($event)"
-            [value]="estadoAdminService.institucionSeleccionadaId() === null ? '0' : estadoAdminService.institucionSeleccionadaId()"
-          >
-            <option value="0">Todas las Instituciones (Consolidado)</option>
-            @for (inst of instituciones(); track inst.id) {
-              <option [value]="inst.id">{{ inst.nombreInstitucion }}</option>
-            }
-          </select>
-        </div>
-      }
-
       <div class="perfil-admin">
         <div class="info-texto">
           <span class="nombre-usuario">{{ nombreCompletoUsuario() }}</span>
-          <span class="rol-usuario">{{ nombreInstitucionUsuario() }}</span>
+          <span class="rol-usuario">Operador</span>
         </div>
       </div>
     </header>

@@ -18,21 +18,21 @@ import {
 })
 export class ProblematicaService {
   private http = inject(HttpClient);
-  private apiUrl = `${environment.API_URL}/problematica`;
+  private apiUrl = `${environment.API_URL}/problematicas`;
 
   obtenerProblematicas(): Observable<ListarProblematicasResponse> {
-    return this.http.get<ListarProblematicasResponse>(`${this.apiUrl}/listar/pagina`);
+    return this.http.get<ListarProblematicasResponse>(this.apiUrl);
   }
 
   obtenerProblematicasPag(pag: string): Observable<ListarProblematicasPagResponse> {
     return this.http.get<ListarProblematicasPagResponse>(
-      environment.API_URL + `/problematica/listar/pagina/?page=${pag}`,
+      `${this.apiUrl}?page=${pag}`,
     );
   }
 
   crearProblematica(problematica: Partial<Problematica>): Observable<CrearProblematicaResponse> {
-    return this.http.post<CrearProblematicaResponse>(`${this.apiUrl}/agregar`, {
-      problema: problematica.problema,
+    return this.http.post<CrearProblematicaResponse>(this.apiUrl, {
+      problematica: problematica.problema,
     });
   }
 
@@ -40,17 +40,17 @@ export class ProblematicaService {
     id: number,
     problematica: Partial<Problematica>,
   ): Observable<ActualizarProblematicaResponse> {
-    return this.http.put<ActualizarProblematicaResponse>(`${this.apiUrl}/actu/${id}`, {
-      problema: problematica.problema,
+    return this.http.put<ActualizarProblematicaResponse>(`${this.apiUrl}/${id}`, {
+      problematica: problematica.problema,
     });
   }
 
   eliminarProblematica(id: number): Observable<any> {
-    return this.http.delete(`${this.apiUrl}/eliminar/${id}`);
+    return this.http.delete(`${this.apiUrl}/${id}`);
   }
 
   restaurarProblematica(id: number): Observable<any> {
-    return this.http.patch(`${this.apiUrl}/restaurar/${id}`, {});
+    return this.http.patch(`${this.apiUrl}/${id}/restaurar`, {});
   }
 
   // Cargar las problematicas asociadas a una institucion

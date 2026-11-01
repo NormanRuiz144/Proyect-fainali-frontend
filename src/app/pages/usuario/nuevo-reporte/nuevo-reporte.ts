@@ -102,7 +102,7 @@ export class NuevoReporte implements OnInit, AfterViewInit, OnDestroy {
   private cargarHistorial(): void {
     this.reporteService.obtenerHistorialUsuario().subscribe({
       next: (res) => {
-        const reportes = res.lista_Reportes || res.data || [];
+        const reportes = res.lista_Incidencias || res.data || [];
         this.historialReportes.set(reportes);
         
         // Si no hay historial, mostramos el formulario
@@ -172,8 +172,8 @@ export class NuevoReporte implements OnInit, AfterViewInit, OnDestroy {
       nombres: usuario.nombres || '',
       apellidos: usuario.apellidos || '',
       sexo: usuario.sexo || '',
-      rol: this.nombreRolVisible(usuario.rol?.rol || ''),
-      institucion: usuario.institucion?.nombreInstitucion || 'Ciudadano',
+      rol: usuario.operador ? 'Operador' : 'Ciudadano',
+      institucion: usuario.sector?.nomSector || 'Sector no asignado',
       correo: usuario.correo || '',
     }));
 
@@ -383,17 +383,17 @@ export class NuevoReporte implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private cargarCatalogos(): void {
-    this.reporteService.obtenerInstituciones().subscribe({
-      next: (res) => this.instituciones.set(res.lista_Instituciones || res),
+    this.reporteService.obtenerProblematicas().subscribe({
+      next: (res) => this.problematicas.set(res.listaProblematicas || []),
       error: (err) => {
-        console.error('Error cargando instituciones', err);
+        console.error('Error cargando problemáticas', err);
         this.interactionService.mostrarError(err);
       },
     });
-    this.ubicacionService.obtenerDepartamentos().subscribe({
-      next: (res) => this.departamentos.set(res),
+    this.reporteService.obtenerSectores().subscribe({
+      next: (res) => this.sectores.set(res.lista_Sectores || []),
       error: (err) => {
-        console.error('Error cargando departamentos', err);
+        console.error('Error cargando sectores', err);
         this.interactionService.mostrarError(err);
       },
     });
@@ -629,12 +629,11 @@ export class NuevoReporte implements OnInit, AfterViewInit, OnDestroy {
 
     // Obtener valores de los inputs por su ID
     const idProblematica = (document.getElementById('problematica') as HTMLSelectElement).value;
-    const idInstitucion = (document.getElementById('institucion') as HTMLSelectElement).value;
     const idSector = (document.getElementById('sector') as HTMLSelectElement).value;
     const descripcion = (document.getElementById('descripcion') as HTMLTextAreaElement).value;
     const archivosInput = document.getElementById('archivos-evidencia') as HTMLInputElement;
 
-    if (!idProblematica || !idInstitucion || !idSector || !descripcion) {
+    if (!idProblematica || !idSector || !descripcion) {
       this.interactionService.showToast('Por favor, completa todos los campos requeridos.', 'warning');
       return;
     }
@@ -646,11 +645,8 @@ export class NuevoReporte implements OnInit, AfterViewInit, OnDestroy {
     }
 
     const formData = new FormData();
-    // Valores dinámicos del usuario autenticado
-    formData.append('idUsuario', usuarioLogueado.id.toString()); 
     formData.append('nvlPrioridad', '5');
     formData.append('idProblematica', idProblematica);
-    formData.append('idInstitucion', idInstitucion);
     formData.append('idSector', idSector);
     
     // El backend espera "ubicacion" y "descripcion"
@@ -662,7 +658,7 @@ export class NuevoReporte implements OnInit, AfterViewInit, OnDestroy {
     const imagenes = this.imagenesPrevisualizacion();
     if (imagenes.length > 0) {
       for (let i = 0; i < imagenes.length; i++) {
-        formData.append('formato[]', imagenes[i].file);
+        formData.append('formato', imagenes[i].file);
       }
     }
 

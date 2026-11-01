@@ -3,7 +3,7 @@ import { Sector } from './ubicacion.interface';
 
 export interface ISector {
   id: number;
-  nombreSector: string;
+  nomSector: string;
   is_deleted: boolean;
 }
 

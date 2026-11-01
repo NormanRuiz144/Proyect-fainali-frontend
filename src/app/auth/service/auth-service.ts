@@ -5,18 +5,13 @@ import { ILogin } from '../interfaces/ilogin';
 import { map, Observable, tap } from 'rxjs';
 import { AuthResponse } from '../interfaces/auth-response';
 
-type ProfileResponse =
-  | ILogin
-  | { data: ILogin }
-  | { user: ILogin }
-  | { data: { user: ILogin } };
+type ProfileResponse = ILogin | { data: ILogin };
 
 @Injectable({
   providedIn: 'root',
 })
 export class AuthService {
   private http = inject(HttpClient);
-  // private url = `${environment.API_URL.replace('/api', '')}/auth`
   private url = `${environment.API_URL}/auth`;
   private profileUrl = `${environment.API_URL}/account/profile`;
   private usuario = signal<ILogin | null>(
@@ -29,23 +24,18 @@ export class AuthService {
       }
     })(),
   );
-  //Recuperar el token
   private token = signal<string | null>(localStorage.getItem('token') || null);
 
-  // Crear una señal solo lectura para que otros componentes sepan si el usuario esta autorizado o no//
-
   public usuarioActual = computed(() => this.usuario());
-  public estaAutenticado = computed(() => this.token());
-  public rolUsuario = computed(() => this.usuario()?.rol?.rol || null);
+  public estaAutenticado = computed(() => this.token() !== null);
+  public esOperador = computed(() => this.usuario()?.operador !== null && this.usuario()?.operador !== undefined);
+  public permisos = computed(() => this.usuario()?.permisos ?? []);
 
-  // Iniciar sesión
-  iniciarSesion(email: string, contrasena: string): Observable<AuthResponse> {
+  iniciarSesion(correo: string, password: string): Observable<AuthResponse> {
     return this.http
-      .post<AuthResponse>(`${this.url}/login`, { correo: email, contrasena })
+      .post<AuthResponse>(`${this.url}/login`, { correo, password })
       .pipe(tap((res) => this.establecerSesion(res)));
   }
-
-  //Guardar los datos en signal y localStorage
 
   establecerSesion(res: AuthResponse): void {
     if (!res?.data) return;
@@ -69,23 +59,27 @@ export class AuthService {
     );
   }
 
+  tienePermiso(permiso: string): boolean {
+    return this.permisos().includes(permiso);
+  }
+
+  tieneAlgunoDe(permisos: string[]): boolean {
+    return permisos.some((permiso) => this.tienePermiso(permiso));
+  }
+
   private static normalizarUsuario(res: ProfileResponse | any): ILogin {
-    if (res?.data?.user) return res.data.user;
     if (res?.data) return res.data;
-    if (res?.user) return res.user;
     return res;
   }
 
-  //borrar los datos de sesion
-
-  // Borrar los datos de sesión
+  /** Limpia la sesión local. El cierre remoto se incorporará donde se confirme la UX global. */
   logout(): void {
     this.usuario.set(null);
     this.token.set(null);
-    localStorage.clear();
+    localStorage.removeItem('token');
+    localStorage.removeItem('usuario');
   }
 
-  // Retornar el token actual para usarlo
   obtenerToken(): string | null {
     return this.token();
   }
