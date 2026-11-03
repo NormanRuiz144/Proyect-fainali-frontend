@@ -4,9 +4,7 @@ import { FormsModule } from '@angular/forms';
 import * as L from 'leaflet';
 import { MapaReportesService } from './service/mapa-reportes.service';
 import { IReporteMapa, IReporteMapaResponse } from './interface/ireporte-mapa';
-import { InstitucionesService } from '../../../features/instituciones/service/instituciones.service';
 import { ProblematicaService } from '../../../features/problematicas/service/problematica.service';
-import { Institucion } from '../../../features/instituciones/interface/instituciones';
 import { Problematica } from '../../../features/problematicas/interface/problematica';
 import { InteractionService } from '../../../shared/service/interaction.service';
 
@@ -19,12 +17,10 @@ import { InteractionService } from '../../../shared/service/interaction.service'
 })
 export class MapaReportes implements OnInit, AfterViewInit, OnDestroy {
   private mapaReportesService = inject(MapaReportesService);
-  private institucionesService = inject(InstitucionesService);
   private problematicaService = inject(ProblematicaService);
   private interactionService = inject(InteractionService);
 
   reportes = signal<IReporteMapa[]>([]);
-  instituciones = signal<Institucion[]>([]);
   problematicas = signal<Problematica[]>([]);
   cargando = signal(false);
   total = signal(0);
@@ -32,7 +28,6 @@ export class MapaReportes implements OnInit, AfterViewInit, OnDestroy {
   totalSinUbicacion = signal(0);
 
   filtroEstado = signal('');
-  filtroInstitucion = signal('');
   filtroProblematica = signal('');
   fechaDesde = signal('');
   fechaHasta = signal('');
@@ -60,12 +55,22 @@ export class MapaReportes implements OnInit, AfterViewInit, OnDestroy {
   }
 
   aplicarFiltros(): void {
+    const fechaDesde = this.fechaDesde()
+    const fechaHasta = this.fechaHasta()
+
+    if (fechaDesde && fechaHasta && fechaHasta < fechaDesde) {
+      this.interactionService.showToast(
+        'La fecha final no puede ser anterior a la fecha inicial.',
+        'warning',
+      )
+      return
+    }
+
     this.cargarReportes();
   }
 
   limpiarFiltros(): void {
     this.filtroEstado.set('');
-    this.filtroInstitucion.set('');
     this.filtroProblematica.set('');
     this.fechaDesde.set('');
     this.fechaHasta.set('');
@@ -73,19 +78,15 @@ export class MapaReportes implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private cargarCatalogos(): void {
-    this.institucionesService.obtenerInstituciones().subscribe({
-      next: (res) => {
-        const lista = res.lista_Instituciones as any;
-        const instituciones: Institucion[] = Array.isArray(lista) ? lista : lista?.data || [];
-        this.instituciones.set(instituciones.filter((institucion) => !institucion.isDeleted));
-      },
-      error: (err) => console.error('Error al cargar instituciones:', err),
-    });
-
     this.problematicaService.obtenerProblematicas().subscribe({
       next: (res) => {
-        const lista = res.lista_Problematicas as any;
-        const problematicas: Problematica[] = Array.isArray(lista) ? lista : lista?.data || [];
+        const lista = (res as any).listaProblematicas ?? (res as any).lista_Problematicas;
+        const problematicas: Problematica[] = (Array.isArray(lista) ? lista : lista?.data || []).map(
+          (problematica: any) => ({
+            ...problematica,
+            problema: problematica.problematica ?? problematica.problema,
+          }),
+        );
         this.problematicas.set(problematicas.filter((problematica) => !problematica.isDeleted));
       },
       error: (err) => console.error('Error al cargar problematicas:', err),
@@ -98,7 +99,6 @@ export class MapaReportes implements OnInit, AfterViewInit, OnDestroy {
     this.mapaReportesService
       .obtenerReportesMapa({
         estado: this.filtroEstado(),
-        idInstitucion: this.filtroInstitucion(),
         idProblematica: this.filtroProblematica(),
         fechaDesde: this.fechaDesde(),
         fechaHasta: this.fechaHasta(),

@@ -106,14 +106,15 @@
               <div class="form-step slide-in">
                 <div class="form-group form-floating">
                   <input
-                    type="number"
+                    type="text"
+                    inputmode="text"
                     formControlName="numeroCedula"
                     id="regCedula"
                     placeholder=" "
                   />
                   <label for="regCedula">Cédula</label>
                   @if (isInvalid(registroForm, 'numeroCedula')) {
-                    <small class="error-msg">Ingrese solo números</small>
+                    <small class="error-msg">Ingrese una cédula alfanumérica válida</small>
                   }
                 </div>
                 <div class="form-group form-floating">

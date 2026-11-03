@@ -25,21 +25,6 @@
     </div>
 
     <div class="grupo-filtro">
-      <label for="institucion">Institución</label>
-      <select
-        id="institucion"
-        class="form-input"
-        [ngModel]="filtroInstitucion()"
-        (ngModelChange)="filtroInstitucion.set($event)"
-      >
-        <option value="">Todas</option>
-        @for (institucion of instituciones(); track institucion.id) {
-          <option [value]="institucion.id">{{ institucion.nombreInstitucion }}</option>
-        }
-      </select>
-    </div>
-
-    <div class="grupo-filtro">
       <label for="problematica">Problemática</label>
       <select
         id="problematica"

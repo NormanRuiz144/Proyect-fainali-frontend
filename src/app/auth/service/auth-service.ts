@@ -6,6 +6,7 @@ import { map, Observable, tap } from 'rxjs';
 import { AuthResponse } from '../interfaces/auth-response';
 
 type ProfileResponse = ILogin | { data: ILogin };
+type SessionResponse = AuthResponse | { user: ILogin; token: string };
 
 @Injectable({
   providedIn: 'root',
@@ -37,13 +38,16 @@ export class AuthService {
       .pipe(tap((res) => this.establecerSesion(res)));
   }
 
-  establecerSesion(res: AuthResponse): void {
-    if (!res?.data) return;
-    const usuarioNormalizado = AuthService.normalizarUsuario(res.data.user);
+  establecerSesion(res: SessionResponse): boolean {
+    const sesion = 'data' in res ? res.data : res;
+    if (!sesion?.user || !sesion.token) return false;
+
+    const usuarioNormalizado = AuthService.normalizarUsuario(sesion.user);
     this.usuario.set(usuarioNormalizado);
-    this.token.set(res.data.token);
-    localStorage.setItem('token', res.data.token);
+    this.token.set(sesion.token);
+    localStorage.setItem('token', sesion.token);
     localStorage.setItem('usuario', JSON.stringify(usuarioNormalizado));
+    return true;
   }
 
   sincronizarUsuario(usuario: ILogin): void {

@@ -32,7 +32,7 @@
 
 .panel-filtros {
   display: grid;
-  grid-template-columns: repeat(5, minmax(150px, 1fr)) auto;
+  grid-template-columns: repeat(4, minmax(150px, 1fr)) auto;
   gap: 12px;
   align-items: end;
   background: #ffffff;

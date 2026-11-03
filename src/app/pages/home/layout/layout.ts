@@ -14,7 +14,7 @@ import { ISector } from '../../../features/ubicacion/interface/isector';
 
 const EMAIL_PATTERN = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 const PASSW_PATTERN = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/;
-const CEDULA_PATTERN = /^\d+$/;
+const CEDULA_PATTERN = /^[a-zA-Z0-9-]+$/;
 const SEXO_PATTERN = /^[MF]$/;
 
 @Component({
@@ -238,7 +238,7 @@ export class Layout {
 
     const val = this.registroForm.value;
     const usuario: any = {
-      numeroCedula: Number(val.numeroCedula),
+      numeroCedula: val.numeroCedula.trim(),
       nombres: val.nombres,
       apellidos: val.apellidos,
       sexo: val.sexo,
@@ -253,7 +253,13 @@ export class Layout {
     this.usuarioService.registrarUsuario(usuario).subscribe({
       next: async (res) => {
         await this.interactionService.hideLoading();
-        this.authService.establecerSesion(res);
+        if (!this.authService.establecerSesion(res)) {
+          await this.interactionService.showToast(
+            'No se pudo iniciar la sesión automática. Inténtelo nuevamente.',
+            'error',
+          );
+          return;
+        }
         this.cerrarModal();
         await this.interactionService.showToast('Cuenta creada correctamente', 'success');
         this.router.navigate(['/reportes']);
