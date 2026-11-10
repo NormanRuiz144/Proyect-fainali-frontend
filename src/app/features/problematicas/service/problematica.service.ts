@@ -4,13 +4,10 @@ import { environment } from '../../../../environment/environment';
 import { Observable } from 'rxjs';
 import {
   ActualizarProblematicaResponse,
-  cargarInstitucionesAsociadasResponse,
   CrearProblematicaResponse,
   ListarProblematicasPagResponse,
   ListarProblematicasResponse,
   Problematica,
-  ProblematicasDisponiblesMiInstitucionResponse,
-  ProblematicasMiInstitucionResponse,
 } from '../interface/problematica';
 
 @Injectable({
@@ -53,54 +50,4 @@ export class ProblematicaService {
     return this.http.patch(`${this.apiUrl}/${id}/restaurar`, {});
   }
 
-  // Cargar las problematicas asociadas a una institucion
-  cargarProblematicasInstitucion(problematicaId: number): Observable<any> {
-    return this.http.get(`${this.apiUrl}/filtrar/${problematicaId}`);
-  }
-  // Cargar instituciones asociadas a una problematica
-  cargarInstitucionesAsociadas(
-    problematicaId: number,
-  ): Observable<cargarInstitucionesAsociadasResponse> {
-    return this.http.get<cargarInstitucionesAsociadasResponse>(
-      `${this.apiUrl}/listar-instituciones-asociadas/${problematicaId}`,
-    );
-  }
-  // Asignar problematica con Instituciones
-  asignarProblematicaAInstitucion(problematicaId: number, institucionId: number): Observable<any> {
-    return this.http.post(`${this.apiUrl}/asignar`, {
-      idProblematica: problematicaId,
-      idInstitucion: institucionId,
-    });
-  }
-
-  desasignarProblematicaDeInstitucion(
-    problematicaId: number,
-    institucionId: number,
-  ): Observable<any> {
-    return this.http.delete(`${this.apiUrl}/eliminar-asociacion`, {
-      body: { idProblematica: problematicaId, idInstitucion: institucionId },
-    });
-  }
-
-  listarProblematicasMiInstitucion(): Observable<ProblematicasMiInstitucionResponse> {
-    return this.http.get<ProblematicasMiInstitucionResponse>(
-      `${this.apiUrl}/mi-institucion/listar`,
-    );
-  }
-
-  listarProblematicasDisponiblesMiInstitucion(): Observable<ProblematicasDisponiblesMiInstitucionResponse> {
-    return this.http.get<ProblematicasDisponiblesMiInstitucionResponse>(
-      `${this.apiUrl}/mi-institucion/disponibles`,
-    );
-  }
-
-  asignarProblematicaMiInstitucion(problematicaId: number): Observable<any> {
-    return this.http.post(`${this.apiUrl}/mi-institucion/asignar`, {
-      idProblematica: problematicaId,
-    });
-  }
-
-  eliminarProblematicaMiInstitucion(problematicaId: number): Observable<any> {
-    return this.http.delete(`${this.apiUrl}/mi-institucion/eliminar/${problematicaId}`);
-  }
 }

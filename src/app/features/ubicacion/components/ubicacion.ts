@@ -417,7 +417,14 @@ export class UbicacionComponent implements OnInit {
             this.interactionService.showToast('Departamento creado correctamente', 'success');
           },
           error: (err) => {
-            this.interactionService.mostrarError(err);
+            if (err.status === 409) {
+              this.interactionService.showToast(
+                err.error?.mensaje ?? `Ya existe un departamento con el nombre: ${data.nomDepartamento}.`,
+                'warning',
+              );
+            } else {
+              this.interactionService.mostrarError(err);
+            }
             this.cargando.set(false);
           },
         });

@@ -1,5 +1,3 @@
-import { Institucion } from '../../instituciones/interface/instituciones';
-
 export interface Problematica {
   id?: number;
   problema: string;
@@ -37,28 +35,3 @@ export interface ActualizarProblematicaResponse {
   problematica: Problematica;
 }
 
-export interface cargarInstitucionesAsociadasResponse {
-  lista_instituciones: {
-    id: number;
-    idInstitucion: number;
-    idProblematica: number;
-    institucion: Institucion;
-  }[];
-}
-
-export interface ProblematicaInstitucionRelacion {
-  id: number;
-  idInstitucion: number;
-  idProblematica: number;
-  problematica: Problematica;
-}
-
-export interface ProblematicasMiInstitucionResponse {
-  institucion: Institucion;
-  lista_problematicas: ProblematicaInstitucionRelacion[];
-}
-
-export interface ProblematicasDisponiblesMiInstitucionResponse {
-  institucion: Institucion;
-  lista_problematicas: Problematica[];
-}
