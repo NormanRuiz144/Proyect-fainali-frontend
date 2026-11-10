@@ -29,13 +29,13 @@ export class UsuariosBaneadosComponent implements OnInit {
         const rawData = res.data || [];
         this.baneados.set(
           rawData.map((item: any) => {
-            const user = item.user ?? {};
+            const user = item.usuario ?? item.user ?? {};
             const tipoBan = item.tipo_ban ?? item.tipoBan;
 
             return {
               id: item.id,
               usuario: {
-                id: item.user_id ?? item.userId ?? user.id ?? 0,
+                id: item.id_usuario ?? item.user_id ?? item.userId ?? user.id ?? 0,
                 nombres: user.nombres ?? '',
                 apellidos: user.apellidos ?? '',
                 correo: user.correo ?? '',

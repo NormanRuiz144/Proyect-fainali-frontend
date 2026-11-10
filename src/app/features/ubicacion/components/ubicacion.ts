@@ -459,7 +459,14 @@ export class UbicacionComponent implements OnInit {
             this.interactionService.showToast('Municipio creado correctamente', 'success');
           },
           error: (err) => {
-            this.interactionService.mostrarError(err);
+            if (err.status === 409) {
+              this.interactionService.showToast(
+                err.error?.mensaje ?? `Ya existe un municipio con el nombre: ${data.nomMunicipio}.`,
+                'warning',
+              );
+            } else {
+              this.interactionService.mostrarError(err);
+            }
             this.cargando.set(false);
           },
         });

@@ -1,6 +1,24 @@
 <section class="accesos">
   <header><h1>Operadores y permisos</h1><p>Administra los accesos activos de la plataforma.</p></header>
   @if (cargando()) { <p>Cargando…</p> } @else {
+    @if (auth.tienePermiso('operadores.crear')) {
+      <section class="promover-operador">
+        <h2>Promover usuario a operador</h2>
+        <p>Se asignarán los permisos básicos para consultar el panel y las incidencias.</p>
+        <div class="asignar">
+          <input
+            type="email"
+            placeholder="correo@ejemplo.com"
+            [ngModel]="correoOperador()"
+            (ngModelChange)="correoOperador.set($event)"
+            [disabled]="promoviendo()"
+          />
+          <button (click)="promoverPorCorreo()" [disabled]="promoviendo()">
+            {{ promoviendo() ? 'Promoviendo…' : 'Promover a operador' }}
+          </button>
+        </div>
+      </section>
+    }
     @if (auth.tienePermiso('permisos.administrar')) {
       <div class="asignar">
         <select [(ngModel)]="idOperador"><option [ngValue]="null">Seleccione operador</option>@for (op of operadores(); track op.id) { <option [ngValue]="op.id">{{ op.usuario?.nombres }} {{ op.usuario?.apellidos }}</option> }</select>

@@ -32,7 +32,7 @@ export class LayoutAdmin {
     { texto: 'Ubicaciones', icono: 'fa-solid fa-map-marker-alt', url: '/operadores/ubicaciones', permisos: ['departamentos.ver', 'municipios.ver', 'sectores.ver'], requiereAlguno: true },
     { texto: 'Usuarios', icono: 'fa-solid fa-users', url: '/operadores/usuarios', permisos: ['usuarios.ver'] },
     { texto: 'Baneados', icono: 'fa-solid fa-ban', url: '/operadores/baneados', permisos: ['banned_users.ver'] },
-    { texto: 'Operadores y permisos', icono: 'fa-solid fa-user-gear', url: '/operadores/accesos', permisos: ['operadores.ver', 'permisos.ver', 'permisos.administrar'], requiereAlguno: true },
+    { texto: 'Operadores y permisos', icono: 'fa-solid fa-user-gear', url: '/operadores/accesos', permisos: ['operadores.ver', 'operadores.crear', 'permisos.ver', 'permisos.administrar'], requiereAlguno: true },
   ];
 
   alternarMenu() {

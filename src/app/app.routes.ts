@@ -91,7 +91,7 @@ export const routes: Routes = [
       {
         path: 'accesos',
         canActivate: [PermissionGuard],
-        data: { permisos: ['operadores.ver', 'permisos.ver', 'permisos.administrar'], requiereAlguno: true },
+        data: { permisos: ['operadores.ver', 'operadores.crear', 'permisos.ver', 'permisos.administrar'], requiereAlguno: true },
         loadComponent: () => import('./pages/operadores/accesos/accesos').then((c) => c.AccesosComponent),
       },
       {

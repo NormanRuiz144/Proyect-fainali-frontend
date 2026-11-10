@@ -22,6 +22,8 @@ export class AccesosComponent implements OnInit {
   asignaciones = signal<any[]>([]);
   idOperador = signal<number | null>(null);
   idPermiso = signal<number | null>(null);
+  correoOperador = signal('');
+  promoviendo = signal(false);
   cargando = signal(true);
   private api = environment.API_URL;
 
@@ -36,6 +38,30 @@ export class AccesosComponent implements OnInit {
     const idOperador = this.idOperador(); const idPermiso = this.idPermiso();
     if (!idOperador || !idPermiso) return;
     this.http.post<any>(`${this.api}/operador-permisos`, { idOperador, idPermiso, activo: true }).subscribe({ next: () => { this.interaction.showToast('Permiso asignado.', 'success'); this.cargar(); }, error: (e) => this.interaction.mostrarError(e) });
+  }
+  promoverPorCorreo() {
+    const correo = this.correoOperador().trim();
+    if (!correo) {
+      this.interaction.showToast('Ingresa el correo del usuario que deseas promover.', 'warning');
+      return;
+    }
+
+    this.promoviendo.set(true);
+    this.http.post<any>(`${this.api}/operadores/por-correo`, { correo }).subscribe({
+      next: (respuesta) => {
+        this.correoOperador.set('');
+        this.promoviendo.set(false);
+        this.interaction.showToast(respuesta?.mensaje ?? 'Operador creado con permisos básicos.', 'success');
+        this.cargar();
+      },
+      error: (error) => {
+        this.promoviendo.set(false);
+        this.interaction.showToast(
+          error.error?.mensaje ?? 'No se pudo promover al usuario como operador.',
+          'error',
+        );
+      },
+    });
   }
   cambiarEstado(asignacion: any) { this.http.put(`${this.api}/operador-permisos/${asignacion.id}`, { activo: !asignacion.activo }).subscribe({ next: () => this.cargar(), error: (e) => this.interaction.mostrarError(e) }); }
 }

@@ -86,7 +86,7 @@ export class UbicacionService {
 
   sectoresPorMunicipio(idMuni: number): Observable<{ lista_Sectores: Sector[] }> {
     return this.http.get<{ lista_Sectores: Sector[] }>(
-      `${this.apiUrl}/sectores`,
+      `${this.apiUrl}/sectores?idMunicipio=${idMuni}`,
     );
   }
 

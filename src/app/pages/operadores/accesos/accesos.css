@@ -1,1 +1,4 @@
-.accesos { max-width: 900px; margin: 0 auto; padding: 24px; } .asignar { display: flex; gap: 12px; margin: 20px 0; } select, button { padding: 9px 12px; } li { margin: 8px 0; }
+.accesos { max-width: 900px; margin: 0 auto; padding: 24px; } .asignar { display: flex; gap: 12px; margin: 20px 0; } input, select, button { padding: 9px 12px; } li { margin: 8px 0; }
+.promover-operador { border: 1px solid #dbe3ef; border-radius: 8px; margin: 20px 0; padding: 16px; }
+.promover-operador h2 { margin: 0; }
+.promover-operador p { color: #64748b; margin: 6px 0 0; }

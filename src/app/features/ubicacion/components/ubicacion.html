@@ -248,7 +248,11 @@
                   {{ sec.nombre_sector || sec.nombreSector || sec.nomSector }}
                 </td>
                 <td class="text-gray-500">
-                  {{ getNombreMunicipio(sec.id_municipios || sec.idMunicipios || sec.idMunicipio) }}
+                  {{
+                    sec.municipio?.nom_municipio ||
+                      sec.municipio?.nomMunicipio ||
+                      getNombreMunicipio(sec.idMunicipio)
+                  }}
                 </td>
                 <td>
                   <div

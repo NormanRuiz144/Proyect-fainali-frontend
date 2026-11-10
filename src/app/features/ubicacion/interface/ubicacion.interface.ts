@@ -22,5 +22,6 @@ export interface Sector {
   idMunicipio?: number; // expected by validator
   idMunicipios?: number; // from model
   id_municipios?: number; // from DB
+  municipio?: Municipio | null;
   isDeleted: boolean;
 }
